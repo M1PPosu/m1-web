@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 import PlaymodeTabs from 'components/playmode-tabs';
+import { Sort } from 'components/sort';
 import StringWithComponent from 'components/string-with-component';
 import { rulesets } from 'interfaces/ruleset';
 import { route } from 'laroute';
@@ -10,11 +11,18 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 import { onErrorWithCallback } from 'utils/ajax';
 import { trans } from 'utils/lang';
+import { navigate } from 'utils/turbolinks';
 import Controller from './controller';
 
 interface Props {
   controller: Controller;
 }
+
+const variantsByRuleset = new Map([
+  ['osu', ['all', 'rx', 'ap']],
+  ['taiko', ['all', 'rx']],
+  ['fruits', ['all', 'rx']],
+]);
 
 @observer
 export default class GameModeSwitcher extends React.Component<Props> {
@@ -36,19 +44,40 @@ export default class GameModeSwitcher extends React.Component<Props> {
         {this.renderSetDefault()}
         <PlaymodeTabs
           currentMode={this.props.controller.currentMode}
+          currentVariant={this.props.controller.currentVariant}
           defaultMode={this.props.controller.state.user.playmode}
+          defaultVariant={this.props.controller.state.user.playmode_variant}
           entries={rulesets.map((mode) => ({
             disabled: false,
-            href: route('users.show', { mode, user: this.props.controller.state.user.id }),
+            href: route('users.show', { mode, user: this.props.controller.state.user.id, variant: null }),
             mode,
+            variant: null,
           }))}
+          extraContent={this.renderVariantSwitch()}
         />
       </>
     );
   }
 
+  private readonly onChangeVariant = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const value = event.currentTarget.dataset.value;
+    const variant = value == null || value === 'all' ? null : value;
+
+    navigate(route('users.show', {
+      mode: this.props.controller.currentMode,
+      user: this.props.controller.state.user.id,
+      variant,
+    }));
+  };
+
   private renderSetDefault() {
-    if (!this.props.controller.withEdit || this.props.controller.state.user.playmode === this.props.controller.currentMode) {
+    if (
+      !this.props.controller.withEdit
+      || (
+        this.props.controller.state.user.playmode === this.props.controller.currentMode
+        && this.props.controller.state.user.playmode_variant === this.props.controller.currentVariant
+      )
+    ) {
       return null;
     }
 
@@ -68,6 +97,27 @@ export default class GameModeSwitcher extends React.Component<Props> {
           />
         </button>
       </div>
+    );
+  }
+
+  private renderVariantSwitch() {
+    const mode = this.props.controller.currentMode;
+
+    const variants = variantsByRuleset.get(mode);
+
+    if (variants == null) return null;
+
+    return (
+      <li>
+        <Sort
+          currentValue={this.props.controller.currentVariant ?? 'all'}
+          modifiers='page-extra'
+          onChange={this.onChangeVariant}
+          showTitle={false}
+          transPrefix={`beatmaps.variant.${mode}.`}
+          values={variants}
+        />
+      </li>
     );
   }
 

@@ -5,24 +5,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\M1pposu\SourceAuthenticator;
 use App\Libraries\User\CountryChange;
 use App\Libraries\User\DatadogLoginAttempt;
 use App\Libraries\User\ForceReactivation;
 use App\Models\Country;
+use App\Models\LoginAttempt;
 use App\Models\User;
 use App\Transformers\CurrentUserTransformer;
 use Auth;
 use romanzipp\Turnstile\Validator as TurnstileValidator;
+use Throwable;
 
 class SessionsController extends Controller
 {
     public function __construct()
     {
         $this->middleware('guest', ['only' => [
+            'create',
             'store',
         ]]);
 
         parent::__construct();
+    }
+
+    public function create()
+    {
+        return view('sessions.create');
     }
 
     public function store()
@@ -73,10 +82,30 @@ class SessionsController extends Controller
 
         $user = User::findForLogin($username);
 
-        if ($user === null && strpos($username, '@') !== false && !$GLOBALS['cfg']['osu']['user']['allow_email_login']) {
+        $emailLoginDisabled = $user === null
+            && strpos($username, '@') !== false
+            && !$GLOBALS['cfg']['osu']['user']['allow_email_login'];
+
+        if ($emailLoginDisabled) {
             $authError = osu_trans('users.login.email_login_disabled');
         } else {
             $authError = User::attemptLogin($user, $password, $ip);
+        }
+
+        if ($authError !== null && !$emailLoginDisabled) {
+            try {
+                $sourceAuthUser = app(SourceAuthenticator::class)->attempt($username, $password);
+            } catch (Throwable $e) {
+                log_error($e);
+
+                return error_popup('Source login is temporarily unavailable. Please try again or contact support.', 503);
+            }
+
+            if ($sourceAuthUser !== null) {
+                $user = $sourceAuthUser;
+                $authError = null;
+                LoginAttempt::logLoggedIn($ip, $user);
+            }
         }
 
         if ($authError === null) {
@@ -97,7 +126,10 @@ class SessionsController extends Controller
             // try fixing user country if it's currently set to unknown
             if ($user->country_acronym === Country::UNKNOWN) {
                 try {
-                    CountryChange::handle($user, request_country(), 'automated unknown country fixup on login');
+                    $requestCountry = request_country();
+                    if ($requestCountry !== null) {
+                        CountryChange::handle($user, $requestCountry, 'automated unknown country fixup on login');
+                    }
                 } catch (\Throwable $e) {
                     // report failures but continue anyway
                     log_error($e);

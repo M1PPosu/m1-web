@@ -12,11 +12,11 @@ return [
 
     'daily_challenge' => [
         'beatmap' => 'Dificuldade',
-        'top_10p' => 'Pontuação do Topo 10%',
-        'top_50p' => 'Pontuação do Topo 50%',
+        'top_10p' => 'Pontuação do top 10%',
+        'top_50p' => 'Pontuação do top 50%',
         'unavailable' => [
-            'future' => 'Ainda não existe um desafio diário para a data especificada!',
-            'past' => 'Não existe um desafio diário para a data especificada!',
+            'future' => '',
+            'past' => '',
         ],
     ],
 
@@ -35,15 +35,15 @@ return [
     ],
 
     'matchmaking' => [
-        'plays' => 'Partidas',
-        'points' => 'Pontos',
-        'provisional' => 'Não foram jogadas partidas suficientes para determinar a classificação com precisão',
-        'rating' => 'Classificação',
-        'wins' => 'Vitórias',
+        'plays' => '',
+        'points' => '',
+        'provisional' => '',
+        'rating' => '',
+        'wins' => '',
     ],
 
     'multiplayer' => [
-        'room_name' => 'Nome da Sala',
+        'room_name' => '',
     ],
 
     'performance' => [
@@ -51,15 +51,15 @@ return [
     ],
 
     'top_plays' => [
-        'empty' => 'Os dados estão a ser calculados...',
-        'last_updated' => 'Última atualização',
+        'empty' => '',
+        'last_updated' => '',
     ],
 
     'playlists' => [
-        'charts' => 'destaques (antigo)',
-        'featured' => 'em destaque',
-        'season_room' => 'sala da temporada',
-        'seasons' => 'temporadas',
+        'charts' => '',
+        'featured' => '',
+        'season_room' => '',
+        'seasons' => '',
     ],
 
     'type' => [
@@ -67,42 +67,42 @@ return [
         'daily_challenge' => 'desafio diário',
         'global' => 'global',
         'kudosu' => 'kudosu',
-        'matchmaking' => 'partida classificada',
-        'playlists' => 'listas de reprodução',
+        'matchmaking' => '',
+        'playlists' => '',
         'team' => 'equipa',
-        'top_plays' => 'melhores partidas',
+        'top_plays' => '',
     ],
 
     'seasons' => [
-        'empty' => 'Ainda não existem salas nesta temporada.',
-        'ongoing' => 'Esta temporada ainda está em curso (serão adicionadas mais listas de reprodução).',
-        'room_count' => 'Número de listas de reprodução',
-        'summary' => 'Ver o Sumário da Temporada',
+        'empty' => 'Ainda não há salas nesta temporada.',
+        'ongoing' => 'Esta temporada ainda está em curso (serão acrescentadas mais listas de reprodução).',
+        'room_count' => 'Soma das listas de reprodução',
+        'summary' => '',
         'url' => 'Mostrar mais informações sobre a época.',
         'validation' => [
-            'not_enough_factors' => 'não existem fatores de pontuação suficientes para um cálculo adequado',
+            'not_enough_factors' => 'não existem elementos de pontuação suficientes para um cálculo correto',
         ],
     ],
 
     'spotlight' => [
-        'end_date' => 'Data Final',
-        'map_count' => 'Número de Mapas',
+        'end_date' => 'Data final',
+        'map_count' => 'Nº de mapas',
         'participants' => 'Participantes',
         'start_date' => 'Data de início',
     ],
 
     'stat' => [
         'accuracy' => 'Precisão',
-        'active_users' => 'Utilizadores Ativos',
+        'active_users' => 'Utilizadores ativos',
         'country' => 'País',
         'division' => 'Divisão',
         'members' => 'Membros',
-        'play_count' => 'Número de Partidas',
+        'play_count' => 'Nº de partidas',
         'performance' => 'Desempenho',
-        'total_score' => 'Pontuação Total',
-        'ranked_score' => 'Pontuação Classificada',
-        'average_score' => 'Pontuação Média',
-        'average_performance' => 'Desempenho Médio',
+        'total_score' => 'Pontuação total',
+        'ranked_score' => 'Pontuação classificada',
+        'average_score' => 'Pontuação média',
+        'average_performance' => 'Desempenho médio',
         'ss' => '',
         's' => '',
         'a' => '',

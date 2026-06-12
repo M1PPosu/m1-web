@@ -7,6 +7,8 @@
     use App\Models\Country;
 
     $countryChangeTarget = CountryChangeTarget::get($user);
+    $countryCode = $user->country_acronym ?? Country::UNKNOWN;
+    $countryName = $user->country?->name ?? app('countries')->byCode(Country::UNKNOWN)?->name ?? Country::UNKNOWN;
 @endphp
 <div class="account-edit-entry account-edit-entry--read-only">
     <div class="account-edit-entry__label account-edit-entry__label--top-pinned">
@@ -15,10 +17,10 @@
     <div class="account-edit-entry__group">
         <p>
             @include('objects._flag_country', [
-                'country' => $user->country_acronym,
+                'country' => $countryCode,
                 'modifiers' => 'wiki',
             ])
-            {{ $user->country->name }}
+            {{ $countryName }}
         </p>
         @if ($countryChangeTarget !== null)
             <p>
@@ -26,7 +28,7 @@
                     'update_link' => link_to(
                         route('account.country', ['country_acronym' => $countryChangeTarget]),
                         osu_trans('accounts.edit.profile.country_change.update_link', [
-                            'country' => app('countries')->byCode($countryChangeTarget)->name,
+                            'country' => app('countries')->byCode($countryChangeTarget)?->name ?? $countryChangeTarget,
                         ]),
                         [
                             'data-confirm' => osu_trans('common.confirmation'),

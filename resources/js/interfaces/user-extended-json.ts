@@ -44,6 +44,7 @@ interface UserExtendedAdditionalAttributes {
   max_friends: number;
   occupation: string | null;
   playmode: Ruleset;
+  playmode_variant: string | null;
   playstyle: string[];
   post_count: number;
   profile_hue: number | null;

@@ -1,0 +1,28 @@
+HTTP/1.1 302 Found
+Server: nginx/1.29.8
+Date: Mon, 27 Apr 2026 20:17:05 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 458
+Connection: keep-alive
+Cache-Control: no-cache, private
+Location: http://localhost:8088/rankings/osu/global/performance
+Server-Timing: app; dur=50.647020339966; desc="Application", timeline-event-0; dur=49.829006195068; desc="Controller"
+Set-Cookie: osu_session=eyJpdiI6Im9yY3RSV1B3T2dXNVlxZk9xVFJzaUE9PSIsInZhbHVlIjoiYmFuVmIvc3FWWCtRa1JOWTFRVU5lZmlpaGtoL0lVYTZzb2IvMzNHMGdSaXV2alBpbktITm90b29sWUgybEhMRTVNSW9zUWdxdE9WZUNWR2JOWTZ2RGs2dTNJTGpycmIzUmYrSG85SEswMXVCR0dpZGFTczNPQlJaQWRTVUZKYmE5NUlhd05LUjl5aXQvYmJnbmw3aFdBPT0iLCJtYWMiOiI1NDk2Nzk5YjhmNGMyNzdiOTE3ZTNlMGRhYTYzZmIwMjUxMGYxNmFjN2E1ZDg5NDU4OWRhMDMxZDhlNzU1Zjg2IiwidGFnIjoiIn0%3D; expires=Wed, 27 May 2026 20:17:05 GMT; Max-Age=2592000; path=/; httponly; samesite=lax
+X-Clockwork-Id: 1777321025-7265-1385737227
+X-Clockwork-Version: 5.3.4
+X-Powered-By: PHP/8.4.20
+
+HTTP/1.1 200 OK
+Server: nginx/1.29.8
+Date: Mon, 27 Apr 2026 20:17:06 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-cache, private
+Server-Timing: app; dur=529.43420410156; desc="Application", db; dur=1.84; desc="Database", timeline-event-0; dur=528.20801734924; desc="Controller"
+Set-Cookie: osu_session=eyJpdiI6Ik01ZDNsNk1BVDRWbEJqUEt6d0xoa0E9PSIsInZhbHVlIjoiRUZqbmtreENBMnl4bmlwYk1ObmxVTFBIV25DTThweVFKdUFzb2ZrOXdsUy9ETTJmMFFzSU9CdDVHZFVoS21YYnlZNjlIL0RNMys2ZXVrRk0ycllRZnZGT04wT251d1krenZycVNIRGV1TEp0UjRVZmt5WEh3R1phQTRHeWtGTFAvdjhFRmVhN2swQ2pObWtiNGNwdk93PT0iLCJtYWMiOiJhMzExMzY0YTdlZGRjN2MzZjY4NTZiODY1MjYyMTY5NTdjMzBkMzdkMzM4MDdmZTliMGEwMTNlZTAwNjk2YTAyIiwidGFnIjoiIn0%3D; expires=Wed, 27 May 2026 20:17:06 GMT; Max-Age=2592000; path=/; httponly; samesite=lax
+Set-Cookie: x-clockwork=%7B%22requestId%22%3A%221777321025-7804-11081063%22%2C%22version%22%3A%225.3.4%22%2C%22path%22%3A%22%5C%2F__clockwork%5C%2F%22%2C%22webPath%22%3A%22%5C%2Fclockwork%5C%2Fapp%22%2C%22token%22%3A%22dc72ebc5%22%2C%22metrics%22%3Atrue%2C%22toolbar%22%3Atrue%7D; expires=Mon, 27 Apr 2026 20:18:06 GMT; Max-Age=60; path=/; samesite=lax
+X-Clockwork-Id: 1777321025-7804-11081063
+X-Clockwork-Version: 5.3.4
+X-Powered-By: PHP/8.4.20
+

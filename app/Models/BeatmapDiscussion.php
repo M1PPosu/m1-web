@@ -195,9 +195,10 @@ class BeatmapDiscussion extends Model
         return $this->hasOne(BeatmapDiscussionPost::class)->whereNotExists(function ($query) {
             $table = (new BeatmapDiscussionPost())->getTable();
 
-            $query->from($table, 'd')
-                ->whereColumn('d.beatmap_discussion_id', "{$table}.beatmap_discussion_id")
-                ->whereColumn('d.id', '<', "{$table}.id");
+            $query->selectRaw(1)
+                ->from(DB::raw("{$table} d"))
+                ->where('beatmap_discussion_id', $this->beatmap_discussion_id)
+                ->whereRaw("d.id < {$table}.id");
         });
     }
 

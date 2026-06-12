@@ -34,7 +34,7 @@ class TeamTransformer extends TransformerAbstract
     public function transform(Team $team): array
     {
         return [
-            'flag_url' => $team->flag()->url(),
+            'flag_url' => $team->flagUrl(),
             'id' => $team->getKey(),
             'name' => $team->name,
             'short_name' => $team->short_name,

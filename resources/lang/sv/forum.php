@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Raderade Inlägg',
             'total_posts' => 'Totala Inlägg',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Nuvarande Prioritet: +:count',

@@ -397,6 +397,17 @@ function datadog_timing(callable $callable, $stat, ?array $tag = null)
 
 function db_unsigned_increment($column, $count)
 {
+    if (!is_string($column) || preg_match('/\A[A-Za-z_][A-Za-z0-9_]*\z/', $column) !== 1) {
+        throw new InvalidArgumentException('Invalid database column name.');
+    }
+
+    if (is_string($count) && preg_match('/\A-?\d+\z/', $count) === 1) {
+        $count = (int) $count;
+    }
+    if (!is_int($count)) {
+        throw new InvalidArgumentException('Database increment must be an integer.');
+    }
+
     if ($count >= 0) {
         $value = "`{$column}` + {$count}";
     } else {
@@ -638,6 +649,33 @@ function oauth_token(): ?App\Models\OAuth\Token
     return Request::instance()->attributes->get(App\Http\Middleware\AuthApi::REQUEST_OAUTH_TOKEN_KEY);
 }
 
+function m1pposu_translation_locale($key, $locale = null)
+{
+    $fallbackLocale = config('app.fallback_locale');
+    $locale ??= app()->getLocale();
+
+    if ($locale === $fallbackLocale) {
+        return $locale;
+    }
+
+    $config = config('m1pposu.localization.branding_fallback', []);
+    if (in_array($key, $config['exact'] ?? [], true)) {
+        return $fallbackLocale;
+    }
+
+    foreach ($config['prefixes'] ?? [] as $prefix) {
+        if (str_starts_with($key, $prefix)) {
+            return $fallbackLocale;
+        }
+    }
+
+    $fallbackTranslation = app('translator')->get($key, [], $fallbackLocale, false);
+
+    return is_string($fallbackTranslation) && str_contains($fallbackTranslation, 'M1PPosu')
+        ? $fallbackLocale
+        : $locale;
+}
+
 function osu_trans($key = null, $replace = [], $locale = null)
 {
     $translator = app('translator');
@@ -645,6 +683,8 @@ function osu_trans($key = null, $replace = [], $locale = null)
     if (is_null($key)) {
         return $translator;
     }
+
+    $locale = m1pposu_translation_locale($key, $locale);
 
     if (!trans_exists($key, $locale)) {
         $locale = $GLOBALS['cfg']['app']['fallback_locale'];
@@ -655,6 +695,8 @@ function osu_trans($key = null, $replace = [], $locale = null)
 
 function osu_trans_choice($key, $number, array $replace = [], $locale = null)
 {
+    $locale = m1pposu_translation_locale($key, $locale);
+
     if (!trans_exists($key, $locale)) {
         $locale = $GLOBALS['cfg']['app']['fallback_locale'];
     }
@@ -921,7 +963,7 @@ function is_turbo_request(?HttpRequest $request = null): bool
 
 function is_valid_email_format(?string $email): bool
 {
-    if ($email === null) {
+    if ($email === null || preg_match('/[\r\n]/', $email) === 1) {
         return false;
     }
 
@@ -947,7 +989,7 @@ function js_localtime($date)
 
 function page_description($extra)
 {
-    $parts = ['osu!', page_title()];
+    $parts = [config('m1pposu.site_title'), page_title()];
 
     if (present($extra)) {
         $parts[] = $extra;
@@ -1246,21 +1288,35 @@ function nav_links()
 {
     $defaultMode = default_mode();
     $links = [];
+    $features = config('m1pposu.features', []);
 
     $links['home'] = [
         '_' => route('home'),
         'page_title.main.news_controller._' => route('news.index'),
-        'layout.menu.home.team' => wiki_url('People/osu!_team'),
         'page_title.main.changelog_controller._' => route('changelog.index'),
         'page_title.main.home_controller.get_download' => route('download'),
         'page_title.main.home_controller.search' => route('search'),
     ];
     $links['beatmaps'] = [
         'page_title.main.beatmapsets_controller.index' => route('beatmapsets.index'),
-        'page_title.main.artists_controller._' => route('artists.index'),
         'page_title.main.beatmap_packs_controller._' => route('packs.index'),
     ];
+    if (get_bool($features['featured_artists'] ?? false)) {
+        $links['beatmaps']['page_title.main.artists_controller._'] = route('artists.index');
+    }
     foreach (RankingController::TYPES as $rankingType) {
+        if ($rankingType === 'daily_challenge' && !get_bool($features['daily_challenge'] ?? false)) {
+            continue;
+        }
+
+        if ($rankingType === 'playlists' && !get_bool($features['playlists'] ?? false)) {
+            continue;
+        }
+
+        if ($rankingType === 'matchmaking' && !get_bool($features['ranked_play'] ?? false)) {
+            continue;
+        }
+
         $links['rankings']["rankings.type.{$rankingType}"] = RankingController::url(['type' => $rankingType]);
     }
     $links['community'] = [
@@ -1268,20 +1324,17 @@ function nav_links()
         'page_title.main.chat_controller._' => route('chat.index'),
         'page_title.main.contests_controller._' => route('contests.index'),
         'page_title.main.tournaments_controller._' => route('tournaments.index'),
-        'page_title.main.livestreams_controller._' => route('livestreams.index'),
-        'layout.menu.community.dev' => osu_url('dev'),
     ];
-    $links['store'] = [
-        'layout.header.store.products' => route('store.products.index'),
-        'layout.header.store.cart' => route('store.cart.show'),
-        'layout.header.store.orders' => route('store.orders.index'),
-    ];
-    $links['help'] = [
-        'page_title.main.wiki_controller._' => wiki_url('Main_page'),
-        'layout.menu.help.getFaq' => wiki_url('FAQ'),
-        'layout.menu.help.getRules' => wiki_url('Rules'),
-        'layout.menu.help.getAbuse' => wiki_url('Reporting_bad_behaviour/Abuse'),
-        'layout.menu.help.getSupport' => wiki_url('Help_centre'),
+    if (get_bool($features['livestreams'] ?? false)) {
+        $links['community']['page_title.main.livestreams_controller._'] = route('livestreams.index');
+    }
+    if (($devUrl = osu_url('dev')) !== null) {
+        $links['community']['layout.menu.community.dev'] = $devUrl;
+    }
+    $links['rules'] = [
+        'layout.menu.rules.getRules' => route('help.rules'),
+        'layout.menu.rules.getAbuse' => route('help.report-abuse'),
+        'layout.menu.rules.getSupport' => route('help.contact'),
     ];
 
     return $links;
@@ -1289,7 +1342,7 @@ function nav_links()
 
 function footer_landing_links()
 {
-    return [
+    $links = [
         'general' => [
             'home' => route('home'),
             'changelog-index' => route('changelog.index'),
@@ -1297,13 +1350,18 @@ function footer_landing_links()
             'download' => route('download'),
         ],
         'help' => [
-            'faq' => wiki_url('FAQ'),
             'forum' => route('forum.forums.index'),
-            'livestreams' => route('livestreams.index'),
-            'wiki' => wiki_url('Main_page'),
+            'report' => route('help.report-abuse'),
+            'contact' => route('help.contact'),
         ],
         'legal' => footer_legal_links(),
     ];
+
+    if (get_bool(config('m1pposu.features.livestreams') ?? false)) {
+        $links['help']['livestreams'] = route('livestreams.index');
+    }
+
+    return $links;
 }
 
 function footer_legal_links(): array
@@ -1311,15 +1369,19 @@ function footer_legal_links(): array
     $locale = app()->getLocale();
 
     $ret = [];
-    $ret['rules'] = wiki_url('Rules');
+    $ret['rules'] = route('help.rules');
     $ret['terms'] = route('legal', ['locale' => $locale, 'path' => 'Terms']);
     if ($locale === 'ja') {
         $ret['jp_sctl'] = route('legal', ['locale' => $locale, 'path' => 'SCTL']);
     }
     $ret['privacy'] = route('legal', ['locale' => $locale, 'path' => 'Privacy']);
     $ret['copyright'] = route('legal', ['locale' => $locale, 'path' => 'Copyright']);
-    $ret['server_status'] = osu_url('server_status');
-    $ret['source_code'] = osu_url('source_code');
+    if (($serverStatusUrl = osu_url('server_status')) !== null) {
+        $ret['server_status'] = $serverStatusUrl;
+    }
+    if (($sourceCodeUrl = config('m1pposu.legal.source_code_url') ?? osu_url('source_code')) !== null) {
+        $ret['source_code'] = $sourceCodeUrl;
+    }
 
     return $ret;
 }
@@ -1505,11 +1567,64 @@ function fast_imagesize_cache_put(string $url, ?string $logErrorId = null): ?arr
 {
     static $oneMonthInSeconds = 30 * 24 * 60 * 60;
 
+    if (!server_fetch_url_allowed($url)) {
+        Cache::put("imageSize:{$url}", false, $oneMonthInSeconds);
+
+        return null;
+    }
+
     $value = imagesize($url, $logErrorId) ?? false;
 
     Cache::put("imageSize:{$url}", $value, $oneMonthInSeconds);
 
     return null_if_false($value);
+}
+
+function server_fetch_url_allowed(string $url): bool
+{
+    $urlParts = parse_url($url);
+    if (
+        $urlParts === false
+        || !in_array(strtolower((string) ($urlParts['scheme'] ?? '')), ['http', 'https'], true)
+        || !present($urlParts['host'] ?? null)
+        || isset($urlParts['user'])
+        || isset($urlParts['pass'])
+    ) {
+        return false;
+    }
+
+    $allowedBaseUrls = [];
+    if (present($GLOBALS['cfg']['osu']['camo']['key'] ?? null)) {
+        $allowedBaseUrls[] = $GLOBALS['cfg']['osu']['camo']['prefix'] ?? null;
+    }
+
+    foreach ($GLOBALS['cfg']['filesystems']['disks'] ?? [] as $disk) {
+        foreach (['base_url', 'mini_url', 'url'] as $key) {
+            $allowedBaseUrls[] = $disk[$key] ?? null;
+        }
+    }
+    array_push($allowedBaseUrls, ...($GLOBALS['cfg']['osu']['server_fetch_allowed_base_urls'] ?? []));
+    $allowedBaseUrls[] = $GLOBALS['cfg']['m1pposu']['imported_assets_base_url'] ?? null;
+
+    foreach (array_unique(array_filter($allowedBaseUrls, 'present')) as $baseUrl) {
+        $baseParts = parse_url((string) $baseUrl);
+        if (
+            $baseParts === false
+            || strtolower((string) ($baseParts['scheme'] ?? '')) !== strtolower((string) $urlParts['scheme'])
+            || strtolower((string) ($baseParts['host'] ?? '')) !== strtolower((string) $urlParts['host'])
+            || ($baseParts['port'] ?? null) !== ($urlParts['port'] ?? null)
+        ) {
+            continue;
+        }
+
+        $basePath = rtrim((string) ($baseParts['path'] ?? ''), '/');
+        $urlPath = (string) ($urlParts['path'] ?? '');
+        if ($basePath === '' || $urlPath === $basePath || str_starts_with($urlPath, "{$basePath}/")) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function imagesize(string $url, ?string $logErrorId = null): ?array

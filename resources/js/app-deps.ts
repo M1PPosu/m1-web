@@ -25,6 +25,11 @@ interface SharedStyles {
   };
 }
 
+interface BrandingTranslationFallback {
+  exact: string[];
+  prefixes: string[];
+}
+
 // partial qtip2 typings
 interface QTip2 {
   (...args: unknown[]): any;
@@ -56,6 +61,7 @@ declare global {
     jQuery: JQueryStatic;
     Lang: Lang;
     LangMessages: unknown;
+    m1pposuBrandingTranslationFallback: BrandingTranslationFallback;
     moment: any;
     popup: typeof popup;
     reloadPage: typeof reloadPage;

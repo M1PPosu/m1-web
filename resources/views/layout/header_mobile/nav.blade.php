@@ -38,4 +38,4 @@
     </div>
 @endforeach
 
-{!! app('layout-cache')->getLocalesMobile() !!}
+@include('layout.header_mobile._locales')

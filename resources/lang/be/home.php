@@ -63,7 +63,7 @@ return [
         ],
 
         'team' => [
-            'login_required' => 'Увайдзіце, каб шукаць каманд',
+            'login_required' => '',
             'more_simple' => 'Паглядзець усе вынікі пошуку сярод каманд',
         ],
 
@@ -84,7 +84,7 @@ return [
 
     'download' => [
         'action_lazer_info' => 'артыкул з падрабязнай інфармацыяй',
-        'download' => 'Спампаваць',
+        'download' => '',
         'for_os' => 'для :os',
         'macos-fallback' => 'для macOS',
         'mirror' => 'люстэрка',

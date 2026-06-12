@@ -50,11 +50,6 @@ return [
         'title' => 'ไม่พบช่อง',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'สร้าง',
         'disabled' => 'ไม่สามารถส่งข้อความได้...',

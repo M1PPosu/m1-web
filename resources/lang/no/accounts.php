@@ -88,8 +88,8 @@ return [
             '_' => 'leveringsalternativer',
             'beatmap_owner_change' => 'gjeste-kart',
             'beatmapset:modding' => 'beatmap modding',
-            'channel_mention' => '',
             'channel_message' => 'private meldinger',
+            'channel_mention' => '',
             'channel_team' => '',
             'comment_new' => 'nye kommentar',
             'forum_topic_reply' => 'emne svar',
@@ -97,18 +97,6 @@ return [
             'mapping' => 'beatmap mapper',
             'news_post' => '',
             'push' => 'trykk',
-        ],
-
-        'tooltips' => [
-            'beatmap_owner_change' => '',
-            'beatmapset:modding' => '',
-            'channel_mention' => '',
-            'channel_message' => '',
-            'channel_team' => '',
-            'comment_new' => '',
-            'forum_topic_reply' => '',
-            'mapping' => '',
-            'news_post' => '',
         ],
     ],
 

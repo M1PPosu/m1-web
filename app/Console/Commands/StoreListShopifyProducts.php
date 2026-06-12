@@ -27,7 +27,7 @@ class StoreListShopifyProducts extends Command
             'unauthenticated_read_product_listings',
             $GLOBALS['cfg']['store']['shopify']['domain'],
             new FileSessionStorage(),
-            ApiVersion::JANUARY_2026,
+            ApiVersion::APRIL_2024,
         );
 
         $client = new Storefront(

@@ -57,13 +57,14 @@
     .full-size();
     background-size: contain;
     background-repeat: no-repeat;
-    transition: all 100ms ease-in-out;
+    transition: transform 100ms ease-in-out;
 
     background-image: var(--nav-logo);
 
     .@{_top}__logo-link:hover & {
       // be careful of weird snapping at the end of animation on Firefox (with 1.1, ~60px).
       transform: scale(1.11);
+      opacity: 0;
     }
 
     &--bg {

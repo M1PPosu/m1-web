@@ -43,6 +43,7 @@ class UserTransformer extends UserCompactTransformer
             'max_friends' => $user->maxFriends(),
             'occupation' => $user->user_occ,
             'playmode' => $user->playmode,
+            'playmode_variant' => $user->playmode_variant,
             'playstyle' => $user->osu_playstyle,
             'post_count' => $user->user_posts,
             'profile_hue' => $user->user_style,

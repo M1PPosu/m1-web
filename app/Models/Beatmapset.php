@@ -26,6 +26,7 @@ use App\Libraries\Beatmapset\BeatmapsetMainRuleset;
 use App\Libraries\Beatmapset\NominateBeatmapset;
 use App\Libraries\Elasticsearch\Indexable;
 use App\Libraries\ImageProcessorService;
+use App\Libraries\M1pposu\BeatmapsetAssets;
 use App\Libraries\StorageUrl;
 use App\Libraries\Transactions\AfterCommit;
 use App\Models\Forum\Post;
@@ -184,6 +185,14 @@ class Beatmapset extends Model implements AfterCommit, CommentableInterface, Ind
 
     public static function popular()
     {
+        if (static::usePrivateServerBeatmapModules()) {
+            return static::privateServerProjectedBeatmapsets()
+                ->orderByDesc('play_count')
+                ->orderByRaw('(SELECT COALESCE(SUM(passcount), 0) FROM osu_beatmaps WHERE osu_beatmaps.beatmapset_id = osu_beatmapsets.beatmapset_id) DESC')
+                ->orderByDesc('beatmapset_id')
+                ->limit(5);
+        }
+
         $ids = cache_remember_mutexed('popularBeatmapsetIds', 300, [], function () {
             return static::popularIds();
         });
@@ -211,6 +220,16 @@ class Beatmapset extends Model implements AfterCommit, CommentableInterface, Ind
     public static function latestRanked($count = 5)
     {
         // TODO: add filtering by game mode after mode-toggle UI/UX happens
+
+        if (static::usePrivateServerBeatmapModules()) {
+            return Cache::remember("m1pposu_beatmapsets_latest_{$count}", 300, function () use ($count) {
+                return static::privateServerProjectedBeatmapsets()
+                    ->orderByRaw('COALESCE(approved_date, last_update) DESC')
+                    ->orderByDesc('beatmapset_id')
+                    ->limit($count)
+                    ->get();
+            });
+        }
 
         return Cache::remember("beatmapsets_latest_{$count}", 3600, function () use ($count) {
             // We union here so mysql can use indexes to speed this up
@@ -460,6 +479,11 @@ class Beatmapset extends Model implements AfterCommit, CommentableInterface, Ind
 
     public function coverURL($coverSize = 'cover', $customTimestamp = null)
     {
+        $privateCover = BeatmapsetAssets::covers($this)[$coverSize] ?? null;
+        if ($privateCover !== null) {
+            return $privateCover;
+        }
+
         $timestamp = $customTimestamp ?? $this->defaultCoverTimestamp();
 
         return StorageUrl::make(null, $this->coverPath()."{$coverSize}.jpg?{$timestamp}");
@@ -1422,15 +1446,10 @@ class Beatmapset extends Model implements AfterCommit, CommentableInterface, Ind
                 $title = $this->artist.' - '.$this->title;
 
                 $topic = Forum\Topic::createNew($forum, [
-                    'title' => mb_substr($title, 0, 100),
+                    'title' => $title,
                     'user' => $user,
                     'body' => '---------------',
                 ]);
-                // allow up to 255 characters title. The actual maximum length
-                // is 163 due to 80 characters limit for artist and title.
-                if (mb_strlen($title) > 100) {
-                    Forum\Topic::whereKey($topic->getKey())->update(['topic_title' => mb_substr($title, 0, 255)]);
-                }
                 $topic->lock();
                 $this->update(['thread_id' => $topic->getKey()]);
                 $post = $topic->firstPost;
@@ -1460,7 +1479,7 @@ class Beatmapset extends Model implements AfterCommit, CommentableInterface, Ind
         // Any description (after the first match) that matches
         // '/-{15}/' within its body doesn't get split anymore,
         // and gets stored in $split[1] anyways
-        $split = preg_split('/-{15}/', $post->post_text, 2);
+        $split = preg_split('/-{15}/', (string) $post->post_text, 2);
 
         // Return empty description if the pattern was not found
         // (mostly older beatmapsets)
@@ -1583,6 +1602,34 @@ class Beatmapset extends Model implements AfterCommit, CommentableInterface, Ind
     private function defaultCoverTimestamp(): string
     {
         return $this->cover_updated_at?->format('U') ?? '0';
+    }
+
+    private static function privateServerProjectedBeatmapsets(): Builder
+    {
+        return static::query()
+            ->with(['beatmaps' => fn ($query) => $query->default()])
+            ->where('active', true)
+            ->whereNull('deleted_at')
+            ->where('nsfw', false)
+            ->where('user_id', 0)
+            ->where('thread_id', 0)
+            ->whereIn('approved', [
+                static::STATES['ranked'],
+                static::STATES['approved'],
+                static::STATES['loved'],
+            ])
+            ->whereHas('beatmaps', function ($query) {
+                $query->whereIn('approved', [
+                    static::STATES['ranked'],
+                    static::STATES['approved'],
+                    static::STATES['loved'],
+                ]);
+            });
+    }
+
+    private static function usePrivateServerBeatmapModules(): bool
+    {
+        return get_bool(config('m1pposu.private_server.enabled') ?? false);
     }
 
     private function getArtistUnicode()

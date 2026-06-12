@@ -12,25 +12,36 @@
     <div class="download-page">
         <div class="download-page__header">
             <div class="download-page__banner">
-                <video class="download-page__banner-video" src="{{ $GLOBALS['cfg']['osu']['urls']['download_video'] }}" autoplay muted loop playsinline>
-                </video>
+                <video
+                    class="download-page__banner-video"
+                    src="{{ $GLOBALS['cfg']['osu']['urls']['download_video'] }}"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                ></video>
                 <div class="download-page__banner-content download-page__banner-content--main">
                     <div class="download-page__tagline">
                         <span class="download-page__tagline-1">{{ osu_trans('home.download.tagline_1') }}</span>
                         <span class="download-page__tagline-2">{{ osu_trans('home.download.tagline_2') }}</span>
                     </div>
-                    <a
-                        class="btn-osu-big btn-osu-big--download"
-                        href="{{ $lazerUrl }}"
+                    <{{ $launcherUrl === null ? 'span' : 'a' }}
+                        class="btn-osu-big btn-osu-big--download btn-osu-big--download-m1pposu {{ $launcherUrl === null ? 'btn-osu-big--disabled' : '' }}"
+                        @if ($launcherUrl === null)
+                            aria-disabled="true"
+                            role="link"
+                        @else
+                            href="{{ $launcherUrl }}"
+                        @endif
                     >
                         <div class="btn-osu-big__content">
                             <div class="btn-osu-big__left">
-                                {{ osu_trans('home.download.download') }}
+                                {{ osu_trans($launcherUrl === null ? 'home.download.download_disabled' : 'home.download.download') }}
                                 <div>
                                     <div class="btn-osu-big__text-top btn-osu-big__text-top--download">
-                                        osu!
+                                        {{ osu_trans('home.download.launcher') }}
                                     </div>
-                                    {{ osu_trans('home.download.for_os', ['os' => $lazerPlatformName]) }}
+                                    {{ osu_trans('home.download.os.windows') }}
                                 </div>
                                 <div class="btn-osu-big__text-bottom btn-osu-big__text-bottom--download-version">
                                     {{ $version }}
@@ -40,10 +51,7 @@
                                 <span class="svg-icon svg-icon--download"></span>
                             </span>
                         </div>
-                    </a>
-                    <div class="download-page__other-platforms">
-                        @include('objects._basic_select_options', ['modifiers' => 'download', 'selectOptions' => $selectOptions])
-                    </div>
+                    </{{ $launcherUrl === null ? 'span' : 'a' }}>
                 </div>
             </div>
             <div class="download-page__banner-tail">
@@ -52,46 +60,17 @@
                         <div>
                             {{ osu_trans('home.download.stable_text') }}:
                         </div>
-                        @if (($lazerInfoUrl = osu_url('lazer_info')) !== null)
-                            <a href="{{ $lazerInfoUrl }}">
-                                ({{ osu_trans('home.download.action_lazer_info') }})
+                        @if ($launcherInfoUrl !== null)
+                            <a href="{{ $launcherInfoUrl }}">
+                                ({{ osu_trans('home.download.action_launcher_info') }})
                             </a>
                         @endif
-                    </div>
-                    <a class="btn-osu-big btn-osu-big--download btn-osu-big--download-stable" href="{{ osu_url('installer') }}">
-                        <div class="btn-osu-big__content">
-                            <div class="btn-osu-big__left">
-                                <div>
-                                    <div class="btn-osu-big__text-top btn-osu-big__text-top--download">
-                                        osu!(stable)
-                                    </div>
-                                    {{ osu_trans('home.download.os.windows') }}
-                                </div>
-                            </div>
-                            <span class="btn-osu-big__icon">
-                                <span class="svg-icon svg-icon--download"></span>
-                            </span>
-                        </div>
-                    </a>
-
-                    <div class="download-page__extra-links">
-                        <a class="download-page__extra-link" href="{{ osu_url('installer-mirror') }}">
-                            {{ osu_trans('home.download.mirror') }}
-                        </a>
-                        <span class="download-page__extra-link download-page__extra-link--separator"></span>
-                        <a class="download-page__extra-link" href="{{ osu_url('osx') }}">
-                            {{ osu_trans('home.download.macos-fallback') }}
-                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="download-page__guide">
-            <iframe
-                class="download-page__video u-embed-wide"
-                src="https://youtube.com/embed/videoseries?list={{ $GLOBALS['cfg']['osu']['urls']['youtube-tutorial-playlist'] }}"
-            ></iframe>
             <div class="download-page__guide-content">
                 <div class="download-page__steps">
                     <div class="download-page__step">
@@ -102,10 +81,6 @@
                         <div class="download-page__text download-page__text--description">
                             {{ osu_trans("home.download.steps.download.description") }}
                         </div>
-                        {!! img2x([
-                            'class' => 'download-page__example',
-                            'src' => '/images/layout/download-step-1.jpg',
-                        ]) !!}
                     </div>
                     <div class="download-page__step">
                         <span class="download-page__step-number">2</span>
@@ -115,10 +90,6 @@
                         <div class="download-page__text download-page__text--description">
                             {{ osu_trans('home.download.steps.register.description') }}
                         </div>
-                        {!! img2x([
-                            'class' => 'download-page__example',
-                            'src' => '/images/layout/download-step-2.png',
-                        ]) !!}
                     </div>
                     <div class="download-page__step">
                         <span class="download-page__step-number">3</span>
@@ -126,17 +97,8 @@
                             {{ osu_trans("home.download.steps.beatmaps.title") }}
                         </div>
                         <div class="download-page__text download-page__text--description">
-                            {!! osu_trans('home.download.steps.beatmaps.description._', [
-                                'browse' => link_to(
-                                    route('beatmapsets.index'),
-                                    osu_trans('home.download.steps.beatmaps.description.browse')
-                                )
-                            ]) !!}
+                            {{ osu_trans('home.download.steps.beatmaps.description') }}
                         </div>
-                        {!! img2x([
-                            'class' => 'download-page__example',
-                            'src' => '/images/layout/download-step-3.jpg',
-                        ]) !!}
                     </div>
                 </div>
 

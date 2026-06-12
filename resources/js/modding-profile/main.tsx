@@ -133,7 +133,7 @@ export default class Main extends React.Component<BeatmapsetDiscussionsBundleJso
           </div>
           <div
             ref={this.pagesOffsetRef}
-            className='sticky-toolbar'
+            className='page-extra-tabs page-extra-tabs--profile-page'
           >
             <div
               ref={this.tabs}

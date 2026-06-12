@@ -406,6 +406,55 @@ class UsersControllerTest extends TestCase
             ->assertSuccessful();
     }
 
+    public function testProfileUsesPersistedDefaultVariant(): void
+    {
+        $user = User::factory()->create([
+            'osu_playmode' => 0,
+            'osu_playmode_variant' => 'rx',
+        ]);
+        \App\Models\UserStatistics\Osu::factory()->create([
+            'playcount' => 11,
+            'user_id' => $user->getKey(),
+        ]);
+        \App\Models\UserStatistics\OsuRx::factory()->create([
+            'playcount' => 22,
+            'user_id' => $user->getKey(),
+        ]);
+
+        $this->actAsScopedUser($user, ['public']);
+
+        $this->get(route('api.users.show', ['user' => $user->getKey()]))
+            ->assertSuccessful()
+            ->assertJsonPath('playmode_variant', 'rx')
+            ->assertJsonPath('statistics.play_count', 22);
+    }
+
+    public function testExplicitProfileModeDoesNotUseDefaultVariant(): void
+    {
+        $user = User::factory()->create([
+            'osu_playmode' => 0,
+            'osu_playmode_variant' => 'rx',
+        ]);
+        \App\Models\UserStatistics\Osu::factory()->create([
+            'playcount' => 11,
+            'user_id' => $user->getKey(),
+        ]);
+        \App\Models\UserStatistics\OsuRx::factory()->create([
+            'playcount' => 22,
+            'user_id' => $user->getKey(),
+        ]);
+
+        $this->actAsScopedUser($user, ['public']);
+
+        $this->get(route('api.users.show', [
+            'mode' => 'osu',
+            'user' => $user->getKey(),
+        ]))
+            ->assertSuccessful()
+            ->assertJsonPath('playmode_variant', 'rx')
+            ->assertJsonPath('statistics.play_count', 11);
+    }
+
     public static function dataProviderForStoreWebInvalidParams(): array
     {
         return [
@@ -432,6 +481,8 @@ class UsersControllerTest extends TestCase
     {
         parent::setUp();
 
-        Country::factory()->fallback()->create();
+        if (!Country::whereKey(Country::UNKNOWN)->exists()) {
+            Country::factory()->fallback()->create();
+        }
     }
 }

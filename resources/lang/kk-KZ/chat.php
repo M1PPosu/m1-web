@@ -50,11 +50,6 @@ return [
         'title' => 'арна табылмады',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Жасау',
         'disabled' => 'хат жіберу мүмкін емес...',

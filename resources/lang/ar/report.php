@@ -36,7 +36,7 @@ return [
 
     'team' => [
         'button' => 'الإبلاغ عن فريق',
-        'title' => 'هل تريد الإبلاغ عن فريق :username؟',
+        'title' => '',
     ],
 
     'user' => [

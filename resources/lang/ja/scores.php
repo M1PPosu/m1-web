@@ -14,10 +14,10 @@ return [
 
         'player' => [
             'by' => 'プレイ',
-            'played_on' => 'プレイ環境',
+            'played_on' => '',
             'submitted_on' => '投稿日',
-            'watched' => '視聴回数',
-            'watched_count' => ':count_delimited 回|:count_delimited 回',
+            'watched' => '',
+            'watched_count' => '',
 
             'rank' => [
                 'country' => '国別ランキング',

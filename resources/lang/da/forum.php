@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Slettede Opslag',
             'total_posts' => 'Opslag i alt',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Nuværende Prioritet: +:count',

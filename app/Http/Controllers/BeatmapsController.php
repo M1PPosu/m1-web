@@ -9,14 +9,17 @@ use App\Enums\Ruleset;
 use App\Exceptions\InvariantException;
 use App\Libraries\BeatmapDifficultyAttributes;
 use App\Libraries\Beatmapset\ChangeBeatmapOwners;
+use App\Libraries\M1pposu\ProjectedScoreVariant;
 use App\Libraries\Score\BeatmapScores;
 use App\Libraries\Score\UserRank;
 use App\Libraries\Search\ScoreSearch;
 use App\Libraries\Search\ScoreSearchParams;
 use App\Models\Beatmap;
+use App\Models\Solo\Score as SoloScore;
 use App\Models\User;
 use App\Transformers\BeatmapTransformer;
 use App\Transformers\ScoreTransformer;
+use DB;
 
 /**
  * @group Beatmaps
@@ -57,14 +60,34 @@ class BeatmapsController extends Controller
             'mode',
             'mods:string[]',
             'type:string',
+            'variant:string',
         ], ['null_missing' => true]);
 
         $rulesetId = static::getRulesetId($params['mode']) ?? $beatmap->playmode;
+        $ruleset = Beatmap::modeStr($rulesetId) ?? throw new InvariantException('invalid mode specified');
+        $variant = in_array($params['variant'], [null, '', 'all'], true) ? null : $params['variant'];
+        if (!Beatmap::isVariantValid($ruleset, $variant)) {
+            throw new InvariantException('invalid variant specified');
+        }
+
         $mods = array_values(array_filter($params['mods'] ?? []));
         $type = presence($params['type'], 'global');
         $currentUser = \Auth::user();
 
         static::assertSupporterOnlyOptions($currentUser, $type, $mods);
+
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            return static::privateServerBeatmapScores(
+                $beatmap,
+                $legacyFormat,
+                $ruleset,
+                $variant,
+                $params['limit'],
+                $mods,
+                $type,
+                $currentUser,
+            );
+        }
 
         $esFetch = new BeatmapScores([
             'beatmap_ids' => [$beatmap->getKey()],
@@ -98,6 +121,153 @@ class BeatmapsController extends Controller
         }
 
         return $results;
+    }
+
+    private static function privateServerBeatmapScores(
+        Beatmap $beatmap,
+        ?bool $legacyFormat,
+        string $ruleset,
+        ?string $variant,
+        ?int $limit,
+        array $mods,
+        string $type,
+        ?User $currentUser,
+    ): array {
+        $limit = \Number::clamp($limit ?? 50, 1, $GLOBALS['cfg']['osu']['beatmaps']['max_scores']);
+        $baseQuery = static::privateServerBeatmapScoreQuery($beatmap, $ruleset, $variant, $mods, $type, $currentUser);
+        $scoreTransformer = new ScoreTransformer($legacyFormat);
+
+        $rankedScores = static::privateServerDedupedScoresQuery(clone $baseQuery);
+        $scoreIds = (clone $rankedScores)
+            ->limit($limit)
+            ->pluck('id')
+            ->all();
+
+        $scores = SoloScore::whereKey($scoreIds)
+            ->with(['beatmap', 'user.country', 'user.team'])
+            ->get()
+            ->sortBy(fn ($score) => array_search($score->getKey(), $scoreIds, true))
+            ->values();
+
+        $results = [
+            'score_count' => (clone $baseQuery)->distinct('scores.user_id')->count('scores.user_id'),
+            'scores' => json_collection(
+                $scores,
+                $scoreTransformer,
+                static::DEFAULT_SCORE_INCLUDES
+            ),
+        ];
+
+        if ($currentUser !== null) {
+            $userScore = (clone $baseQuery)
+                ->where('scores.user_id', $currentUser->getKey())
+                ->orderByDesc('scores.legacy_total_score')
+                ->orderByDesc('scores.pp')
+                ->orderBy('scores.id')
+                ->first();
+
+            if ($userScore !== null) {
+                $results['user_score'] = [
+                    'position' => static::privateServerBeatmapScoreRank($rankedScores, $userScore),
+                    'score' => json_item($userScore->loadMissing(['beatmap', 'user.country', 'user.team']), $scoreTransformer, static::DEFAULT_SCORE_INCLUDES),
+                ];
+                $results['userScore'] = $results['user_score'];
+            }
+        }
+
+        return $results;
+    }
+
+    private static function privateServerBeatmapScoreQuery(Beatmap $beatmap, string $ruleset, ?string $variant, array $mods, string $type, ?User $currentUser)
+    {
+        $query = SoloScore::query()
+            ->where('scores.beatmap_id', $beatmap->getKey())
+            ->where('scores.ruleset_id', Beatmap::MODES[$ruleset])
+            ->where('scores.passed', true)
+            ->where('scores.ranked', true)
+            ->where('scores.preserve', true)
+            ->visibleUsers();
+
+        ProjectedScoreVariant::apply($query, $ruleset, $variant);
+        static::applyPrivateServerScoreType($query, $type, $currentUser);
+        static::applyPrivateServerScoreMods($query, $mods);
+
+        return $query;
+    }
+
+    private static function privateServerDedupedScoresQuery($query)
+    {
+        $rankedScoreRows = $query->select([
+            'scores.id',
+            'scores.user_id',
+            'scores.legacy_total_score',
+            'scores.pp',
+            DB::raw('ROW_NUMBER() OVER (PARTITION BY scores.user_id ORDER BY scores.legacy_total_score DESC, scores.pp DESC, scores.id ASC) AS user_score_rank'),
+        ]);
+
+        return DB::query()
+            ->fromSub($rankedScoreRows->toBase(), 'leaderboard_scores')
+            ->where('user_score_rank', 1)
+            ->orderByDesc('legacy_total_score')
+            ->orderByDesc('pp')
+            ->orderBy('id');
+    }
+
+    private static function privateServerBeatmapScoreRank($rankedScores, SoloScore $score): int
+    {
+        return (clone $rankedScores)
+            ->where(function ($query) use ($score) {
+                $query
+                    ->where('legacy_total_score', '>', $score->legacy_total_score)
+                    ->orWhere(function ($scoreQuery) use ($score) {
+                        $scoreQuery
+                            ->where('legacy_total_score', $score->legacy_total_score)
+                            ->where('pp', '>', $score->pp);
+                    })
+                    ->orWhere(function ($scoreQuery) use ($score) {
+                        $scoreQuery
+                            ->where('legacy_total_score', $score->legacy_total_score)
+                            ->where('pp', $score->pp)
+                            ->where('id', '<', $score->getKey());
+                    });
+            })
+            ->count() + 1;
+    }
+
+    private static function applyPrivateServerScoreMods($query, array $mods): void
+    {
+        $mods = array_values(array_unique(array_filter($mods, fn ($mod) => preg_match('/^[A-Z0-9]+$/', $mod) === 1)));
+
+        if ($mods === []) {
+            return;
+        }
+
+        if (in_array('NM', $mods, true)) {
+            $query->whereRaw("JSON_LENGTH(JSON_EXTRACT(data, '$.mods')) = 0");
+            $mods = array_values(array_diff($mods, ['NM']));
+        }
+
+        foreach ($mods as $mod) {
+            $query->whereRaw("JSON_CONTAINS(JSON_EXTRACT(data, '$.mods'), JSON_OBJECT('acronym', ?))", [$mod]);
+        }
+    }
+
+    private static function applyPrivateServerScoreType($query, string $type, ?User $currentUser): void
+    {
+        if ($currentUser === null) {
+            if ($type !== 'global') {
+                $query->whereRaw('1 = 0');
+            }
+
+            return;
+        }
+
+        match ($type) {
+            'country' => $query->whereHas('user', fn ($userQuery) => $userQuery->where('country_acronym', $currentUser->country_acronym)),
+            'friend' => $query->whereIn('scores.user_id', [...$currentUser->friends()->allRelatedIds(), $currentUser->getKey()]),
+            'team' => $query->whereIn('scores.user_id', $currentUser->team?->members()->pluck('user_id')->all() ?? []),
+            default => null,
+        };
     }
 
     private static function getRulesetId(?string $rulesetName): ?int

@@ -40,7 +40,7 @@ class FetchDedupedScores
             $response = $search->response();
             $search->assertNoError();
 
-            $query = $response->records()->whereHas('beatmap');
+            $query = $response->records()->whereHas('beatmap.beatmapset');
             if ($columns !== null) {
                 $query->select($columns);
             }

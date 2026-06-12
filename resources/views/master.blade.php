@@ -24,18 +24,24 @@
         $titleTree[] = page_title();
     }
 
-    $title = '';
-    foreach ($titleTree as $i => $titlePart) {
-        // Reset text direction (202c = reset, 202d = force ltr).
-        $title .= e($titlePart)."\u{202c}";
+    $titleTree = array_values(array_unique($titleTree));
 
-        if ($i + 1 === count($titleTree)) {
-            // Titles ending with phrase containing "osu!" like "osu!store" don't need the suffix.
-            if (strpos($titlePart, 'osu!') === false) {
-                $title .= " | \u{202d}osu!\u{202c}";
+    $siteTitle = config('m1pposu.site_title');
+    if (request()->routeIs('home')) {
+        $title = e($siteTitle);
+    } else {
+        $title = '';
+        foreach ($titleTree as $i => $titlePart) {
+            // Reset text direction (202c = reset).
+            $title .= e($titlePart)."\u{202c}";
+
+            if ($i + 1 === count($titleTree)) {
+                if (strpos($titlePart, $siteTitle) === false) {
+                    $title .= ' | '.e($siteTitle);
+                }
+            } else {
+                $title .= ' &middot; ';
             }
-        } else {
-            $title .= ' · ';
         }
     }
 
@@ -50,7 +56,7 @@
     <head>
         @include("layout.metadata")
         <title>{!! $title !!}</title>
-        <base href="{{ $GLOBALS['cfg']['app']['url'].Request::getRequestUri() }}" />
+        <base href="{{ Request::getSchemeAndHttpHost().Request::getRequestUri() }}" />
     </head>
 
     <body
@@ -74,6 +80,14 @@
                         osu_trans('users.restricted_banner.message_link')
                     ),
                 ]),
+            ])
+        @endif
+
+        @if ($currentUser !== null && !$currentUser->isRestricted() && $currentUser->isSilenced())
+            @include('objects._notification_banner', [
+                'type' => 'alert',
+                'title' => osu_trans('users.silenced_banner.title'),
+                'message' => osu_trans('users.silenced_banner.message'),
             ])
         @endif
 
@@ -110,7 +124,7 @@
 
                 @if ($GLOBALS['cfg']['osu']['is_development_deploy'])
                     <div class="development-deploy-footer">
-                        This is a development instance of the <a href="https://osu.ppy.sh" class="development-deploy-footer__link">osu! website</a>. Please do not login with your osu! credentials.
+                        This is a development instance of M1PPosu. {{ config('m1pposu.legal.non_affiliation') }}
                     </div>
                 @endif
             </div>

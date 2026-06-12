@@ -27,7 +27,7 @@
         $userTransformer,
         UserCompactTransformer::CARD_INCLUDES,
     );
-    $headerUrl = $team->header()->url();
+    $headerUrl = $team->headerUrl();
 
     $currentUser = Auth::user();
     $defaultRuleset = Beatmap::modeStr($team->default_ruleset_id);

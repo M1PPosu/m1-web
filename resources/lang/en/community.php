@@ -7,33 +7,33 @@ return [
     'support' => [
         'convinced' => [
             'title' => 'I\'m convinced! :D',
-            'support' => 'support osu!',
+            'support' => 'support M1PPosu',
             'gift' => 'or gift supporter to other players',
-            'instructions' => 'click the heart button to proceed to the osu!store',
+            'instructions' => 'click the heart button to proceed to the M1PPosu Store',
         ],
         'why-support' => [
-            'title' => 'Why should I support osu!? Where does the money go?',
+            'title' => 'Why should I support M1PPosu? Where does the money go?',
 
             'team' => [
                 'title' => 'Support the Team',
-                'description' => 'A small team develops and runs osu!. Your support helps them to, you know... live.',
+                'description' => 'A small team develops and runs M1PPosu. Your support helps cover development and operations.',
             ],
             'infra' => [
                 'title' => 'Server Infrastructure',
                 'description' => 'Contributions go towards the servers for running the website, multiplayer services, online leaderboards, etc.',
             ],
             'featured-artists' => [
-                'title' => 'Featured Artists',
-                'description' => 'With your support, we can approach even more awesome artists and license more great music for use in osu!',
-                'link_text' => 'View the current roster &raquo;',
+                'title' => 'Aura Factor',
+                'description' => 'You will just be cool, with m1pp supporter you gain an intant x999999 aura',
+                'link_text' => '',
             ],
             'ads' => [
-                'title' => 'Keep osu! self-sustaining',
-                'description' => 'Your contributions help keep the game independent and completely free from ads and outside sponsors.',
+                'title' => 'Keep M1PPosu self-sustaining',
+                'description' => 'Your contributions help keep M1PPosu online.',
             ],
             'tournaments' => [
-                'title' => 'Official Tournaments',
-                'description' => 'Help fund the running of (and the prizes for) the official osu! World Cup tournaments.',
+                'title' => 'Server Events',
+                'description' => 'Help fund future server-run events and community prizes when available.',
                 'link_text' => 'Explore tournaments &raquo;',
             ],
             'bounty-program' => [
@@ -45,8 +45,8 @@ return [
         'perks' => [
             'title' => 'Cool! What perks do I get?',
             'osu_direct' => [
-                'title' => 'osu!direct',
-                'description' => 'Gain quick and easy access to search for and download beatmaps without having to leave the game.',
+                'title' => 'Beatmap Access',
+                'description' => 'Supporter beatmap download benefits depend on the server launcher and mirror configuration.',
             ],
 
             'friend_ranking' => [
@@ -96,7 +96,7 @@ return [
 
             'speedy_downloads' => [
                 'title' => 'Speedy Downloads',
-                'description' => 'More lenient download restrictions, especially when using osu!direct.',
+                'description' => 'More lenient download restrictions when server download support is configured.',
             ],
 
             'change_username' => [
@@ -139,9 +139,9 @@ return [
         ],
         'supporter_status' => [
             'contribution_with_duration' => 'Thank you for your ongoing support! So far, you\'ve contributed a total of :dollars, earning you the "Supporter" tag for :duration.',
-            'not_yet' => "You haven't ever had an osu!supporter tag :(",
-            'valid_until' => 'Your current osu!supporter tag is valid until :date!',
-            'was_valid_until' => 'Your osu!supporter tag was valid until :date.',
+            'not_yet' => "You haven't ever had a M1PPosu supporter tag :(",
+            'valid_until' => 'Your current M1PPosu supporter tag is valid until :date!',
+            'was_valid_until' => 'Your M1PPosu supporter tag was valid until :date.',
 
             'gifted' => [
                 '_' => 'Out of your total contributions, you’ve gifted :dollars worth of tags to :users covering :duration. That’s incredibly generous!',

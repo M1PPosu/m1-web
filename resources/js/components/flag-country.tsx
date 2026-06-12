@@ -10,6 +10,8 @@ interface Props {
   modifiers?: Modifiers;
 }
 
+const flaglessCountryCodes = new Set(['A1', 'A2', 'AP', 'XX']);
+
 const flagUrl = (code: string) => {
   const baseFileName = code
     .split('')
@@ -20,7 +22,7 @@ const flagUrl = (code: string) => {
 };
 
 export default function FlagCountry({ country, modifiers }: Props) {
-  if (country == null || country.code == null) {
+  if (country == null || country.code == null || flaglessCountryCodes.has(country.code)) {
     return null;
   }
 

@@ -50,11 +50,6 @@ return [
         'title' => 'kanalas nerastas',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Kurti',
         'disabled' => 'žinutės išsiųsti nepavyko...',

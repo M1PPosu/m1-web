@@ -17,7 +17,7 @@ return [
             '405' => 'em falta',
             '422' => 'pedido inválido',
             '429' => 'demasiados pedidos',
-            '500' => 'algo avariou',
+            '500' => 'algo quebrou',
             '503' => 'manutenção',
         ],
     ],
@@ -35,44 +35,44 @@ return [
             '_' => 'artistas destacados',
         ],
         'beatmap_discussion_posts_controller' => [
-            '_' => 'publicações de discussão do mapa',
+            '_' => 'publicações de discussão de beatmap',
         ],
         'beatmap_discussions_controller' => [
-            '_' => 'discussões do mapa',
+            '_' => 'discussões do beatmap',
         ],
         'beatmap_packs_controller' => [
-            '_' => 'pacotes de mapas',
+            '_' => 'pacotes de beatmaps',
         ],
         'beatmapset_discussion_votes_controller' => [
-            '_' => 'votos de discussão do mapa',
+            '_' => 'votos de discussão do beatmap',
         ],
         'beatmapset_events_controller' => [
-            '_' => 'histórico do mapa',
+            '_' => 'histórico do beatmap',
         ],
         'beatmapsets_controller' => [
-            'discussion' => 'discussão do mapa',
-            'index' => 'listagem de mapas',
-            'show' => 'informação do mapa',
-            'versions' => 'histórico de versões do mapa',
+            'discussion' => 'discussão do beatmap',
+            'index' => 'listagem de beatmaps',
+            'show' => 'informação do beatmap',
+            'versions' => '',
         ],
         'changelog_controller' => [
             '_' => 'registo de alterações',
         ],
         'chat_controller' => [
-            '_' => 'conversa',
+            '_' => 'chat',
         ],
         'comments_controller' => [
             '_' => 'comentários',
         ],
         'contest_entries_controller' => [
-            'judge_results' => 'resultados da avaliação do concurso',
+            'judge_results' => 'resultados da apreciação de prova',
         ],
         'contests_controller' => [
             '_' => 'concursos',
-            'judge' => 'avaliação do concurso',
+            'judge' => 'apreciação de prova',
         ],
         'group_history_controller' => [
-            '_' => 'histórico do grupo',
+            '_' => '',
         ],
         'groups_controller' => [
             'show' => 'grupos',
@@ -81,8 +81,8 @@ return [
             'get_download' => 'transferir',
             'index' => 'painel de controlo',
             'search' => 'pesquisar',
-            'support_the_game' => 'apoie o jogo',
-            'testflight' => 'ensaio',
+            'support_the_game' => 'apoia o jogo',
+            'testflight' => 'testflight',
         ],
         'legacy_matches_controller' => [
             '_' => 'partidas',
@@ -100,7 +100,7 @@ return [
             '_' => 'histórico de notificações',
         ],
         'password_reset_controller' => [
-            '_' => 'redefinir a palavra-passe',
+            '_' => 'redefinir palavra-passe',
         ],
         'ranking_controller' => [
             '_' => 'classificações',
@@ -109,11 +109,11 @@ return [
             '_' => 'desempenho',
         ],
         'seasons_controller' => [
-            '_' => 'classificações',
+            '_' => 'classificação',
         ],
         'teams_controller' => [
             '_' => 'equipas',
-            'create' => 'criar uma equipa',
+            'create' => 'criar equipa',
             'edit' => 'definições da equipa',
             'leaderboard' => 'classificação da equipa',
             'show' => 'informações da equipa',
@@ -125,11 +125,11 @@ return [
             '_' => 'capas predefinidas',
         ],
         'user_totp_controller' => [
-            '_' => 'aplicação de autenticação',
+            '_' => '',
         ],
         'users_controller' => [
             '_' => 'informação do jogador',
-            'create' => 'criar uma conta',
+            'create' => 'criar conta',
             'disabled' => 'aviso',
         ],
         'wiki_controller' => [
@@ -138,7 +138,7 @@ return [
     ],
     'multiplayer' => [
         'rooms_controller' => [
-            'events' => 'histórico da sala',
+            'events' => '',
         ],
     ],
     'passport' => [
@@ -156,7 +156,7 @@ return [
     ],
     'users' => [
         'modding_history_controller' => [
-            '_' => 'informação do modificador de mapas',
+            '_' => 'informação do modder',
         ],
         'multiplayer_controller' => [
             '_' => 'histórico do multijogador',

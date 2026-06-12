@@ -4,17 +4,20 @@
 --}}
 @php
     $appUrl = $GLOBALS['cfg']['app']['url'];
+    $faviconVersion = 'm1pposu-r2';
     $currentLocale = App::getLocale();
     $fallbackLocale = $GLOBALS['cfg']['app']['fallback_locale'];
     $opengraph = Request::instance()->attributes->get('opengraph');
+    $siteTitle = config('m1pposu.site_title');
 
     $opengraph['description'] ??= $pageDescription ?? null;
 @endphp
-<link rel="apple-touch-icon" sizes="180x180" href="{{ $appUrl }}/images/favicon/apple-touch-icon.png">
-<link rel="icon" sizes="32x32" href="{{ $appUrl }}/images/favicon/favicon-32x32.png">
-<link rel="icon" sizes="16x16" href="{{ $appUrl }}/images/favicon/favicon-16x16.png">
-<link rel="manifest" href="{{ $appUrl }}/site.webmanifest">
-<link rel="mask-icon" href="{{ $appUrl }}/images/favicon/safari-pinned-tab.svg" color="#e2609a">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ $appUrl }}/images/favicon/m1pposu-r2-180.png?v={{ $faviconVersion }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ $appUrl }}/images/favicon/m1pposu-r2-32.png?v={{ $faviconVersion }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ $appUrl }}/images/favicon/m1pposu-r2-16.png?v={{ $faviconVersion }}">
+<link rel="shortcut icon" href="{{ $appUrl }}/favicon.ico?v={{ $faviconVersion }}">
+<link rel="manifest" href="{{ $appUrl }}/site.webmanifest?v={{ $faviconVersion }}">
+<link rel="mask-icon" href="{{ $appUrl }}/images/favicon/safari-pinned-tab.svg?v={{ $faviconVersion }}" color="#e2609a">
 <meta name="msapplication-TileColor" content="#603cba">
 <meta name="theme-color" content="{{ hsl_to_hex($currentHue, 0.1, 0.4) }}"> {{-- @osu-colour-b1 --}}
 
@@ -26,9 +29,9 @@
 <meta name="turbo-cache-control" content="no-preview">
 <meta name="turbo-prefetch" content="false">
 
-<link rel="search" type="application/opensearchdescription+xml" title="osu! search" href="{{ $appUrl }}/opensearch.xml">
+<link rel="search" type="application/opensearchdescription+xml" title="{{ $siteTitle }} search" href="{{ $appUrl }}/opensearch.xml">
 
-<meta property="og:site_name" content="osu!">
+<meta property="og:site_name" content="{{ $siteTitle }}">
 <meta property="og:type" content="website">
 
 @if (isset($canonicalUrl))
@@ -38,7 +41,7 @@
 @foreach ($opengraph as $key => $value)
     @if (present($value))
         @if ($key === 'title')
-            <meta property="og:{{ $key }}" content="{{ $value }} · {{ page_title() }}">
+            <meta property="og:{{ $key }}" content="{{ $value }} | {{ $siteTitle }}">
         @else
             <meta property="og:{{ $key }}" content="{{ $value }}">
         @endif
@@ -90,6 +93,7 @@
 <script>
     var currentLocale = {!! json_encode($currentLocale) !!};
     var fallbackLocale = {!! json_encode($fallbackLocale) !!};
+    window.m1pposuBrandingTranslationFallback = {!! json_encode(config('m1pposu.localization.branding_fallback')) !!};
 </script>
 
 <script src="{{ unmix('js/runtime.js') }}" data-turbo-eval="false"></script>

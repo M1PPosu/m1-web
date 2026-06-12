@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'โพสต์ที่ถูกลบ',
             'total_posts' => 'โพสต์ทั้งหมด',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'ลำดับความสำคัญปัจจุบัน: +:count',

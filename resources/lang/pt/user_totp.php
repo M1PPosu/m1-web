@@ -5,27 +5,27 @@
 
 return [
     'create' => [
-        'finish' => 'Concluir',
-        'key' => 'Digitalize o código QR com o autenticador e insira a chave de verificação',
-        'key_copy' => 'Ou clique neste link para copiar a chave para o autenticador',
-        'key_link' => 'Use este link se estiver a usar um telemóvel',
-        'password' => 'Para configurar a verificação através do autenticador, introduza a sua palavra-passe atual',
-        'start' => 'Continuar',
+        'finish' => '',
+        'key' => '',
+        'key_copy' => '',
+        'key_link' => '',
+        'password' => '',
+        'start' => '',
     ],
 
     'destroy' => [
-        'missing' => 'A verificação através do autenticador não está configurada.',
-        'ok' => 'A verificação através do autenticador foi removida.',
+        'missing' => '',
+        'ok' => '',
     ],
 
     'edit' => [
-        'password' => 'Introduza a sua palavra-passe atual para desativar a verificação através do autenticador.',
-        'start' => 'Remover',
+        'password' => '',
+        'start' => '',
     ],
 
     'store' => [
-        'existing' => 'Já tem a verificação através do autenticador configurada.',
-        'ok' => 'A verificação através do autenticador foi configurada',
-        'restart' => 'Ocorreu um erro. Por favor, reinicie o processo.',
+        'existing' => '',
+        'ok' => '',
+        'restart' => '',
     ],
 ];

@@ -32,7 +32,7 @@ return [
         'cart_problems_edit' => 'Click here to go edit it.',
         'declined' => 'The payment was cancelled.',
         'delayed_shipping' => 'We are currently overwhelmed with orders! You are welcome to place your order, but please expect an **additional 1-2 week delay** while we catch up with existing orders.',
-        'hide_from_activity' => 'Hide all osu!supporter tags in this order from my activity',
+        'hide_from_activity' => 'Hide all M1PPosu supporter tags in this order from my activity',
         'old_cart' => 'Your cart appears to be out of date and has been reloaded, please try again.',
         'pay' => 'Checkout with Paypal',
         'title_compact' => 'checkout',
@@ -56,7 +56,7 @@ return [
         'date' => 'Date:',
         'echeck_delay' => 'As your payment was an eCheck, please allow up to 10 extra days for the payment to clear through PayPal!',
         'echeck_denied' => 'The eCheck payment was rejected by PayPal.',
-        'hide_from_activity' => 'osu!supporter tags in this order are not displayed in your recent activities.',
+        'hide_from_activity' => 'M1PPosu supporter tags in this order are not displayed in your recent activities.',
         'sent_via' => 'Sent Via:',
         'shipping_to' => 'Shipping To:',
         'title' => 'Invoice',
@@ -67,14 +67,14 @@ return [
                 'title' => 'Your order has been cancelled',
                 'line_1' => [
                     '_' => "If you didn't request a cancellation please contact :link quoting your order number (#:order_number).",
-                    'link_text' => 'osu!store support',
+                    'link_text' => 'M1PPosu Store support',
                 ],
             ],
             'delivered' => [
                 'title' => 'Your order has been delivered! We hope you are enjoying it!',
                 'line_1' => [
                     '_' => 'If you have any issues with your purchase, please contact the :link.',
-                    'link_text' => 'osu!store support',
+                    'link_text' => 'M1PPosu Store support',
                 ],
             ],
             'prepared' => [
@@ -187,7 +187,7 @@ return [
         'gift_message' => 'add an optional message to your gift! (up to :length characters)',
 
         'require_login' => [
-            '_' => 'You need to be :link to get an osu!supporter tag!',
+            '_' => 'You need to be :link to get a M1PPosu supporter tag!',
             'link_text' => 'signed in',
         ],
     ],
@@ -206,6 +206,6 @@ return [
     ],
 
     'xsolla' => [
-        'distributor' => 'Xsolla is an authorised<br>global distributor of osu!',
+        'distributor' => 'Payment is not available right now.',
     ],
 ];

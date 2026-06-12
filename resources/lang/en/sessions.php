@@ -5,7 +5,7 @@
 
 return [
     'create' => [
-        'download' => 'Click here to download the game and create an account',
+        'download' => 'Create an account',
         'label' => 'First, let\'s sign into your account!',
         'title' => 'Account Sign-in',
     ],

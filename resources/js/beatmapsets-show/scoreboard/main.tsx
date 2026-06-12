@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
 // See the LICENCE file in the repository root for full licence text.
 
+import { Sort } from 'components/sort';
 import StringWithComponent from 'components/string-with-component';
 import BeatmapExtendedJson from 'interfaces/beatmap-extended-json';
 import ModJson from 'interfaces/mod-json';
@@ -84,9 +85,12 @@ export default class Main extends React.Component<Props> {
         </div>
 
         {this.controller.beatmap.is_scoreable &&
-          <div className={classWithModifiers('beatmapset-scoreboard__mods', { initial: this.controller.enabledMods.size === 0 })}>
-            {this.mods.map((mod) => <Mod key={mod} controller={this.controller} mod={mod} />)}
-          </div>
+          <>
+            {this.renderVariantSwitch()}
+            <div className={classWithModifiers('beatmapset-scoreboard__mods', { initial: this.controller.enabledMods.size === 0 })}>
+              {this.mods.map((mod) => <Mod key={mod} controller={this.controller} mod={mod} />)}
+            </div>
+          </>
         }
 
         <div className={classWithModifiers('beatmapset-scoreboard__main', {
@@ -97,6 +101,13 @@ export default class Main extends React.Component<Props> {
       </div>
     );
   }
+
+  private readonly onChangeVariant = (event: React.MouseEvent<HTMLButtonElement>) => {
+    this.controller.setCurrent({
+      forceReload: true,
+      variant: event.currentTarget.dataset.value === 'rx' ? 'rx' : null,
+    });
+  };
 
   private readonly onClickRetryButton = () => {
     this.controller.setCurrent({ forceReload: true });
@@ -202,6 +213,21 @@ export default class Main extends React.Component<Props> {
       <p className='beatmapset-scoreboard__notice beatmapset-scoreboard__notice--no-scores'>
         {trans('beatmapsets.show.scoreboard.no_scores.unranked')}
       </p>
+    );
+  }
+
+  private renderVariantSwitch() {
+    if (!this.controller.supportsRelax) return null;
+
+    return (
+      <Sort
+        currentValue={this.controller.effectiveVariant ?? 'all'}
+        modifiers='page-extra'
+        onChange={this.onChangeVariant}
+        showTitle={false}
+        transPrefix={`beatmaps.variant.${this.controller.beatmap.mode}.`}
+        values={['all', 'rx']}
+      />
     );
   }
 }

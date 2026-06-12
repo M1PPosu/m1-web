@@ -28,7 +28,7 @@ return [
         'beatmapsets' => [
             'show' => 'thông tin',
             'discussions' => 'thảo luận',
-            'versions' => 'lịch sử phiên bản',
+            'versions' => 'Lịch sử phiên bản',
         ],
 
         'changelog' => [
@@ -53,7 +53,7 @@ return [
         'users' => [
             'modding' => 'modding',
             'playlists' => 'danh sách phát',
-            'ranked-play' => 'chơi xếp hạng',
+            'ranked-play' => '',
             'realtime' => 'nhiều người chơi',
             'show' => 'thông tin',
         ],
@@ -78,7 +78,7 @@ return [
         'help' => [
             '_' => 'trợ giúp',
             'getAbuse' => 'báo cáo lạm dụng',
-            'getFaq' => 'câu hỏi thường gặp',
+            'getFaq' => 'faq',
             'getRules' => 'quy tắc',
             'getSupport' => 'không, thật sự, tôi cần giúp đỡ!',
         ],
@@ -105,8 +105,8 @@ return [
         'help' => [
             '_' => 'Giúp Đỡ & Cộng Đồng',
             'faq' => 'Những Câu Hỏi Thường Gặp',
-            'forum' => 'Diễn Đàn Cộng Đồng',
-            'livestreams' => 'Phát trực tiếp',
+            'forum' => 'Diễn Đàn',
+            'livestreams' => 'Live Streams',
             'report' => 'Báo Cáo Một Vấn Đề',
             'wiki' => 'Wiki',
         ],
@@ -188,7 +188,7 @@ return [
 
         'register' => [
             'download' => 'Tải xuống',
-            'info' => 'Hãy tải xuống osu! để tạo tài khoản của riêng bạn!',
+            'info' => 'Bạn cần một tài khoản. Tại sao bạn lại không có chứ?',
             'title' => "Chưa có tài khoản?",
         ],
     ],

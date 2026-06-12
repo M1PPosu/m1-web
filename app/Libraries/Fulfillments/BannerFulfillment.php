@@ -16,7 +16,6 @@ abstract class BannerFulfillment extends OrderFulfiller
     const ALLOWED_TAGGED_NAMES = [
         'owc-supporter',
         'mwc7-supporter',
-        'player-supporter',
         'twc-supporter',
         'cwc-supporter',
         'mwc4-supporter',
@@ -43,16 +42,6 @@ abstract class BannerFulfillment extends OrderFulfiller
         $this->incrementRevoke();
     }
 
-    protected function applyBanner(OrderItem $orderItem)
-    {
-        $extraData = $orderItem->extra_data;
-        $user = $orderItem->order->user;
-        $user->profileBanners()->create([
-            'tournament_id' => $extraData->tournamentId,
-            'country_acronym' => $extraData->countryAcronym,
-        ]);
-    }
-
     protected function getOrderItems()
     {
         if (!isset($this->orderItems)) {
@@ -67,18 +56,31 @@ abstract class BannerFulfillment extends OrderFulfiller
         return $this->orderItems;
     }
 
-    protected function revokeBanner(OrderItem $orderItem)
+    private function applyBanner(OrderItem $orderItem)
+    {
+        $extraData = $orderItem->extra_data;
+        $user = $orderItem->order->user;
+        $user->profileBanners()->create([
+            'tournament_id' => $extraData->tournamentId,
+            'country_acronym' => $extraData->countryAcronym,
+        ]);
+    }
+
+    private function revokeBanner(OrderItem $orderItem)
     {
         $extraData = $orderItem->extra_data;
         $user = $orderItem->order->user;
 
         // just any matching banner
-        $user
+        $banner = $user
             ->profileBanners()
             ->where('tournament_id', $extraData->tournamentId)
             ->where('country_acronym', $extraData->countryAcronym)
-            ->first()
-            ?->delete();
+            ->first();
+
+        if ($banner) {
+            $banner->delete();
+        }
     }
 
     //================

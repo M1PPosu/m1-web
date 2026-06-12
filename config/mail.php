@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'driver' => env('MAIL_DRIVER', 'log'),
+    'driver' => env('MAIL_MAILER', env('MAIL_DRIVER', 'log')),
 
     /*
     |--------------------------------------------------------------------------
@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'from' => ['address' => 'osu@ppy.sh', 'name' => 'osu!'],
+    'from' => ['address' => env('MAIL_FROM_ADDRESS', 'noreply@m1pposu.local'), 'name' => env('MAIL_FROM_NAME', 'M1PPosu')],
 
     /*
     |--------------------------------------------------------------------------

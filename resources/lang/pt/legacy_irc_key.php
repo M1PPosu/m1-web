@@ -4,8 +4,8 @@
 // See the LICENCE file in the repository root for full licence text.
 
 return [
-    'confirm_new' => 'Deseja criar uma palavra‑passe de IRC?',
-    'new' => 'Nova palavra‑passe de IRC antiga',
+    'confirm_new' => 'Criar nova palavra-passe de IRC?',
+    'new' => 'Nova palavra-passe de IRC legado',
     'none' => 'A palavra-passe de IRC não foi definida.',
 
     'form' => [

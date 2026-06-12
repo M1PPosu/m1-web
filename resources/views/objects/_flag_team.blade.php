@@ -5,5 +5,5 @@
 <span
     class="{{ class_with_modifiers('flag-team', $modifiers ?? null) }}"
     title="{{ $team->name }}"
-    {!! background_image($team->flag()->url()) !!}
+    {!! background_image($team->flagUrl()) !!}
 ></span>

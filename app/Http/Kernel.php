@@ -57,6 +57,7 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'check-user-restricted' => Middleware\CheckUserRestricted::class,
         'guest' => Middleware\RedirectIfAuthenticated::class,
+        'm1pposu-feature' => Middleware\RequireM1pposuFeature::class,
         'request-cost' => Middleware\RequestCost::class,
         'require-scopes' => Middleware\RequireScopes::class,
         'throttle' => Middleware\ThrottleRequests::class,

@@ -1,0 +1,14 @@
+HTTP/1.1 401 Unauthorized
+Server: nginx/1.29.8
+Date: Mon, 27 Apr 2026 20:17:07 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-cache, private
+Server-Timing: app; dur=120.13602256775; desc="Application", timeline-event-0; dur=119.21811103821; desc="Controller"
+Set-Cookie: osu_session=eyJpdiI6InBOZm1LWG9Kamdjb1RJYnRDWnYyNHc9PSIsInZhbHVlIjoiYkJyTDlqNitkTE5WMjNmK3ZSQzJhcTRxMUNONFg5clNMQjh3WFRjd0hXeFFFOHhmYTJrMThJSUVCRXBSbkZvZk9HYW1NMFhVSUs1QzhyOTh3S0VCV1hMcjl6U1pVNFEvVFh0QlBuMGdUd0tWVmcvYkdlaTJGR3Z2RlpnRmtlbktZU2c4TkhRRnJESjlkNXpXWkJNaXJBPT0iLCJtYWMiOiJhNTZkNjE1NjgzNzI0ZGM1NWNkODFkMDdkNDFkOGE0M2JjNTNlYzg1YjY4ZWEyZGQzOWU5N2YwMDZmMGQyMGQ0IiwidGFnIjoiIn0%3D; expires=Wed, 27 May 2026 20:17:07 GMT; Max-Age=2592000; path=/; httponly; samesite=lax
+Set-Cookie: x-clockwork=%7B%22requestId%22%3A%221777321027-4539-1528834334%22%2C%22version%22%3A%225.3.4%22%2C%22path%22%3A%22%5C%2F__clockwork%5C%2F%22%2C%22webPath%22%3A%22%5C%2Fclockwork%5C%2Fapp%22%2C%22token%22%3A%22cf6e1cd8%22%2C%22metrics%22%3Atrue%2C%22toolbar%22%3Atrue%7D; expires=Mon, 27 Apr 2026 20:18:07 GMT; Max-Age=60; path=/; samesite=lax
+X-Clockwork-Id: 1777321027-4539-1528834334
+X-Clockwork-Version: 5.3.4
+X-Powered-By: PHP/8.4.20
+

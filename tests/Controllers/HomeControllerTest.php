@@ -34,6 +34,25 @@ class HomeControllerTest extends TestCase
     {
         $this
             ->get(route('home'))
-            ->assertStatus(200);
+            ->assertStatus(200)
+            ->assertSee('<title>M1PPosu - [Beta]</title>', false)
+            ->assertSee('<meta property="og:site_name" content="M1PPosu - [Beta]">', false);
+    }
+
+    public function testSupportRedirectsToCommunityWhileStoreDisabled(): void
+    {
+        config_set('m1pposu.features.store', false);
+        config_set('m1pposu.community.discord_url', 'https://discord.gg/jTcgGNFj9g');
+
+        $this->get(route('support-the-game'))
+            ->assertRedirect('https://discord.gg/jTcgGNFj9g');
+    }
+
+    public function testStoreAndPaymentsAreUnavailableWhileDisabled(): void
+    {
+        config_set('m1pposu.features.store', false);
+
+        $this->get(route('store.products.index'))->assertNotFound();
+        $this->post(route('payments.shopify.callback'))->assertNotFound();
     }
 }

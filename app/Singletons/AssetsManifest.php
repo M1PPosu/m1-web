@@ -13,20 +13,37 @@ use Illuminate\Support\HtmlString;
 class AssetsManifest
 {
     private $manifest;
+    private string $manifestPath;
+    private int $manifestMtime;
 
     public function __construct()
     {
-        $manifestPath = public_path('assets/manifest.json');
+        $this->manifestPath = public_path('assets/manifest.json');
 
-        if (!file_exists($manifestPath)) {
+        $this->loadManifest();
+    }
+
+    private function loadManifest(): void
+    {
+        if (!file_exists($this->manifestPath)) {
             throw new Exception('The manifest does not exist.');
         }
 
-        $this->manifest = json_decode(file_get_contents($manifestPath), true);
+        $mtime = filemtime($this->manifestPath);
+        if ($mtime === false) {
+            throw new Exception('The manifest timestamp could not be read.');
+        }
+
+        $this->manifest = json_decode(file_get_contents($this->manifestPath), true);
+        $this->manifestMtime = $mtime;
     }
 
     public function src(string $resource): HtmlString
     {
+        if (filemtime($this->manifestPath) !== $this->manifestMtime) {
+            $this->loadManifest();
+        }
+
         if (!isset($this->manifest[$resource])) {
             throw new Exception("resource not defined: {$resource}.");
         }

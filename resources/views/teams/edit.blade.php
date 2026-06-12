@@ -15,7 +15,7 @@
 
 @section('content')
     @include('layout._page_header_v4', ['params' => [
-        'backgroundImage' => $team->header()->url(),
+        'backgroundImage' => $team->headerUrl(),
         'links' => App\Http\Controllers\TeamsController::pageLinks('edit', $team),
         'theme' => 'team',
     ]])

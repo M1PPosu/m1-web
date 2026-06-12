@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\HasM1pposuCommandLock;
 use App\Models\Beatmap;
 use App\Models\BeatmapLeader;
 use Illuminate\Console\Command;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 class BeatmapLeadersRefresh extends Command
 {
+    use HasM1pposuCommandLock;
+
     /**
      * The name and signature of the console command.
      *
@@ -35,6 +38,11 @@ class BeatmapLeadersRefresh extends Command
      */
     public function handle()
     {
+        return $this->withM1pposuCommandLock('beatmap-leaders:refresh', fn () => $this->handleLocked());
+    }
+
+    private function handleLocked()
+    {
         $continue = $this->option('no-interaction') || $this->confirm('This will recalculate beatmap leaders, continue?', true);
 
         if (!$continue) {
@@ -53,5 +61,7 @@ class BeatmapLeadersRefresh extends Command
         });
         $bar->finish();
         $this->line('');
+
+        return static::SUCCESS;
     }
 }

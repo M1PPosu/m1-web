@@ -225,7 +225,9 @@ class Forum extends Model
 
             return $parentsArray;
         } else {
-            return unserialize($value);
+            $parents = @unserialize($value, ['allowed_classes' => false]);
+
+            return is_array($parents) ? $parents : [];
         }
     }
 

@@ -19,6 +19,29 @@ describe('utils/lang', () => {
     it('returns the untranslated key for missing translation', () => {
       expect(trans('common.this_is_not_existed')).toBe('common.this_is_not_existed');
     });
+
+    it('uses fallback locale for M1PPosu branding keys', () => {
+      const messages = window.LangMessages as Record<string, Record<string, string>>;
+      messages['en.branding'] = {
+        exact: 'Private server account',
+        marker: 'M1PPosu account',
+      };
+      messages['ja.branding'] = {
+        exact: 'osu! account',
+        marker: 'osu! account',
+      };
+      window.Lang.setMessages(messages);
+      window.currentLocale = 'ja';
+      window.m1pposuBrandingTranslationFallback.exact = ['branding.exact'];
+
+      expect(trans('branding.exact')).toBe('Private server account');
+      expect(trans('branding.marker')).toBe('M1PPosu account');
+
+      delete messages['en.branding'];
+      delete messages['ja.branding'];
+      window.currentLocale = 'en';
+      window.m1pposuBrandingTranslationFallback.exact = [];
+    });
   });
 
   describe('.transArray', () => {

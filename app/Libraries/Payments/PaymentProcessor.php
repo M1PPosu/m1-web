@@ -23,7 +23,10 @@ abstract class PaymentProcessor implements \ArrayAccess
 
     public function __construct(protected array $params, protected PaymentSignature $signature)
     {
-        \Log::debug($params);
+        \Log::debug('Payment notification received.', [
+            'processor' => static::class,
+            'parameter_keys' => array_keys($params),
+        ]);
     }
 
     /**

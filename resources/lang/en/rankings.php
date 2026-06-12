@@ -36,7 +36,7 @@ return [
     'matchmaking' => [
         'plays' => 'Plays',
         'points' => 'Points',
-        'provisional' => 'Provisional rating due to an insufficient number of recent matches',
+        'provisional' => 'Not enough matches played to accurately determine rating',
         'rating' => 'Rating',
         'wins' => 'Wins',
     ],
@@ -50,7 +50,7 @@ return [
     ],
 
     'top_plays' => [
-        'empty' => 'The data is being calculated...',
+        'empty' => 'No ranked top plays are available for this mode yet.',
         'last_updated' => 'Last updated',
     ],
 

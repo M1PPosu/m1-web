@@ -72,11 +72,8 @@ class MultiSearch
 
     public function hasQuery()
     {
-        $currentMode = $this->getMode();
-
         return present($this->query)
-            || ($currentMode === 'forum_post' && isset($this->request['username']))
-            || ($currentMode === 'team');
+            || ($this->getMode() === 'forum_post' && isset($this->request['username']));
     }
 
     public function searches()

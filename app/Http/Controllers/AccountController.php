@@ -6,6 +6,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ModelNotSavedException;
+use App\Libraries\M1pposu\SourceMode;
 use App\Libraries\Session\Store as SessionStore;
 use App\Libraries\SessionVerification;
 use App\Libraries\User\AvatarHelper;
@@ -245,12 +246,29 @@ class AccountController extends Controller
             'hide_presence:bool',
             'osu_playstyle:string[]',
             'playmode:string',
+            'playmode_variant:string',
             'pm_friends_only:bool',
             'user_notify:bool',
         ]);
 
         if (isset($userParams['playmode']) && !Beatmap::isModeValid($userParams['playmode'])) {
             abort(422, 'invalid value specified for user[playmode]');
+        }
+
+        if (array_key_exists('playmode', $userParams) || array_key_exists('playmode_variant', $userParams)) {
+            $playmode = $userParams['playmode'] ?? $user->playmode;
+            $variant = array_key_exists('playmode_variant', $userParams)
+                ? presence($userParams['playmode_variant'])
+                : null;
+
+            if (
+                !Beatmap::isVariantValid($playmode, $variant)
+                || SourceMode::sourceMode($playmode, $variant) === null
+            ) {
+                abort(422, 'invalid value specified for user[playmode_variant]');
+            }
+
+            $userParams['playmode_variant'] = $variant;
         }
 
         $profileParams = get_params($params, 'user_profile_customization', [

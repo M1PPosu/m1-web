@@ -8,6 +8,7 @@
     $newsPostLargePreviews = NewsPost::LANDING_LIMIT;
     $currentUser = Auth::user();
     $queryForRecentBeatmapsets = 'ranked>'.json_date(Carbon\Carbon::now()->subDays(30));
+    $privateServerBeatmaps = get_bool(config('m1pposu.private_server.enabled') ?? false);
 @endphp
 @extends('master')
 
@@ -97,12 +98,14 @@
                         'colour' => 'c-pink-darker'
                     ])
 
-                    @include('home._user_giant_button', [
-                        'href' => route('store.products.index'),
-                        'label' => osu_trans('home.user.buttons.store'),
-                        'icon' => 'shopping-cart',
-                        'colour' => 'c-darkorange'
-                    ])
+                    @if (get_bool(config('m1pposu.features.store') ?? false))
+                        @include('home._user_giant_button', [
+                            'href' => route('store.products.index'),
+                            'label' => osu_trans('home.user.buttons.store'),
+                            'icon' => 'shopping-cart',
+                            'colour' => 'c-darkorange'
+                        ])
+                    @endif
                 </div>
 
                 @if ($dailyChallenge)
@@ -138,7 +141,7 @@
                     @foreach ($popularBeatmapsets as $beatmapset)
                         @include('home._user_beatmapset', ['type' => 'popular'])
                     @endforeach
-                    <a href="{{ route('beatmapsets.index', ['q' => $queryForRecentBeatmapsets, 'sort' => 'favourites_desc']) }}">
+                    <a href="{{ route('beatmapsets.index', ['q' => $queryForRecentBeatmapsets, 'sort' => $privateServerBeatmaps ? 'plays_desc' : 'favourites_desc']) }}">
                         {{ osu_trans('common.buttons.see_more') }}
                     </a>
                 </div>

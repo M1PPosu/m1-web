@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Postări șterse',
             'total_posts' => 'Total postări',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Prioritate actuală: +:count',

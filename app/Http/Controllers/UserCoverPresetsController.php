@@ -19,8 +19,6 @@ class UserCoverPresetsController extends Controller
 
     public function batchActivate(): Response
     {
-        priv_check('UserCoverPresetManage')->ensureCan();
-
         $params = get_params(\Request::all(), null, [
             'ids:int[]',
             'active:bool',

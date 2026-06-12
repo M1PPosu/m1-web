@@ -91,6 +91,9 @@ class Beatmap extends Model implements AfterCommit
     ];
 
     const VARIANTS = [
+        'osu' => ['rx', 'ap'],
+        'taiko' => ['rx'],
+        'fruits' => ['rx'],
         'mania' => ['4k', '7k'],
     ];
 

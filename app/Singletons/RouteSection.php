@@ -81,6 +81,9 @@ class RouteSection
             'home_controller' => [
                 '_' => 'home',
             ],
+            'help_controller' => [
+                '_' => 'help',
+            ],
             'legal_controller' => [
                 '_' => 'home',
             ],

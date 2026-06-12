@@ -16,8 +16,8 @@ return [
             'by' => 'Игрок',
             'played_on' => 'Клиент',
             'submitted_on' => 'Поставлен',
-            'watched' => 'Просмотрено',
-            'watched_count' => ':count_delimited раз|:count_delimited раза|:count_delimited раз',
+            'watched' => '',
+            'watched_count' => '',
 
             'rank' => [
                 'country' => 'Рейтинг в стране',

@@ -22,7 +22,9 @@
     </a>
 
     <div class="simple-menu__extra">
-        @include('layout._score_mode_toggle', ['class' => 'simple-menu__item'])
+        @if (get_bool(config('m1pposu.features.lazer_toggle') ?? false))
+            @include('layout._score_mode_toggle', ['class' => 'simple-menu__item'])
+        @endif
     </div>
 
     <a
@@ -34,7 +36,7 @@
 
     @if ($teamId === null)
         <a class="simple-menu__item" href="{{ route('teams.create') }}">
-            {{ osu_trans('layout.popup_user.links.create_team') }}
+            {{ osu_trans('layout.popup_user.links.team') }}
         </a>
     @else
         <a class="simple-menu__item" href="{{ route('teams.show', ['team' => $teamId]) }}">

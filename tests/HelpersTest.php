@@ -54,6 +54,36 @@ class HelpersTest extends TestCase
         $this->assertTrue(is_sql_unique_exception($exception));
     }
 
+    public function testEmailValidationRejectsHeaderInjection(): void
+    {
+        $this->assertFalse(is_valid_email_format("victim@example.com\r\nBcc: attacker@example.com"));
+        $this->assertFalse(is_valid_email_format("victim@example.com\nBcc: attacker@example.com"));
+        $this->assertTrue(is_valid_email_format('victim@example.com'));
+    }
+
+    public function testServerFetchUrlAllowedOnlyForConfiguredAssetHosts(): void
+    {
+        config_set('osu.camo.key', null);
+        config_set('osu.server_fetch_allowed_base_urls', ['https://trusted.example.test/media']);
+        config_set('filesystems.disks.local.base_url', 'https://assets.example.test/uploads/default');
+
+        $this->assertTrue(server_fetch_url_allowed('https://assets.example.test/uploads/default/image.png'));
+        $this->assertTrue(server_fetch_url_allowed('https://trusted.example.test/media/image.png'));
+        $this->assertFalse(server_fetch_url_allowed('https://trusted.example.test/private/image.png'));
+        $this->assertFalse(server_fetch_url_allowed('https://assets.example.test/private/admin'));
+        $this->assertFalse(server_fetch_url_allowed('http://127.0.0.1/server-status'));
+        $this->assertFalse(server_fetch_url_allowed('http://169.254.169.254/latest/meta-data/'));
+        $this->assertFalse(server_fetch_url_allowed('file:///etc/passwd'));
+        $this->assertFalse(server_fetch_url_allowed('https://user:password@assets.example.test/uploads/default/image.png'));
+    }
+
+    public function testDbUnsignedIncrementRejectsRawColumnSql(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        db_unsigned_increment('count` = 0; DROP TABLE users; --', 1);
+    }
+
     /**
      * @dataProvider dataForGetLengthSeconds
      */

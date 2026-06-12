@@ -35,7 +35,7 @@ class ScreenshotsControllerTest extends TestCase
 
         $matches = [];
 
-        $this->assertGreaterThan(0, preg_match('#(\d+)/(.{4})$#', $url, $matches));
+        $this->assertGreaterThan(0, preg_match('#(\d+)/([a-f0-9]{16})$#', $url, $matches));
 
         $this->get(route('screenshots.show', [
             'screenshot' => $matches[1],

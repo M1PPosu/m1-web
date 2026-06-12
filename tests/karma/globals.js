@@ -5,6 +5,10 @@
 
 window.currentLocale = 'en';
 window.fallbackLocale = 'en';
+window.m1pposuBrandingTranslationFallback = {
+  exact: [],
+  prefixes: [],
+};
 // stub all the things
 window.currentUser = {};
 

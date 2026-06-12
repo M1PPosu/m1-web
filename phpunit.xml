@@ -27,6 +27,8 @@
         <env name="HELP_FORUM_ID" value="0"/>
         <env name="INITIAL_HELP_FORUM_IDS" value="0"/>
         <env name="ISSUE_FORUM_IDS" value="0"/>
+        <env name="M1PP_FEATURE_STORE" value="true"/>
+        <env name="SHARED_INTEROP_SECRET" value="test-shared-interop-secret"/>
         <env name="SLACK_WATCH_FORUM_IDS" value="0"/>
         <env name="SLACK_WATCH_TOPIC_IDS" value="0"/>
     </php>

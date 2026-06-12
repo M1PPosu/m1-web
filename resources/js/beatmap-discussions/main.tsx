@@ -22,7 +22,6 @@ import { Header } from './header';
 import { ModeSwitcher } from './mode-switcher';
 import { NewDiscussion } from './new-discussion';
 import Refresh from './refresh';
-import Toolbar from './toolbar';
 
 const beatmapsetJsonId = 'json-beatmapset';
 
@@ -40,8 +39,8 @@ export default class Main extends React.Component<Props> {
   private readonly eventId = `beatmap-discussions-${nextVal()}`;
   // FIXME: update url handler to recognize this instead
   private readonly focusNewDiscussion = currentUrl().hash === '#new';
+  private readonly modeSwitcherRef = React.createRef<HTMLDivElement>();
   private readonly newDiscussionRef = React.createRef<HTMLDivElement>();
-  private readonly stickyRef = React.createRef<HTMLDivElement>();
   @observable private readonly store;
 
   constructor(props: Props) {
@@ -93,11 +92,10 @@ export default class Main extends React.Component<Props> {
           store={this.store}
         />
         <div className='osu-page osu-page--small osu-page--full'>
-          <Toolbar discussionsState={this.discussionsState} store={this.store} />
-          <div className='sticky-toolbar-before' />
-          <div ref={this.stickyRef} className='sticky-toolbar'>
-            <ModeSwitcher discussionsState={this.discussionsState} />
-          </div>
+          <ModeSwitcher
+            discussionsState={this.discussionsState}
+            innerRef={this.modeSwitcherRef}
+          />
           {this.discussionsState.currentPage === 'events' ? (
             <Events
               discussions={this.store.discussions}
@@ -111,7 +109,7 @@ export default class Main extends React.Component<Props> {
                   discussionsState={this.discussionsState}
                   innerRef={this.newDiscussionRef}
                   onFocus={this.handleNewDiscussionFocus}
-                  stickTo={this.stickyRef}
+                  stickTo={this.modeSwitcherRef}
                   store={this.store}
                 />
               ) : (
@@ -120,7 +118,7 @@ export default class Main extends React.Component<Props> {
                   discussionsState={this.discussionsState}
                   innerRef={this.newDiscussionRef}
                   onFocus={this.handleNewDiscussionFocus}
-                  stickTo={this.stickyRef}
+                  stickTo={this.modeSwitcherRef}
 
                 />
               )}
@@ -167,9 +165,9 @@ export default class Main extends React.Component<Props> {
     const attribute = postId != null ? `data-post-id='${postId}'` : `data-id='${discussionId}'`;
     const target = document.querySelector(`.js-beatmap-discussion-jump[${attribute}]`);
 
-    if (target == null || this.stickyRef.current == null || this.newDiscussionRef.current == null) return;
+    if (target == null || this.modeSwitcherRef.current == null || this.newDiscussionRef.current == null) return;
 
-    let margin = this.stickyRef.current.getBoundingClientRect().height;
+    let margin = this.modeSwitcherRef.current.getBoundingClientRect().height;
     if (this.discussionsState.pinnedNewDiscussion) {
       margin += this.newDiscussionRef.current.getBoundingClientRect().height;
     }

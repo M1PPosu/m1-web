@@ -79,7 +79,7 @@
             class="ranking-page-table-main__link js-usercard"
             data-tooltip-position="right center"
             data-user-id="{{ $object->getKey() }}"
-            href="{{ route('users.show', ['user' => $object->getKey(), 'mode' => $params['mode']]) }}"
+            href="{{ route('users.show', ['user' => $object->getKey(), 'mode' => $params['mode'], 'variant' => $params['variant']]) }}"
         >
             @if ($showAvatar ?? false)
                 <span class="ranking-page-table-main__flag">

@@ -53,7 +53,7 @@ return [
         'users' => [
             'modding' => 'módování',
             'playlists' => 'playlisty',
-            'ranked-play' => 'hodnocená hra',
+            'ranked-play' => '',
             'realtime' => 'multiplayer',
             'show' => 'informace',
         ],

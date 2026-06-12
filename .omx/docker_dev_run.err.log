@@ -1,0 +1,45 @@
+ Image osu-web-ps-migrator Building 
+ Image osu-web-ps-assets Building 
+ Image osu-web-ps-php Building 
+ Image osu-web-ps-job Building 
+ Image osu-web-ps-php-dusk Building 
+ Image osu-web-ps-migrator Built 
+ Image osu-web-ps-php-dusk Built 
+ Image osu-web-ps-job Built 
+ Image osu-web-ps-php Built 
+ Image osu-web-ps-assets Built 
+ Image osu-web-ps-testjs Building 
+ Image osu-web-ps-testjs Built 
+ Network osu-web-ps_default Creating 
+ Network osu-web-ps_default Created 
+ Container osu-web-ps-php-run-7e0423fa638e Creating 
+ Container osu-web-ps-php-run-7e0423fa638e Created 
+warning " > @shopify/hydrogen-react@2024.10.1" has incorrect peer dependency "react@^18.0.0".
+warning " > @shopify/hydrogen-react@2024.10.1" has incorrect peer dependency "react-dom@^18.0.0".
+warning " > coffee-loader@5.0.0" has incorrect peer dependency "coffeescript@>= 2.0.0".
+ Container osu-web-ps-php-run-3ec5c0c32cc5 Creating 
+ Container osu-web-ps-php-run-3ec5c0c32cc5 Created 
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Nothing to install, update or remove
+Package paypal/paypal-checkout-sdk is abandoned, you should avoid using it. Use paypal/paypal-server-sdk instead.
+Package spatie/data-transfer-object is abandoned, you should avoid using it. Use spatie/laravel-data instead.
+Package xsolla/xsolla-sdk-php is abandoned, you should avoid using it. No replacement was suggested.
+Generating optimized autoload files
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+> @php artisan package:discover
+117 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+ Container osu-web-ps-php-run-9e36bddd3a83 Creating 
+ Container osu-web-ps-php-run-9e36bddd3a83 Created 
+ Container osu-web-ps-php-run-69650e69f19b Creating 
+ Container osu-web-ps-php-run-69650e69f19b Created 
+ Image elasticsearch:7.17.16 Pulling 
+ Image nginx:latest Pulling 
+ Image redis:latest Pulling 
+ Image pppy/osu-elastic-indexer:master Pulling 
+ Image pppy/osu-elastic-indexer:master Pulling 
+ Image pppy/osu-notification-server Pulling 
+ Image pppy/osu-notification-server Pulling 
+ Image pppy/osu-beatmap-difficulty-lookup-cache Pulling 
+error getting credentials - err: exit status 1, out: ``

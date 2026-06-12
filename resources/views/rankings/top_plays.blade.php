@@ -2,14 +2,66 @@
     Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
     See the LICENCE file in the repository root for full licence text.
 --}}
+@php
+    use App\Libraries\M1pposu\SourceMode;
+    use App\Models\Beatmap;
+
+    $topPlayVariant = $variant ?? null;
+    $hasTopPlayScores = $scores !== null && $scores->total() > 0;
+@endphp
 @extends('rankings.index', [
-    'hasPager' => $scores !== null,
-    'params' => ['mode' => $rulesetName, 'type' => 'top_plays'],
-    'rulesetSelectorUrlFn' => fn (string $r): string => route('rankings.top-plays', ['mode' => $r]),
+    'hasPager' => $hasTopPlayScores,
+    'params' => ['mode' => $rulesetName, 'type' => 'top_plays', 'variant' => $topPlayVariant],
+    'rulesetSelectorUrlFn' => fn (string $r): string => route('rankings.top-plays', [
+        'mode' => $r,
+        'variant' => SourceMode::sourceMode($r, $topPlayVariant) === null ? null : $topPlayVariant,
+    ]),
     'titlePrepend' => osu_trans('rankings.type.top_plays'),
 ])
 
-@if ($scores === null)
+@section('ranking-header')
+    @php
+        $variants = array_values(array_filter(
+            Beatmap::VARIANTS[$rulesetName] ?? [],
+            fn ($v) => SourceMode::sourceMode($rulesetName, $v) !== null,
+        ));
+        if ($variants !== []) {
+            array_unshift($variants, 'all');
+        }
+    @endphp
+    @if ($variants !== [])
+        <div class="osu-page osu-page--ranking-info">
+            <div class="grid-items grid-items--ranking-filter">
+                <div class="ranking-filter">
+                    <div class="ranking-filter__title">
+                        {{ osu_trans('rankings.filter.variant.title') }}
+                    </div>
+                    <div class="sort sort--ranking-header">
+                        <div class="sort__items">
+                            @foreach ($variants as $v)
+                                @php
+                                    $selectedVariant = $v === 'all' ? null : $v;
+                                @endphp
+                                <a
+                                    class="{{ class_with_modifiers('sort__item', 'button', ['active' => $topPlayVariant === $selectedVariant]) }}"
+                                    href="{{ route('rankings.top-plays', [
+                                        'mode' => $rulesetName,
+                                        'variant' => $selectedVariant,
+                                        'page' => null,
+                                    ]) }}"
+                                >
+                                    {{ osu_trans("beatmaps.variant.{$rulesetName}.{$v}") }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+@endsection
+
+@if (!$hasTopPlayScores)
     @section('scores')
         {{ osu_trans('rankings.top_plays.empty') }}
     @endsection

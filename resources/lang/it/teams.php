@@ -48,7 +48,7 @@ return [
 
         'description' => [
             'label' => 'Descrizione',
-            'title' => 'Descrizione della squadra',
+            'title' => 'Descrizione Squadra',
         ],
 
         'flag' => [
@@ -66,7 +66,7 @@ return [
             'default_ruleset_help' => 'La modalità di gioco impostata come predefinita quando si visita la pagina della squadra',
             'flag_help' => 'Dimensione massima di :width×:height',
             'header_help' => 'Dimensione massima di :width×:height',
-            'title' => 'Impostazioni della squadra',
+            'title' => 'Impostazioni Squadra',
 
             'application_state' => [
                 'state_0' => 'Chiuse',

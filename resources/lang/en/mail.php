@@ -21,18 +21,18 @@ return [
     'donation_thanks' => [
         'benefit_more' => 'More new supporter benefits will appear over time, as well!',
         'feedback' => "If you have any questions or feedback, don't hesitate to reply to this mail; I'll get back to you as soon as possible!",
-        'keep_free' => 'It is thanks to people like you that osu! is able to keep the game and community running smoothly without any advertisements or forced payments.',
-        'keep_running' => 'Your support keeps osu! running for around :minutes! It may not seem like much, but it all adds up :).',
-        'subject' => 'Thanks, osu! <3s you',
+        'keep_free' => 'It is thanks to people like you that M1PPosu is able to keep the server and community running smoothly without any advertisements or forced payments.',
+        'keep_running' => 'Your support keeps M1PPosu running for around :minutes! It may not seem like much, but it all adds up :).',
+        'subject' => 'Thanks, M1PPosu <3s you',
         'translation' => 'A community-provided translation for informational purposes follows:',
 
         'benefit' => [
-            'gift' => 'Your giftee(s) will now have access to osu!direct and many other supporter benefits.',
-            'self' => 'You will now have access to osu!direct and many other supporter benefits for :duration.',
+            'gift' => 'Your giftee(s) will now have access to M1PPosu supporter benefits.',
+            'self' => 'You will now have access to M1PPosu supporter benefits for :duration.',
         ],
 
         'support' => [
-            '_' => 'Thanks a lot for your :support towards osu!.',
+            '_' => 'Thanks a lot for your :support towards M1PPosu.',
             'first' => 'support',
             'repeat' => 'continued support',
         ],
@@ -40,15 +40,15 @@ return [
 
     'forum_new_reply' => [
         'new' => 'Just letting you know that there has been a new reply in ":title" since your last visit.',
-        'subject' => '[osu!] New reply for topic ":title"',
+        'subject' => '[M1PPosu] New reply for topic ":title"',
         'unwatch' => 'If you no longer wish to watch this topic, you can either click the "Unsubscribe topic" link found at the bottom of the topic above, or from topic subscriptions management page:',
         'visit' => 'Jump straight to the latest reply using the following link:',
     ],
 
     'password_reset' => [
         'code' => 'Your verification code is:',
-        'requested' => 'Either you or someone pretending to be you has requested a password reset on your osu! account.',
-        'subject' => 'osu! account recovery',
+        'requested' => 'Either you or someone pretending to be you has requested a password reset on your M1PPosu account.',
+        'subject' => 'M1PPosu account recovery',
     ],
 
     'store_payment_completed' => [
@@ -56,44 +56,44 @@ return [
         'processing' => 'We have received your payment and are currently processing your order. You can follow the progress of your order here:',
         'questions' => "If you have any questions, don't hesitate to reply to this email.",
         'shipping' => 'Shipping',
-        'subject' => 'We received your osu!store order!',
-        'thank_you' => 'Thanks for your osu!store order!',
+        'subject' => 'We received your M1PPosu Store order!',
+        'thank_you' => 'Thanks for your M1PPosu Store order!',
         'total' => 'Total',
     ],
 
     'supporter_gift' => [
         'anonymous_gift' => 'The person who gifted you this tag may choose to remain anonymous, so they have not been mentioned in this notification.',
         'anonymous_gift_maybe_not' => 'But you likely already know who it is ;).',
-        'duration' => 'Thanks to them, you have access to osu!direct and other osu!supporter benefits for the next :duration.',
+        'duration' => 'Thanks to them, you have access to M1PPosu supporter benefits for the next :duration.',
         'features' => 'You can find out more details on these features here:',
-        'gifted' => 'Someone has just gifted you an osu!supporter tag!',
+        'gifted' => 'Someone has just gifted you an M1PPosu supporter tag!',
         'gift_message' => 'The person who gifted you this tag left you a message:',
-        'subject' => 'You have been gifted an osu!supporter tag!',
+        'subject' => 'You have been gifted an M1PPosu supporter tag!',
     ],
 
     'user_email_updated' => [
-        'changed_to' => 'This is a confirmation email to inform you that your osu! email address has been changed to: ":email".',
-        'check' => 'Please ensure that you received this email at your new address to prevent losing access your osu! account in the future.',
+        'changed_to' => 'This is a confirmation email to inform you that your M1PPosu email address has been changed to: ":email".',
+        'check' => 'Please ensure that you received this email at your new address to prevent losing access your M1PPosu account in the future.',
         'sent' => 'For security reasons, this email has been sent both to your new and old email address.',
-        'subject' => 'osu! email change confirmation',
+        'subject' => 'M1PPosu email change confirmation',
     ],
 
     'user_force_reactivation' => [
         'main' => 'Your account is suspected to have been compromised, has recent suspicious activity or a VERY weak password. As a result, we require you to set a new password. Please make sure to choose a SECURE password.',
         'perform_reset' => 'You can perform the reset from :url',
         'reason' => 'Reason:',
-        'subject' => 'osu! Account Reactivation Required',
+        'subject' => 'M1PPosu Account Reactivation Required',
     ],
 
     'user_notification_digest' => [
         'new' => 'Just letting you know that there have been new updates on items you are watching.',
         'settings' => 'Change email notification preferences:',
-        'subject' => 'New osu! notifications',
+        'subject' => 'New M1PPosu notifications',
     ],
 
     'user_password_updated' => [
-        'confirmation' => 'This is just a confirmation that your osu! password has been changed.',
-        'subject' => 'osu! password change confirmation',
+        'confirmation' => 'This is just a confirmation that your M1PPosu password has been changed.',
+        'subject' => 'M1PPosu password change confirmation',
     ],
 
     'user_verification' => [
@@ -101,7 +101,7 @@ return [
         'code_hint' => 'You can enter the code with or without spaces.',
         'link' => 'Alternatively, you can also visit this link below to finish verification:',
         'report' => 'If you did not request this, please REPLY IMMEDIATELY as your account may be in danger.',
-        'subject' => 'osu! account verification',
+        'subject' => 'M1PPosu account verification',
 
         'action_from' => [
             '_' => 'An action performed on your account from :country requires verification.',

@@ -1,9 +1,9 @@
-{{--
+﻿{{--
     Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
     See the LICENCE file in the repository root for full licence text.
 --}}
 {{-- just in case php has shorttag enabled --}}
-{!! '<?xml version="1.0" encoding="UTF-8"?>' !!}
+{!! '{!! '<?xml version="1.0" encoding="UTF-8"?>' !!}' !!}
 <feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
     <id>{{ atom_id('news') }}</id>
 

@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Dzēstie Raksti',
             'total_posts' => 'Raksti Kopumā',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Pašreizējā Prioritāte: +:count',

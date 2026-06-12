@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Обрисане Постове',
             'total_posts' => 'Укупно Постова',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Тренутни Приоритет: +:count',

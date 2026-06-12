@@ -125,12 +125,12 @@ return [
             ],
 
             'channel_mention' => [
-                '_' => 'Panggilan obrolan',
+                '_' => '',
 
                 'public' => [
-                    'channel_mention' => ':username menyebutkan namamu di :name ":title"',
-                    'channel_mention_compact' => ':username ":title"',
-                    'channel_mention_group' => 'namamu disebut di :name',
+                    'channel_mention' => '',
+                    'channel_mention_compact' => '',
+                    'channel_mention_group' => '',
                 ],
             ],
 
@@ -264,17 +264,17 @@ return [
 
         'channel' => [
             'announcement' => [
-                'channel_announcement' => 'Terdapat pengumuman baru di ":name"',
+                'channel_announcement' => 'Terdapat pengumuman baru pada ":name"',
             ],
             'channel' => [
                 'channel_message' => 'Kamu menerima pesan baru dari :username',
             ],
             'channel_mention' => [
-                'channel_mention' => ':username menyebutkan namamu di :name ":title"',
+                'channel_mention' => '',
             ],
 
             'channel_team' => [
-                'channel_team' => 'Terdapat pesan baru di tim ":name"',
+                'channel_team' => 'Terdapat pesan baru pada tim ":name"',
             ],
         ],
 

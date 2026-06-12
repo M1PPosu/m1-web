@@ -32,6 +32,8 @@ export function joinComponents(array: React.ReactElement[], key = 'common.array_
 }
 
 export function trans(key: string, replacements: Replacements = {}, locale?: string) {
+  locale = m1pposuTranslationLocale(key, locale);
+
   if (!transExists(key, locale)) {
     locale = fallbackLocale;
   }
@@ -53,7 +55,7 @@ export function transArray(array: Replacement[], key = 'common.array_and') {
 }
 
 export function transChoice(key: string, count: number, replacements: Replacements = {}, locale?: string): string {
-  locale ??= currentLocale;
+  locale = m1pposuTranslationLocale(key, locale);
   const isFallbackLocale = locale === fallbackLocale;
 
   if (!isFallbackLocale && !transExists(key, locale)) {
@@ -73,7 +75,7 @@ export function transChoice(key: string, count: number, replacements: Replacemen
 
 // Handles case where crowdin fills in untranslated key with empty string.
 export function transExists(key: string, locale?: string) {
-  locale ??= window.currentLocale;
+  locale = m1pposuTranslationLocale(key, locale);
   window.Lang.setFallback(locale);
 
   const translated = window.Lang.get(key, undefined, locale);
@@ -82,6 +84,22 @@ export function transExists(key: string, locale?: string) {
   window.Lang.setFallback(window.fallbackLocale);
 
   return ret;
+}
+
+function m1pposuTranslationLocale(key: string, locale?: string) {
+  locale ??= window.currentLocale;
+
+  if (locale === window.fallbackLocale) {
+    return locale;
+  }
+
+  const config = window.m1pposuBrandingTranslationFallback;
+  const configured = config.exact.includes(key) || config.prefixes.some((prefix) => key.startsWith(prefix));
+  const fallbackTranslation = window.Lang.get(key, undefined, window.fallbackLocale);
+
+  return configured || (typeof fallbackTranslation === 'string' && fallbackTranslation.includes('M1PPosu'))
+    ? window.fallbackLocale
+    : locale;
 }
 
 // re-export Lang so we can use our version of the types;

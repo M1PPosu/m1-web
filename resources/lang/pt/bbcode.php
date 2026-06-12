@@ -20,6 +20,6 @@ return [
         'normal' => 'Normal',
         'large' => 'Grande',
     ],
-    'spoilerbox' => 'Caixa de revelação',
-    'strikethrough' => 'Texto riscado',
+    'spoilerbox' => 'Caixa do saqueador',
+    'strikethrough' => 'Excluir',
 ];

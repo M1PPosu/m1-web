@@ -69,6 +69,52 @@ class LocaleTest extends TestCase
         $this->assertSame('', osu_trans('key_1.empty_missing'));
     }
 
+    public function testM1PPosuBrandingFallsBackToEnglish()
+    {
+        osu_trans()->addLines([
+            'branding.marker' => 'M1PPosu account',
+            'branding.exact' => 'Private server account',
+            'branding.prefix.item' => 'Private server download',
+            'branding.upstream' => 'osu! gameplay term',
+        ], 'en');
+        osu_trans()->addLines([
+            'branding.marker' => 'osu! account',
+            'branding.exact' => 'osu! account',
+            'branding.prefix.item' => 'download osu!',
+            'branding.upstream' => 'termin osu!',
+        ], 'ja');
+
+        config()->set('m1pposu.localization.branding_fallback', [
+            'exact' => ['branding.exact'],
+            'prefixes' => ['branding.prefix.'],
+        ]);
+        app()->setLocale('ja');
+
+        $this->assertSame('M1PPosu account', osu_trans('branding.marker'));
+        $this->assertSame('Private server account', osu_trans('branding.exact'));
+        $this->assertSame('Private server download', osu_trans('branding.prefix.item'));
+        $this->assertSame('termin osu!', osu_trans('branding.upstream'));
+    }
+
+    public function testCustomHelpAndLegalPagesFallBackToEnglish()
+    {
+        app()->setLocale('pl');
+
+        $this->assertSame('rules', osu_trans('help.rules.title'));
+        $this->assertSame('welcome', osu_trans('home.landing.title'));
+        $this->assertSame('News', osu_trans('home.user.news.title'));
+        $this->assertSame('Privacy', osu_trans('layout.footer.legal.privacy'));
+        $this->assertSame('Privacy Policy', osu_trans('legal.pages.privacy.title'));
+
+        app()->setLocale('de');
+
+        $this->assertSame('report abuse', osu_trans('help.report_abuse.title'));
+        $this->assertSame('welcome', osu_trans('home.landing.title'));
+        $this->assertSame('News', osu_trans('home.user.news.title'));
+        $this->assertSame('Terms', osu_trans('layout.footer.legal.terms'));
+        $this->assertSame('Terms of Service', osu_trans('legal.pages.terms.title'));
+    }
+
     /**
      * @dataProvider availableLocalesProvider
      */

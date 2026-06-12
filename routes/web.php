@@ -14,7 +14,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/beatmapsets/{beatmapset}/covers', 'BeatmapsetsController@covers')->name('beatmapsets.covers');
         Route::post('/beatmapsets/{beatmapset}/covers/regenerate', 'BeatmapsetsController@regenerateCovers')->name('beatmapsets.covers.regenerate');
         Route::post('/beatmapsets/{beatmapset}/covers/remove', 'BeatmapsetsController@removeCovers')->name('beatmapsets.covers.remove');
-        Route::resource('beatmapsets', 'BeatmapsetsController', ['only' => ['show', 'update']]);
+        Route::resource('beatmapsets', 'BeatmapsetsController', ['only' => ['show']]);
 
         Route::group(['as' => 'contests.', 'prefix' => 'contests/{contest}'], function () {
             Route::post('calculate', 'ContestsController@calculate')->name('calculate');
@@ -39,6 +39,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('authenticator-app/edit', 'UserTotpController@edit')->name('authenticator-app.edit');
     Route::delete('authenticator-app', 'UserTotpController@destroy')->name('authenticator-app.destroy');
     Route::post('authenticator-app/issue-uri', 'UserTotpController@issueUri')->name('authenticator-app.issue-uri');
+
+    Route::group(['as' => 'help.', 'prefix' => 'help'], function () {
+        Route::get('contact', 'HelpController@contact')->name('contact');
+        Route::get('report-abuse', 'HelpController@reportAbuse')->name('report-abuse');
+        Route::get('rules', 'HelpController@rules')->name('rules');
+    });
 
     Route::group(['prefix' => 'beatmaps'], function () {
         // featured artists
@@ -316,11 +322,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::resource('seasons', 'SeasonsController', ['only' => 'show']);
     Route::get('seasons/{season}/rooms', 'SeasonsController@rooms')->name('seasons.rooms');
 
+    Route::get('session/new', 'SessionsController@create')->name('login-form');
     Route::post('session', 'SessionsController@store')->name('login');
     Route::delete('session', 'SessionsController@destroy')->name('logout');
-
-    Route::get('suggestions/user', 'SuggestionsController@user')->name('suggestions.user');
-    Route::get('suggestions/wiki', 'SuggestionsController@wiki')->name('suggestions.wiki');
 
     Route::post('user-cover-presets/batch-activate', 'UserCoverPresetsController@batchActivate')->name('user-cover-presets.batch-activate');
     Route::resource('user-cover-presets', 'UserCoverPresetsController', ['only' => ['index', 'store', 'update']]);
@@ -340,6 +344,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('users/check-username-availability', 'UsersController@checkUsernameAvailability')->name('users.check-username-availability');
     Route::get('users/lookup', 'Users\LookupController@index')->name('users.lookup');
     Route::get('users/disabled', 'UsersController@disabled')->name('users.disabled');
+    Route::get('register', 'UsersController@create')->name('register');
     Route::get('users/create', 'UsersController@create')->name('users.create');
     Route::post('users/store-web', 'UsersController@storeWeb')->name('users.store-web');
 
@@ -371,9 +376,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('wiki/{locale}/Sitemap', 'WikiController@sitemap')->name('wiki.sitemap');
     Route::get('wiki/{locale?}/{path?}', 'WikiController@show')->name('wiki.show')->where('path', '.+');
     Route::put('wiki/{locale}/{path}', 'WikiController@update')->where('path', '.+');
+    Route::get('wiki-suggestions', 'WikiController@suggestions')->name('wiki-suggestions');
 
     // FIXME: someone split this crap up into proper controllers
-    Route::group(['as' => 'store.', 'prefix' => 'store'], function () {
+    Route::group(['as' => 'store.', 'prefix' => 'store', 'middleware' => 'm1pposu-feature:store'], function () {
         route_redirect('/', 'store.products.index');
 
         Route::get('listing', 'StoreController@getListing')->name('products.index');
@@ -397,7 +403,7 @@ Route::group(['middleware' => ['web']], function () {
         });
     });
 
-    Route::group(['as' => 'payments.', 'prefix' => 'payments', 'namespace' => 'Payments'], function () {
+    Route::group(['as' => 'payments.', 'prefix' => 'payments', 'namespace' => 'Payments', 'middleware' => 'm1pposu-feature:store'], function () {
         Route::group(['as' => 'paypal.', 'prefix' => 'paypal'], function () {
             Route::get('approved', 'PaypalController@approved')->name('approved');
             Route::get('declined', 'PaypalController@declined')->name('declined');

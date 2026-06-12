@@ -13,27 +13,27 @@ return [
         ],
 
         'title' => [
-            '_' => 'notícias',
-            'info' => 'página inicial',
+            '_' => 'Notícias :info',
+            'info' => 'Página inicial',
         ],
     ],
 
     'series' => [
-        'beatmap_spotlights' => 'Destaques de Mapas',
-        'community_contests' => 'concursos da comunidade',
-        'community_tournaments' => 'torneios da comunidade',
-        'fanart_contests' => 'concursos de arte',
-        'featured_artists' => 'Anúncios de artistas em destaque',
-        'game_updates' => 'atualizações do cliente e da página',
-        'mappers_guild' => 'Guilda dos Criadores de Mapas',
-        'monthly_beatmapping_contest' => 'Concurso Mensal de Criação de Mapas',
-        'merch_runs' => 'produtos oficiais do osu!',
-        'miscellaneous' => 'anúncios diversos',
+        'beatmap_spotlights' => '',
+        'community_contests' => '',
+        'community_tournaments' => '',
+        'fanart_contests' => '',
+        'featured_artists' => '',
+        'game_updates' => '',
+        'mappers_guild' => '',
+        'monthly_beatmapping_contest' => '',
+        'merch_runs' => 'artigos do osu!',
+        'miscellaneous' => '',
         'official_contests' => 'torneios oficiais',
         'offline_events' => 'eventos offline',
         'online_events' => 'eventos online',
-        'project_loved' => 'Projeto Adorado',
-        'ranking_system_updates' => 'atualizações do sistema de classificação',
+        'project_loved' => '',
+        'ranking_system_updates' => '',
         'world_cups' => 'Campeonatos Mundiais do osu!',
     ],
 
@@ -46,17 +46,17 @@ return [
         ],
 
         'title' => [
-            '_' => 'notícias',
-            'info' => 'publicação',
+            '_' => 'Notícias :info',
+            'info' => 'Publicação',
         ],
     ],
 
     'sidebar' => [
-        'archive' => 'Arquivo de notícias',
+        'archive' => 'Arquivo de novidades',
     ],
 
     'store' => [
-        'button' => 'Atualizar',
+        'button' => 'Atualização',
         'ok' => 'A listar atualizados.',
     ],
 

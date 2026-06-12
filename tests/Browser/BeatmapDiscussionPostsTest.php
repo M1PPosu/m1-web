@@ -83,7 +83,6 @@ class BeatmapDiscussionPostsTest extends DuskTestCase
 
     protected function deleteUser(User $user): void
     {
-        $user->statisticsOsu->delete();
         $user->userProfileCustomization()->forceDelete();
         $user->forceDelete();
     }

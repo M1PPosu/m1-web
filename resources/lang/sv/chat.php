@@ -50,11 +50,6 @@ return [
         'title' => 'kanalen hittades ej',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Skapa',
         'disabled' => 'kan inte skicka meddelande...',

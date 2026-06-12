@@ -50,11 +50,6 @@ return [
         'title' => 'ang channel ay hindi nahanap',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Lumikha',
         'disabled' => 'hindi maipadala ang mensahe...',

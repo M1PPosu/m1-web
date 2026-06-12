@@ -15,7 +15,7 @@ export default class NavButton
       @listening = true
       $(window).on 'resize', @hideOrShow
 
-    return if @main.length == 0
+    return if @main.length == 0 || @items.length == 0
 
     # assumes:
     # - the width never changes once the page loads

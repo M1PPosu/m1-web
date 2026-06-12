@@ -168,7 +168,7 @@
         border-box;
 
     --bg-colour: var(--hsl-pink-1);
-    --cookie: url("~@images/backgrounds/cookie_v3.svg");
+    --cookie: none;
     --overlay-colour: rgba(0, 0, 0, 0.75);
 
     .default-text-shadow();
@@ -189,8 +189,18 @@
 
   &--download-stable {
     --bg-colour: var(--hsl-orange-1);
-    --cookie: url("~@images/backgrounds/cookie_v2.svg");
+    --cookie: none;
     --overlay-colour: hsla(var(--hsl-b5), 0.75);
+  }
+
+  &--download-m1pposu {
+    --bg:
+      linear-gradient(hsla(var(--hsl-b6), 0.78), hsla(var(--hsl-b6), 0.78)) padding-box,
+      linear-gradient(to bottom, hsl(var(--hsl-pink-2)), hsl(var(--hsl-pink-1))) border-box;
+
+    --hover-bg:
+      linear-gradient(hsla(var(--hsl-b6), 0.58), hsla(var(--hsl-b6), 0.58)) padding-box,
+      linear-gradient(to bottom, hsl(var(--hsl-pink-2)), hsl(var(--hsl-pink-1))) border-box;
   }
 
   &--fileupload {

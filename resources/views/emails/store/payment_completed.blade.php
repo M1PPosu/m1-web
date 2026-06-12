@@ -26,4 +26,4 @@
 {!! osu_trans('mail.store_payment_completed.questions') !!}
 
 {!! osu_trans('mail.common.closing') !!}
-The osu!store team
+The M1PPosu Store team

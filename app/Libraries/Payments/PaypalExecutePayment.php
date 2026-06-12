@@ -54,7 +54,7 @@ class PaypalExecutePayment
 
             // This block is just extra information for now, errors here should not cause the transaction to fail.
             try {
-                Log::debug('PaypalExecutePayment::run complete', (array) $response);
+                Log::debug('PaypalExecutePayment::run complete', ['order_id' => $order->getKey()]);
                 // This should match the incoming IPN transaction id.
                 $transactionId = $response->result->purchase_units[0]->payments->captures[0]->id;
                 $order->update(['transaction_id' => "paypal-{$transactionId}"]);

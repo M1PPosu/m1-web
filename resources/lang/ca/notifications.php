@@ -125,12 +125,12 @@ return [
             ],
 
             'channel_mention' => [
-                '_' => 'Menció al xat',
+                '_' => '',
 
                 'public' => [
-                    'channel_mention' => ':username us ha mencionat a :name «:title»',
-                    'channel_mention_compact' => ':username «:title»',
-                    'channel_mention_group' => 'mencionat al :name',
+                    'channel_mention' => '',
+                    'channel_mention_compact' => '',
+                    'channel_mention_group' => '',
                 ],
             ],
 
@@ -270,7 +270,7 @@ return [
                 'channel_message' => 'Has rebut un nou missatge de :username',
             ],
             'channel_mention' => [
-                'channel_mention' => ':username us ha mencionat a :name «:title»',
+                'channel_mention' => '',
             ],
 
             'channel_team' => [

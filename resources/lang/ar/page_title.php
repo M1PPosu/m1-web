@@ -82,7 +82,7 @@ return [
             'get_download' => 'تنزيل',
             'index' => 'لوحة التحكم',
             'search' => 'البحث',
-            'support_the_game' => 'إدعم اللعبة',
+            'support_the_game' => 'أِدعَم اللعبة',
             'testflight' => 'مشروع الأختبار',
         ],
         'legacy_matches_controller' => [
@@ -116,7 +116,7 @@ return [
             '_' => 'الفِرق',
             'create' => 'إنشاء فريق',
             'edit' => 'إعدادات الفريق',
-            'leaderboard' => 'لوحة صدارة الفريق',
+            'leaderboard' => 'ترتيب الفريق',
             'show' => 'معلومات الفريق',
         ],
         'tournaments_controller' => [
@@ -157,7 +157,7 @@ return [
     ],
     'users' => [
         'modding_history_controller' => [
-            '_' => 'معلومات المُعدِّل',
+            '_' => 'معلومات المُعَدِل',
         ],
         'multiplayer_controller' => [
             '_' => 'تاريخ المباريات الجماعية ',

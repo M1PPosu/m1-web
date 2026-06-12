@@ -12,7 +12,8 @@
             @endforeach
         </div>
     @endif
-    <div class="footer__row">ppy powered 2007-{{ date('Y') }}</div>
+    <div class="footer__row">{{ config('m1pposu.legal.non_affiliation') }}</div>
+    <div class="footer__row">Based on osu-web by ppy Pty Ltd. Licensed under AGPL-3.0.</div>
 
     <div class="js-sync-height--target" data-sync-height-id="permanent-fixed-footer"></div>
 </footer>

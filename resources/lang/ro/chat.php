@@ -50,11 +50,6 @@ return [
         'title' => 'canalul nu a fost găsit',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Creează',
         'disabled' => 'mesajul nu a putut fi trimis...',

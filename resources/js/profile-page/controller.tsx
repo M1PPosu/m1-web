@@ -70,6 +70,7 @@ export function validPage(page: unknown) {
 interface InitialData {
   achievements: AchievementJson[];
   current_mode: Ruleset;
+  current_variant: string | null;
   scores_notice: string | null;
   user: ProfilePageUserJson;
   user_cover_presets: UserCoverPresetJson[];
@@ -96,6 +97,7 @@ export default class Controller {
   readonly achievements: Map<number, AchievementJson>;
   readonly currentMode: Ruleset;
   @observable currentPage: Page = 'main';
+  readonly currentVariant: string | null;
   readonly debouncedSetDisplayCoverUrl = debounce((url: string | null) => this.setDisplayCoverUrl(url), 300);
   @observable displayCoverUrl: string | null;
   readonly hasSavedState: boolean;
@@ -157,6 +159,7 @@ export default class Controller {
       this.achievements.set(achievement.id, achievement);
     }
     this.currentMode = initialData.current_mode;
+    this.currentVariant = initialData.current_variant;
     this.scoresNotice = initialData.scores_notice;
     this.displayCoverUrl = this.state.user.cover.url;
     this.selectedHue = this.state.user.profile_hue;
@@ -244,11 +247,13 @@ export default class Controller {
       data: {
         user: {
           playmode: this.currentMode,
+          playmode_variant: this.currentVariant,
         },
       },
       method: 'PUT',
     }).done(action(() => {
       this.state.user.playmode = this.currentMode;
+      this.state.user.playmode_variant = this.currentVariant;
       this.saveState();
     })) as JQuery.jqXHR<CurrentUserJson>;
 
@@ -390,10 +395,15 @@ export default class Controller {
         const json = type === 'recent' ? this.state.lazy.historical?.recent : this.state.lazy.top_ranks?.[type];
 
         if (json != null) {
+          const params: Record<string, string | number | undefined> = { ...baseParams, mode: this.currentMode, type };
+          if (this.currentVariant != null) {
+            params.variant = this.currentVariant;
+          }
+
           this.xhr[section] = apiShowMore(
             json,
             'users.scores',
-            { ...baseParams, mode: this.currentMode, type },
+            params,
           );
         }
 
@@ -417,7 +427,7 @@ export default class Controller {
 
   @action
   get<T extends keyof LazyPages>(page: T) {
-    const xhr = getPage<LazyPages[T]>(this.state.user, page, this.currentMode)
+    const xhr = getPage<LazyPages[T]>(this.state.user, page, this.currentMode, this.currentVariant)
       .done((json) => runInAction(() => {
         this.state.lazy[page] = json;
       }));

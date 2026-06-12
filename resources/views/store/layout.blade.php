@@ -8,7 +8,7 @@
     <script id="json-shopify-storefront-options" type="application/json">
         {!! json_encode([
             'storeDomain' => $GLOBALS['cfg']['store']['shopify']['domain'],
-            'apiVersion' => \Shopify\ApiVersion::JANUARY_2026,
+            'apiVersion' => '2024-04',
             'publicAccessToken' => $GLOBALS['cfg']['store']['shopify']['storefront_token'],
         ]) !!}
     </script>

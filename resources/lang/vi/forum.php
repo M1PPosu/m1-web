@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Bài Đăng Đã Bị Xóa',
             'total_posts' => 'Tổng Bài Đăng',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Độ Ưu Tiên: +:count',
@@ -300,7 +299,7 @@ return [
                 ],
 
                 'user' => [
-                    'count' => '{0} không có bình chọn|{1} :count_delimited phiếu|[2,*] :count_delimited phiếu',
+                    'count' => '{0} không có bình chọn|[1,*] :count phiếu',
                     'current' => 'Bạn còn :votes.',
                     'not_enough' => "Bạn không còn lượt bình chọn nào hết",
                 ],

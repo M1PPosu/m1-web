@@ -148,7 +148,7 @@ export class SearchContent extends React.Component<Props> {
   private renderSupporterRequired() {
     const filters = this.controller.supporterRequiredFilterText;
     const link = (
-      <a href={route('store.products.show', { product: 'supporter-tag' })}>
+      <a href={route('support-the-game')}>
         {trans('beatmaps.listing.search.supporter_filter_quote.link_text')}
       </a>
     );

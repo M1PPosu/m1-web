@@ -38,19 +38,21 @@
                             {{ $user->username }}
                         </div>
 
-                        <div class="account-edit-entry__button">
-                            <a class="btn-osu-big btn-osu-big--account-edit" href="{{route('store.products.show', 'username-change')}}">
-                                <div class="btn-osu-big__content">
-                                    <div class="btn-osu-big__left">
-                                        {{ osu_trans('common.buttons.change') }}
-                                    </div>
+                        @if (get_bool(config('m1pposu.features.store') ?? false))
+                            <div class="account-edit-entry__button">
+                                <a class="btn-osu-big btn-osu-big--account-edit" href="{{ route('store.products.show', 'username-change') }}">
+                                    <div class="btn-osu-big__content">
+                                        <div class="btn-osu-big__left">
+                                            {{ osu_trans('common.buttons.change') }}
+                                        </div>
 
-                                    <div class="btn-osu-big__icon">
-                                        <i class="fas fa-pencil-alt"></i>
+                                        <div class="btn-osu-big__icon">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </div>
+                                </a>
+                            </div>
+                        @endif
                     </div>
                     @include('accounts._edit_country')
                 </div>
@@ -175,13 +177,17 @@
 
         @include('accounts._edit_sessions')
 
-        @include('accounts._edit_oauth')
+        @if (get_bool(config('m1pposu.features.oauth_settings') ?? false))
+            @include('accounts._edit_oauth')
+        @endif
 
         @if (\App\Models\GithubUser::canAuthenticate())
             @include('accounts._edit_github_user')
         @endif
 
-        @include('accounts._edit_legacy_api')
+        @if (get_bool(config('m1pposu.features.legacy_api_settings') ?? false))
+            @include('accounts._edit_legacy_api')
+        @endif
     </div>
 @endsection
 

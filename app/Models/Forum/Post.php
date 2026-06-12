@@ -146,7 +146,7 @@ class Post extends Model implements AfterCommit, Indexable, Traits\ReportableInt
             return;
         }
 
-        $bbcode = new BBCodeForDB(app('chat-filters')->filter($value));
+        $bbcode = new BBCodeForDB($value);
         $this->attributes['post_text'] = $bbcode->generate();
         $this->attributes['bbcode_uid'] = $bbcode->uid;
         $this->attributes['bbcode_bitfield'] = $bbcode->bitfield;

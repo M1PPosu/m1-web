@@ -64,7 +64,7 @@
 
             <div class="dialog-form__row dialog-form__row--extra-link">
                 {{ osu_trans('layout.popup_login.register.title') }}
-                <a href="{{ route('download') }}" class="dialog-form__extra-link">
+                <a href="{{ route('register') }}" class="dialog-form__extra-link">
                     {{ osu_trans('sessions.create.download') }}
                 </a>
             </div>

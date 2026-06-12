@@ -4,7 +4,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 return [
-    'hidden_replies' => ':count_delimited svar er skjult.|:count_delimited svar er skjult.',
+    'hidden_replies' => '',
 
     'authorizations' => [
         'update' => [

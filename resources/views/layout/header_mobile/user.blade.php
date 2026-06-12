@@ -24,7 +24,9 @@
             data-react="user-card"
         ></div>
 
-        @include('layout._score_mode_toggle', ['class' => 'navbar-mobile-item__main'])
+        @if (get_bool(config('m1pposu.features.lazer_toggle') ?? false))
+            @include('layout._score_mode_toggle', ['class' => 'navbar-mobile-item__main'])
+        @endif
 
         <a
             class="navbar-mobile-item__main"
@@ -35,7 +37,7 @@
 
         @if ($teamId === null)
             <a class="navbar-mobile-item__main" href="{{ route('teams.create') }}">
-                {{ osu_trans('layout.popup_user.links.create_team') }}
+                {{ osu_trans('layout.popup_user.links.team') }}
             </a>
         @else
             <a class="navbar-mobile-item__main" href="{{ route('teams.show', ['team' => $teamId]) }}">

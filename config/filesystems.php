@@ -3,13 +3,13 @@
 $appUrl = env('APP_URL', 'http://localhost');
 
 $s3Default = [
-    'bucket' => env('S3_BUCKET'),
+    'bucket' => env('AWS_BUCKET', env('S3_BUCKET')),
     'driver' => 's3',
-    'endpoint' => env('S3_ENDPOINT'),
-    'key' => env('S3_KEY'),
-    'region' => env('S3_REGION'),
-    'secret' => env('S3_SECRET'),
-    'use_path_style_endpoint' => get_bool(env('S3_USE_PATH_STYLE_ENDPOINT')) ?? false,
+    'endpoint' => env('AWS_ENDPOINT', env('S3_ENDPOINT')),
+    'key' => env('AWS_ACCESS_KEY_ID', env('S3_KEY')),
+    'region' => env('AWS_DEFAULT_REGION', env('S3_REGION')),
+    'secret' => env('AWS_SECRET_ACCESS_KEY', env('S3_SECRET')),
+    'use_path_style_endpoint' => get_bool(env('AWS_USE_PATH_STYLE_ENDPOINT', env('S3_USE_PATH_STYLE_ENDPOINT'))) ?? false,
 ];
 
 $replays = [];
@@ -111,17 +111,19 @@ return [
 
         's3' => [
             ...$s3Default,
-            'base_url' => env('S3_BASE_URL'),
-            'mini_url' => env('S3_MINI_URL') ?? env('S3_BASE_URL'),
+            'base_url' => env('AWS_URL', env('S3_BASE_URL')),
+            'mini_url' => env('S3_MINI_URL') ?? env('AWS_URL', env('S3_BASE_URL')),
+            'url' => env('AWS_URL', env('S3_BASE_URL')),
         ],
 
         's3-avatar' => [
             ...$s3Default,
-            'base_url' => env('S3_AVATAR_BASE_URL'),
-            'bucket' => env('S3_AVATAR_BUCKET'),
-            'key' => env('S3_AVATAR_KEY'),
-            'region' => env('S3_AVATAR_REGION'),
-            'secret' => env('S3_AVATAR_SECRET'),
+            'base_url' => env('S3_AVATAR_BASE_URL', env('AWS_URL', env('S3_BASE_URL'))),
+            'bucket' => env('S3_AVATAR_BUCKET', env('AWS_BUCKET', env('S3_BUCKET'))),
+            'key' => env('S3_AVATAR_KEY', env('AWS_ACCESS_KEY_ID', env('S3_KEY'))),
+            'region' => env('S3_AVATAR_REGION', env('AWS_DEFAULT_REGION', env('S3_REGION'))),
+            'secret' => env('S3_AVATAR_SECRET', env('AWS_SECRET_ACCESS_KEY', env('S3_SECRET'))),
+            'url' => env('S3_AVATAR_BASE_URL', env('AWS_URL', env('S3_BASE_URL'))),
         ],
 
         's3-central' => [

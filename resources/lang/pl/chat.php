@@ -50,11 +50,6 @@ return [
         'title' => 'nie znaleziono kanału',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Utwórz',
         'disabled' => 'nie udało się wysłać wiadomości...',

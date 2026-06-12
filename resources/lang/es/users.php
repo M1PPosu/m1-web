@@ -403,7 +403,7 @@ return [
                 'show_more' => 'ver más publicaciones',
             ],
             'ranked-play' => [
-                'title' => 'Partidas clasificatorias',
+                'title' => '',
             ],
             'recent_activity' => [
                 'title' => 'Reciente',
@@ -475,7 +475,7 @@ return [
         ],
 
         'matchmaking' => [
-            'title' => 'Partidas clasificatorias',
+            'title' => 'Partidas rápidas',
         ],
 
         'not_found' => [

@@ -99,7 +99,12 @@ class Store extends BaseStore implements SessionVerificationInterface
             $ids,
             // Sessions are stored double-serialized in redis (session serialization + cache backend serialization)
             array_map(
-                fn ($s) => $s === null ? null : unserialize(unserialize($s)),
+                fn ($s) => $s === null
+                    ? null
+                    : unserialize(
+                        unserialize($s, ['allowed_classes' => false]),
+                        ['allowed_classes' => false],
+                    ),
                 self::redis()->mget($ids),
             ),
         );
@@ -285,7 +290,10 @@ class Store extends BaseStore implements SessionVerificationInterface
     {
         // Overridden to force session ids to be regenerated when trying to load a session that doesn't exist anymore
         if ($data = $this->handler->read($this->getId())) {
-            $data = @unserialize($this->prepareForUnserialize($data));
+            $data = @unserialize(
+                $this->prepareForUnserialize($data),
+                ['allowed_classes' => false],
+            );
 
             if ($data !== false && !is_null($data) && is_array($data)) {
                 return $data;

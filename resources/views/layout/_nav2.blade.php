@@ -70,17 +70,21 @@
         </div>
     </div>
     <div class="nav2__colgroup nav2__colgroup--icons js-nav-button--container">
-        <div class="nav2__col js-nav-button--item">
-            <a
-                href="{{ osu_url('social.twitter') }}"
-                class="nav-button nav-button--twitter"
-                title="Twitter"
-                data-tooltip-position="bottom center"
-            >
-                <span class="fab fa-twitter"></span>
-            </a>
-        </div>
+        @if (($twitterUrl = osu_url('social.twitter')) !== null)
+            <div class="nav2__col js-nav-button--item">
+                <a
+                    href="{{ $twitterUrl }}"
+                    class="nav-button nav-button--twitter"
+                    title="Twitter"
+                    data-tooltip-position="bottom center"
+                >
+                    <span class="fab fa-twitter"></span>
+                </a>
+            </div>
+        @endif
 
+        {{-- Commented out: Heart icon / Support-the-game button --}}
+        {{--
         <div class="nav2__col">
             <a
                 href="{{ route('support-the-game') }}"
@@ -91,10 +95,9 @@
                 <span class="fas fa-heart"></span>
             </a>
         </div>
+        --}}
 
-        <div class="nav2__col">
-            {!! app('layout-cache')->getLocalesDesktop() !!}
-        </div>
+
 
         @if ($currentUser !== null)
             @if ($GLOBALS['cfg']['osu']['user']['wrapped_enabled'])
@@ -162,6 +165,10 @@
                 </div>
             </div>
         @endif
+
+        <div class="nav2__col js-nav-button--item">
+            @include('layout.nav2._locales')
+        </div>
 
         <div class="nav2__col nav2__col--avatar">
             @include('layout._header_user')

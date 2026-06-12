@@ -16,8 +16,8 @@ return [
             'by' => 'لُعِبَت بواسطة',
             'played_on' => 'تم اللعب في',
             'submitted_on' => 'تم تقديمه في',
-            'watched' => 'مرات المشاهدة',
-            'watched_count' => ':count_delimited مرة|:count_delimited مرات',
+            'watched' => '',
+            'watched_count' => '',
 
             'rank' => [
                 'country' => 'ترتيب الدولة',

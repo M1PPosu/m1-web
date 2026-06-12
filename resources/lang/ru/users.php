@@ -403,7 +403,7 @@ return [
                 'show_more' => 'показать больше постов',
             ],
             'ranked-play' => [
-                'title' => 'Матчи рейтинговой игры',
+                'title' => '',
             ],
             'recent_activity' => [
                 'title' => 'Последняя активность',
@@ -475,7 +475,7 @@ return [
         ],
 
         'matchmaking' => [
-            'title' => 'Рейтинговая игра',
+            'title' => 'Быстрая игра',
         ],
 
         'not_found' => [

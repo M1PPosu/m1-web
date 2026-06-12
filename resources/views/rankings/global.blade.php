@@ -16,32 +16,29 @@
                 if ($variants !== null) {
                     array_unshift($variants, 'all');
                 }
+                $currentVariant = $params['variant'] ?? null;
             @endphp
             @if ($variants !== null)
-                <div class="js-react u-contents" data-react="ranking-variant-filter">
-                    <div class="ranking-filter">
-                        <div class="ranking-filter__title">
-                            {{ osu_trans('rankings.filter.variant.title') }}
-                        </div>
-                        <div class="sort sort--ranking-header">
-                            <div class="sort__items">
-                                @foreach ($variants as $v)
-                                    <button class="sort__item sort__item--button">
-                                        {{ osu_trans("beatmaps.variant.{$params['mode']}.{$v}") }}
-                                    </button>
-                                @endforeach
-                            </div>
+                <div class="ranking-filter">
+                    <div class="ranking-filter__title">
+                        {{ osu_trans('rankings.filter.variant.title') }}
+                    </div>
+                    <div class="sort sort--ranking-header">
+                        <div class="sort__items">
+                            @foreach ($variants as $v)
+                                @php
+                                    $variant = $v === 'all' ? null : $v;
+                                @endphp
+                                <a
+                                    class="{{ class_with_modifiers('sort__item', 'button', ['active' => $currentVariant === $variant]) }}"
+                                    href="{{ route('rankings', [...$params, 'variant' => $variant, 'page' => null]) }}"
+                                >
+                                    {{ osu_trans("beatmaps.variant.{$params['mode']}.{$v}") }}
+                                </a>
+                            @endforeach
                         </div>
                     </div>
                 </div>
-
-                <script id="json-variant-filter" type="application/json">
-                    {!! json_encode([
-                        'current' => $params['variant'],
-                        'current_ruleset' => $params['mode'],
-                        'items' => $variants,
-                    ]) !!}
-                </script>
             @endif
         </div>
     </div>

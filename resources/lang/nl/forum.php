@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Verwijderde posts',
             'total_posts' => 'Alle posts',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Prioriteit: +:count',

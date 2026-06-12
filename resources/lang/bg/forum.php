@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Изтрити публикации',
             'total_posts' => 'Общ брой публикации',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Текущ приоритет: +:count',

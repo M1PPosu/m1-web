@@ -125,12 +125,12 @@ return [
             ],
 
             'channel_mention' => [
-                '_' => 'Wspomnienie na czacie',
+                '_' => '',
 
                 'public' => [
-                    'channel_mention' => ':username wspomniał o tobie na :name ":title"',
-                    'channel_mention_compact' => ':username „:title”',
-                    'channel_mention_group' => 'wspomniano w :name',
+                    'channel_mention' => '',
+                    'channel_mention_compact' => '',
+                    'channel_mention_group' => '',
                 ],
             ],
 
@@ -270,7 +270,7 @@ return [
                 'channel_message' => 'Otrzymujesz nową wiadomość od użytkownika :username',
             ],
             'channel_mention' => [
-                'channel_mention' => ':username wspomniał o tobie na :name ":title"',
+                'channel_mention' => '',
             ],
 
             'channel_team' => [

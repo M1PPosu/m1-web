@@ -56,7 +56,7 @@
     {
       "avatar_url": "https://a.ppy.sh/2?1519081077.png",
       "country_code": "AU",
-      "default_group": "pippi",
+      "default_group": "dev",
       "id": 1,
       "is_active": true,
       "is_bot": false,
@@ -65,7 +65,7 @@
       "last_visit": "2025-09-05T08:35:00+00:00",
       "pm_friends_only": false,
       "profile_colour": null,
-      "username": "pippi"
+      "username": "dev"
     },
     {
       "avatar_url": "https://a.ppy.sh/2?1519081077.png",

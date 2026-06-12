@@ -289,7 +289,6 @@ return [
         'show' => [
             'deleted-posts' => '刪除主題',
             'total_posts' => '總主題數量',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => '目前優先順序：+:count',

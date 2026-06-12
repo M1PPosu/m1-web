@@ -50,11 +50,6 @@ return [
         'title' => 'kanavaa ei löydetty',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Luo',
         'disabled' => 'viestiä ei voida lähettää...',

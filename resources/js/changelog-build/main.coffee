@@ -70,7 +70,7 @@ export class Main extends React.PureComponent
 
   renderSupporterPromo: =>
     div className: 'supporter-promo',
-      div className: 'supporter-promo__pippi',
+      div className: 'supporter-promo__brand-art',
         div className: 'supporter-promo__heart'
 
       div className: 'supporter-promo__text-box',

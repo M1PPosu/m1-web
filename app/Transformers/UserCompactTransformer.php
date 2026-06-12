@@ -5,7 +5,9 @@
 
 namespace App\Transformers;
 
+use App\Libraries\M1pposu\ProjectedScoreVariant;
 use App\Libraries\MorphMap;
+use App\Libraries\Search\ScoreSearchParams;
 use App\Libraries\SessionVerification;
 use App\Libraries\User\SeasonStats;
 use App\Models\Beatmap;
@@ -50,6 +52,7 @@ class UserCompactTransformer extends TransformerAbstract
     ];
 
     protected string $mode;
+    protected ?string $variant = null;
 
     protected array $availableIncludes = [
         'account_history',
@@ -193,7 +196,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeBeatmapPlaycountsCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('beatmapPlaycounts'));
+        return $this->primitive($user->beatmapPlaycounts()->count());
     }
 
     public function includeBlocks(User $user)
@@ -235,6 +238,10 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeCurrentSeasonStats(User $user): Primitive
     {
+        if ($this->variant !== null) {
+            return $this->primitive(null);
+        }
+
         $season = Season::active()
             ->where('ruleset_id', Beatmap::modeInt($this->mode))
             ->first();
@@ -254,7 +261,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeFavouriteBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('favouriteBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetsFavourite()->count());
     }
 
     public function includeFollowUserMapping(User $user)
@@ -283,14 +290,14 @@ class UserCompactTransformer extends TransformerAbstract
     public function includeGlobalRank(User $user)
     {
         return $this->primitive([
-            'rank' => $user->statistics($this->mode)?->globalRank(),
+            'rank' => $user->statistics($this->mode, false, $this->variant)?->globalRank(),
             'ruleset_id' => Beatmap::MODES[$this->mode],
         ]);
     }
 
     public function includeGraveyardBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('graveyardBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetCountByGroupedStatus('graveyard'));
     }
 
     public function includeGroups(User $user)
@@ -300,7 +307,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeGuestBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('guestBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetsGuest()->count());
     }
 
     public function includeIsAdmin(User $user)
@@ -358,7 +365,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeLovedBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('lovedBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetCountByGroupedStatus('loved'));
     }
 
     public function includeMappingFollowerCount(User $user)
@@ -368,6 +375,10 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeMatchmakingStats(User $user): ResourceInterface
     {
+        if ($this->variant !== null) {
+            return $this->collection([], new MatchmakingUserStatsTransformer());
+        }
+
         $allStats = $user
             ->matchmakingStats()
             ->whereHas('pool', fn ($q) => $q->where([
@@ -390,7 +401,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeNominatedBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('nominatedBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetsNominated()->count());
     }
 
     public function includePage(User $user)
@@ -407,7 +418,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includePendingBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('pendingBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetCountByGroupedStatus('pending'));
     }
 
     public function includePreviousUsernames(User $user)
@@ -417,6 +428,10 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeRankHighest(User $user): ResourceInterface
     {
+        if ($this->variant !== null) {
+            return $this->null();
+        }
+
         $rankHighest = $user->rankHighests()
             ->where('mode', Beatmap::modeInt($this->mode))
             ->first();
@@ -428,6 +443,10 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeRankHistory(User $user)
     {
+        if ($this->variant !== null) {
+            return $this->primitive(null);
+        }
+
         $rankHistoryData = $user->rankHistories()
             ->where('mode', Beatmap::modeInt($this->mode))
             ->first()
@@ -440,7 +459,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeRankedBeatmapsetCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('rankedBeatmapsets'));
+        return $this->primitive($user->profileBeatmapsetCountByGroupedStatus('ranked'));
     }
 
     public function includeReplaysWatchedCounts(User $user)
@@ -453,22 +472,51 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeScoresBestCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('scoresBest', $this->mode));
+        return $this->primitive(count($user->beatmapBestScoreIds(
+            $this->mode,
+            $this->variant,
+        )));
     }
 
     public function includeScoresFirstCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('scoresFirsts', $this->mode));
+        if ($this->variant !== null) {
+            return $this->primitive(0);
+        }
+
+        return $this->primitive($user->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))->count());
     }
 
     public function includeScoresPinnedCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('scoresPinned', $this->mode));
+        if ($this->variant !== null) {
+            return $this->primitive(0);
+        }
+
+        return $this->primitive($user->scorePins()->forRuleset($this->mode)->withVisibleScore()->count());
     }
 
     public function includeScoresRecentCount(User $user)
     {
-        return $this->primitive($user->profileCount()->get('scoresRecent', $this->mode));
+        if ($this->variant !== null) {
+            $query = $user->soloScores()
+                ->default()
+                ->forRuleset($this->mode)
+                ->includeFails(false);
+
+            if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+                ProjectedScoreVariant::apply($query, $this->mode, $this->variant);
+            }
+
+            return $this->primitive($query->count());
+        }
+
+        $query = $user->soloScores()->recent($this->mode, false);
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            ProjectedScoreVariant::apply($query, $this->mode, null);
+        }
+
+        return $this->primitive($query->count());
     }
 
     public function includeSessionVerified(User $user)
@@ -487,7 +535,7 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeStatistics(User $user)
     {
-        $stats = $user->statistics($this->mode);
+        $stats = $user->statistics($this->mode, false, $this->variant);
 
         return $this->item($stats, new UserStatisticsTransformer());
     }
@@ -551,9 +599,10 @@ class UserCompactTransformer extends TransformerAbstract
             : $customization->only($fields));
     }
 
-    public function setMode(string $mode)
+    public function setMode(string $mode, ?string $variant = null)
     {
         $this->mode = $mode;
+        $this->variant = $variant;
 
         return $this;
     }

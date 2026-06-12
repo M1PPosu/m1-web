@@ -14,10 +14,10 @@ return [
 
         'player' => [
             'by' => 'Гравець',
-            'played_on' => 'Клієнт',
+            'played_on' => '',
             'submitted_on' => 'Поставлено',
-            'watched' => 'Переглядів',
-            'watched_count' => ':count_delimited раз|:count_delimited рази|:count_delimited разів',
+            'watched' => '',
+            'watched_count' => '',
 
             'rank' => [
                 'country' => 'Ранг країни',

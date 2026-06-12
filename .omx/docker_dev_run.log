@@ -1,0 +1,265 @@
+declare -x DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus"
+declare -x DISPLAY=":0"
+declare -x HOME="/home/yomorei"
+declare -x HOSTTYPE="x86_64"
+declare -x LANG="C.UTF-8"
+declare -x LOGNAME="yomorei"
+declare -x NAME="DESKTOP-IT7GVEG"
+declare -x OLDPWD
+declare -x PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Users/Yomorei/.codex/tmp/arg0/codex-arg0gBXLli:/mnt/d/python/Scripts/:/mnt/d/python/:/mnt/c/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/d/WinSCP/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/Yomorei/AppData/Local/nvm:/mnt/c/nvm4w/nodejs:/mnt/c/Program Files (x86)/ZeroTier/One/:/mnt/c/Program Files/Microsoft/Web Platform Installer/:/mnt/c/Program Files (x86)/Microsoft ASP.NET/ASP.NET Web Pages/v1.0/:/mnt/c/Program Files/Microsoft SQL Server/110/Tools/Binn/:/mnt/d/Go/bin:/Docker/host/bin:/mnt/c/Users/Yomorei/AppData/Local/Programs/Python/Python313/Scripts/:/mnt/c/Users/Yomorei/AppData/Local/Programs/Python/Python313/:/mnt/c/Program Files/MySQL/MySQL Shell 8.4/bin/:/mnt/c/Users/Yomorei/AppData/Local/Microsoft/WindowsApps:/mnt/d/Microsoft VS Code/bin:/mnt/c/Users/Yomorei/AppData/Roaming/npm:/mnt/c/Users/Yomorei/AppData/Local/nvm:/mnt/c/nvm4w/nodejs:/mnt/c/Users/Yomorei/.dotnet/tools:/mnt/c/Program Files/mitmproxy/bin:/mnt/c/Users/Yomorei/AppData/Local/Microsoft/WinGet/Links:/mnt/c/Users/Yomorei/go/bin:/mnt/c/php:/mnt/c/Users/Yomorei/AppData/Local/OpenAI/Codex/bin:/mnt/c/Program Files/WindowsApps/OpenAI.Codex_26.422.3464.0_x64__2p2nqsd0c76g0/app/resources:/snap/bin"
+declare -x PULSE_SERVER="unix:/mnt/wslg/PulseServer"
+declare -x PWD="/mnt/d/osu-web-ps"
+declare -x SHELL="/bin/bash"
+declare -x SHLVL="2"
+declare -x TERM="xterm-256color"
+declare -x USER="yomorei"
+declare -x WAYLAND_DISPLAY="wayland-0"
+declare -x WSL2_GUI_APPS_ENABLED="1"
+declare -x WSLENV=""
+declare -x WSL_DISTRO_NAME="Ubuntu"
+declare -x WSL_INTEROP="/run/WSL/40186_interop"
+declare -x XDG_DATA_DIRS="/usr/local/share:/usr/share:/var/lib/snapd/desktop"
+declare -x XDG_RUNTIME_DIR="/run/user/1000/"
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.16kB done
+#1 DONE 0.0s
+
+#2 [assets internal] load build definition from Dockerfile.development
+#2 transferring dockerfile: 1.83kB 0.1s done
+#2 DONE 0.1s
+
+#3 [job internal] load metadata for docker.io/library/almalinux:10-minimal
+#3 DONE 0.3s
+
+#4 [assets internal] load .dockerignore
+#4 transferring context: 300B 0.1s done
+#4 DONE 0.1s
+
+#5 [php-dusk internal] load build context
+#5 DONE 0.0s
+
+#6 [php-dusk 1/8] FROM docker.io/library/almalinux:10-minimal@sha256:747f062616f496b0630277a9f25ce9a4d25986887ad6d6dad05cfc6f8b274d90
+#6 resolve docker.io/library/almalinux:10-minimal@sha256:747f062616f496b0630277a9f25ce9a4d25986887ad6d6dad05cfc6f8b274d90 0.0s done
+#6 resolve docker.io/library/almalinux:10-minimal@sha256:747f062616f496b0630277a9f25ce9a4d25986887ad6d6dad05cfc6f8b274d90 0.0s done
+#6 DONE 0.0s
+
+#5 [assets internal] load build context
+#5 transferring context: 65B 0.1s done
+#5 DONE 0.1s
+
+#7 [assets 4/8] RUN corepack enable yarn
+#7 CACHED
+
+#8 [assets 3/8] RUN echo "install_weak_deps=False" >> /etc/dnf/dnf.conf &&     PHP_VERSION="$(tr -d '\r\n' < /.php-version)" &&     NODE_VERSION="$(tr -d '\r\n' < /.node-version)" &&     microdnf install -y epel-release shadow-utils &&     rpm -i https://rpm.henderkes.com/static-php-1-1.noarch.rpm &&     microdnf module enable -y php-zts:static-${PHP_VERSION} &&     (curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION}.x | bash -) &&     microdnf install -y       chromedriver       chromium       ffmpeg-free       frankenphp       git       libjpeg-turbo-utils       mysql8.4       nodejs       php-zts-cli       php-zts-ds       php-zts-fileinfo       php-zts-ffi       php-zts-ftp       php-zts-gd       php-zts-gettext       php-zts-intl       php-zts-mysqli       php-zts-mysqlnd       php-zts-pdo       php-zts-pdo_mysql       php-zts-pdo_sqlite       php-zts-redis       php-zts-shmop       php-zts-sysvmsg       php-zts-sysvsem       php-zts-sysvshm       php-zts-xsl       php-zts-zip       unzip       util-linux &&     microdnf clean all
+#8 CACHED
+
+#9 [assets 6/8] RUN ln -s /app/docker/php.ini /etc/php-zts/conf.d/zz-osuweb.ini
+#9 CACHED
+
+#10 [assets 2/8] COPY .php-version .node-version /
+#10 CACHED
+
+#11 [assets 5/8] RUN curl -L "https://getcomposer.org/download/latest-2.x/composer.phar" > /usr/local/bin/composer && chmod 755 /usr/local/bin/composer
+#11 CACHED
+
+#12 [assets 7/8] WORKDIR /app
+#12 CACHED
+
+#13 [assets 8/8] RUN groupadd osuweb && useradd -g osuweb -d /app/.docker osuweb
+#13 CACHED
+
+#14 [migrator] exporting to image
+#14 exporting layers done
+#14 exporting manifest sha256:ee688f451fad8a607a47235a7fd9477679e3c98f6857c5a3fc30a8a31afe55a4 0.1s done
+#14 exporting config sha256:d52734f7d6adafbec86d40928056c3b589c958f1055186f1ae3385d09f374045
+#14 exporting config sha256:d52734f7d6adafbec86d40928056c3b589c958f1055186f1ae3385d09f374045 0.1s done
+#14 exporting attestation manifest sha256:4c087c2e51352927a90d2dfd21557a82c6f1f6c8075a61cb091ed248a5f48f95
+#14 exporting attestation manifest sha256:4c087c2e51352927a90d2dfd21557a82c6f1f6c8075a61cb091ed248a5f48f95 0.2s done
+#14 exporting manifest list sha256:c0545152e8c146a1adbdee5183a7a7088023fd241757df5d8a84aa91f6d5621e
+#14 exporting manifest list sha256:c0545152e8c146a1adbdee5183a7a7088023fd241757df5d8a84aa91f6d5621e 0.1s done
+#14 naming to docker.io/library/osu-web-ps-migrator:latest 0.0s done
+#14 unpacking to docker.io/library/osu-web-ps-migrator:latest
+#14 ...
+
+#15 [assets] exporting to image
+#15 exporting layers done
+#15 exporting manifest sha256:56d9a352c62e08f1346aec137f570017a19c1d78337a24ece880683c6528316c 0.1s done
+#15 exporting config sha256:395207b38a8512b130b9001839580ca1c8abdf45faf8dc2d354de39d3d56d34b 0.1s done
+#15 exporting attestation manifest sha256:561ca7e59f13976ce4950b7d3227291a235f5341abd2a263d2c6976f8be0bc82 0.2s done
+#15 exporting manifest list sha256:7e422ff3111bf3fe515f32ebaa307f274f44ae33c3e0222423cbe1d74500ea29 0.1s done
+#15 naming to docker.io/library/osu-web-ps-assets:latest 0.0s done
+#15 unpacking to docker.io/library/osu-web-ps-assets:latest
+#15 ...
+
+#16 [job] exporting to image
+#16 exporting layers done
+#16 exporting manifest sha256:1d8a07eb0fbc4c40f4afe7069879e7f94f326d7f6ea56d921eead44034db4e79 0.1s done
+#16 exporting config sha256:e69f214ef32e4d9a64039de35afaa16a2611e174c747e1872ad99b3b28cf1aa6 0.1s done
+#16 exporting attestation manifest sha256:33eaad24a27665a925445998629e04e1985842288afee1f6f7501724b44be737 0.2s done
+#16 exporting manifest list sha256:c41cda4e7d3a633c5311768844fe6e054aa4909f29c60d2884847d87cb78c89d 0.1s done
+#16 naming to docker.io/library/osu-web-ps-job:latest 0.0s done
+#16 unpacking to docker.io/library/osu-web-ps-job:latest
+#16 ...
+
+#17 [php-dusk] exporting to image
+#17 exporting layers done
+#17 exporting manifest sha256:890006de9c87ec5bc48c5a7248cbe42c6a473df729a3f270f90eabed4f598063 0.1s done
+#17 exporting config sha256:34c2a56a0829950ed4356804b7fa39dbdf0caf2189aa0855f9a36a56f02cc859 0.1s done
+#17 exporting attestation manifest sha256:72975e397bf5b6db13fb5676ed41a24c3187fe901e9f129d0053763594083f49 0.2s done
+#17 exporting manifest list sha256:c007bb2851bf3e9ecfed92af5cf2d02798717b204621fd8bfa14a3357762f8c1 0.1s done
+#17 naming to docker.io/library/osu-web-ps-php-dusk:latest 0.0s done
+#17 unpacking to docker.io/library/osu-web-ps-php-dusk:latest
+#17 ...
+
+#18 [php] exporting to image
+#18 exporting layers done
+#18 exporting manifest sha256:34d38cfcbe1441e94dda09643a8a121797f2cc5f25b30b4f806ca7441ea5eb70 0.1s done
+#18 exporting config sha256:aaad373207c615d39383d41a77954b0caa7df6fd2c37d48d73ae6c94fed36a43 0.1s done
+#18 exporting attestation manifest sha256:f2b0454379a7e09fc0a8897b2171da1892037ea9b91ba83baf2c3182ee5e8f9b 0.2s done
+#18 exporting manifest list sha256:d72b51bea15852cbd76740b77bd0411c0ed3511398c7b9d04ee503b3d59a70ff 0.1s done
+#18 naming to docker.io/library/osu-web-ps-php:latest 0.0s done
+#18 unpacking to docker.io/library/osu-web-ps-php:latest
+#18 ...
+
+#14 [migrator] exporting to image
+#14 unpacking to docker.io/library/osu-web-ps-migrator:latest 13.5s done
+#14 DONE 14.2s
+
+#16 [job] exporting to image
+#16 unpacking to docker.io/library/osu-web-ps-job:latest 13.5s done
+#16 DONE 14.2s
+
+#17 [php-dusk] exporting to image
+#17 unpacking to docker.io/library/osu-web-ps-php-dusk:latest 13.5s done
+#17 DONE 14.3s
+
+#18 [php] exporting to image
+#18 unpacking to docker.io/library/osu-web-ps-php:latest 13.5s done
+#18 DONE 14.3s
+
+#15 [assets] exporting to image
+#15 unpacking to docker.io/library/osu-web-ps-assets:latest 13.5s done
+#15 DONE 14.3s
+
+#19 [migrator] resolving provenance for metadata file
+#19 DONE 0.3s
+
+#20 [php] resolving provenance for metadata file
+#20 DONE 0.1s
+
+#21 [php-dusk] resolving provenance for metadata file
+#21 DONE 0.2s
+
+#22 [job] resolving provenance for metadata file
+#22 DONE 0.3s
+
+#23 [assets] resolving provenance for metadata file
+#23 DONE 0.0s
+#1 [internal] load local bake definitions
+#1 reading from stdin 504B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile.development
+#2 transferring dockerfile: 1.83kB 0.1s done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for docker.io/library/almalinux:10-minimal
+#3 DONE 0.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 300B 0.1s done
+#4 DONE 0.1s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [1/8] FROM docker.io/library/almalinux:10-minimal@sha256:747f062616f496b0630277a9f25ce9a4d25986887ad6d6dad05cfc6f8b274d90
+#6 resolve docker.io/library/almalinux:10-minimal@sha256:747f062616f496b0630277a9f25ce9a4d25986887ad6d6dad05cfc6f8b274d90 0.0s done
+#6 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 65B 0.1s done
+#5 DONE 0.1s
+
+#7 [7/8] WORKDIR /app
+#7 CACHED
+
+#8 [5/8] RUN curl -L "https://getcomposer.org/download/latest-2.x/composer.phar" > /usr/local/bin/composer && chmod 755 /usr/local/bin/composer
+#8 CACHED
+
+#9 [6/8] RUN ln -s /app/docker/php.ini /etc/php-zts/conf.d/zz-osuweb.ini
+#9 CACHED
+
+#10 [2/8] COPY .php-version .node-version /
+#10 CACHED
+
+#11 [3/8] RUN echo "install_weak_deps=False" >> /etc/dnf/dnf.conf &&     PHP_VERSION="$(tr -d '\r\n' < /.php-version)" &&     NODE_VERSION="$(tr -d '\r\n' < /.node-version)" &&     microdnf install -y epel-release shadow-utils &&     rpm -i https://rpm.henderkes.com/static-php-1-1.noarch.rpm &&     microdnf module enable -y php-zts:static-${PHP_VERSION} &&     (curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION}.x | bash -) &&     microdnf install -y       chromedriver       chromium       ffmpeg-free       frankenphp       git       libjpeg-turbo-utils       mysql8.4       nodejs       php-zts-cli       php-zts-ds       php-zts-fileinfo       php-zts-ffi       php-zts-ftp       php-zts-gd       php-zts-gettext       php-zts-intl       php-zts-mysqli       php-zts-mysqlnd       php-zts-pdo       php-zts-pdo_mysql       php-zts-pdo_sqlite       php-zts-redis       php-zts-shmop       php-zts-sysvmsg       php-zts-sysvsem       php-zts-sysvshm       php-zts-xsl       php-zts-zip       unzip       util-linux &&     microdnf clean all
+#11 CACHED
+
+#12 [4/8] RUN corepack enable yarn
+#12 CACHED
+
+#13 [8/8] RUN groupadd osuweb && useradd -g osuweb -d /app/.docker osuweb
+#13 CACHED
+
+#14 exporting to image
+#14 exporting layers done
+#14 exporting manifest sha256:d851a98cbbb190377630aae0c75d72704600c9995d2c030e91e422c7189afb8f 0.1s done
+#14 exporting config sha256:15451c4634f31c5c3c5dfda03f567399e42282c58d06e78b03b14a657dfdbbae
+#14 exporting config sha256:15451c4634f31c5c3c5dfda03f567399e42282c58d06e78b03b14a657dfdbbae 0.0s done
+#14 exporting attestation manifest sha256:5877a1adce0a8105b8cd78e0c82db9a6ce47907e5fa2d37e163fcbcccc46260f 0.1s done
+#14 exporting manifest list sha256:3cadb3662683d158c0d4069b9e45c68c98aa0572f25e5e72f1f45c7ce0d224df
+#14 exporting manifest list sha256:3cadb3662683d158c0d4069b9e45c68c98aa0572f25e5e72f1f45c7ce0d224df 0.0s done
+#14 naming to docker.io/library/osu-web-ps-testjs:latest done
+#14 unpacking to docker.io/library/osu-web-ps-testjs:latest 0.0s done
+#14 DONE 0.2s
+
+#15 resolving provenance for metadata file
+#15 DONE 0.0s
+yarn install v1.22.22
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+Done in 154.82s.
+
+   INFO  Discovering packages.  
+
+  beyondcode/laravel-query-detector ..................................... DONE
+  chaseconey/laravel-datadog-helper ..................................... DONE
+  graham-campbell/github ................................................ DONE
+  itsgoingd/clockwork ................................................... DONE
+  knuckleswtf/scribe .................................................... DONE
+  laravel/dusk .......................................................... DONE
+  laravel/octane ........................................................ DONE
+  laravel/passport ...................................................... DONE
+  laravel/slack-notification-channel .................................... DONE
+  laravel/tinker ........................................................ DONE
+  mariuzzo/laravel-js-localization ...................................... DONE
+  nesbot/carbon ......................................................... DONE
+  nunomaduro/collision .................................................. DONE
+  nunomaduro/termwind ................................................... DONE
+  reedware/laravel-relation-joins ....................................... DONE
+  romanzipp/laravel-turnstile ........................................... DONE
+  sentry/sentry-laravel ................................................. DONE
+  spatie/laravel-ignition ............................................... DONE
+  tightenco/ziggy ....................................................... DONE
+
+Generating passport key pair
+
+   INFO  Encryption keys generated successfully.  
+
+Copying default mysql client config
+Updating ip2asn database
+[v4] Checking db for updates
+[v4] Db file is outdated. Downloading
+[v4] Indexing db
+[v4] Writing db and index to file
+[v4] Finished updating db
+[v6] Checking db for updates
+[v6] Db file is outdated. Downloading
+[v6] Indexing db
+[v6] Writing db and index to file
+[v6] Finished updating db
+Done
+Preparation completed. Adjust .env file if needed and run 'docker compose up' followed by running migration.

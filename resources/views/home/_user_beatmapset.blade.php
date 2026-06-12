@@ -41,10 +41,15 @@
 
             <span class='user-home-beatmapset__playcount'>
                 @if ($type === 'new')
-                    {!! timeago($beatmapset->approved_date) !!}
+                    {!! timeago($beatmapset->approved_date ?? $beatmapset->last_update) !!}
                 @elseif ($type === 'popular')
-                    <span class="fa fa-heart"></span>
-                    {{ i18n_number_format($beatmapset->favourite_count) }}
+                    @if (get_bool(config('m1pposu.private_server.enabled') ?? false) && $beatmapset->user_id === 0 && ($beatmapset->thread_id ?? 0) === 0)
+                        <span class="fa fa-play"></span>
+                        {{ i18n_number_format($beatmapset->play_count) }}
+                    @else
+                        <span class="fa fa-heart"></span>
+                        {{ i18n_number_format($beatmapset->favourite_count) }}
+                    @endif
                 @elseif ($type === 'daily_challenge')
                     {!! osu_trans('home.user.beatmaps.resets', ['ends' => timeago($dailyChallenge->ends_at)]) !!}
                 @endif

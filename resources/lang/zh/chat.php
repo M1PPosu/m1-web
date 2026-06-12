@@ -50,11 +50,6 @@ return [
         'title' => '未找到频道',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => '创建',
         'disabled' => '无法发送消息……',

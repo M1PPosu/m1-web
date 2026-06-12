@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace App\Libraries\User;
 
+use App\Libraries\M1pposu\ImportedAssets;
+use App\Libraries\M1pposu\UserAssets;
 use App\Models\User;
 use App\Models\UserCoverPreset;
 
@@ -22,6 +24,11 @@ class Cover
 
     public function customUrl(): ?string
     {
+        $filename = $this->user->getRawAttribute('custom_cover_filename');
+        if (ImportedAssets::isMarker($filename)) {
+            return ImportedAssets::urlFromMarker($filename);
+        }
+
         return $this->user->customCover()->url();
     }
 
@@ -47,9 +54,14 @@ class Cover
 
     public function url(): ?string
     {
-        return $this->hasCustomCover()
-            ? $this->customUrl()
-            : $this->presetUrl();
+        if ($this->hasCustomCover()) {
+            $customUrl = $this->customUrl();
+            if ($customUrl !== null) {
+                return $customUrl;
+            }
+        }
+
+        return UserAssets::coverUrl($this->user) ?? $this->presetUrl();
     }
 
     private function hasCustomCover(): bool

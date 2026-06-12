@@ -46,7 +46,9 @@ class Log extends Model
             return [];
         }
 
-        return unserialize($value);
+        $data = @unserialize($value, ['allowed_classes' => false]);
+
+        return is_array($data) ? $data : [];
     }
 
     public function setLogDataAttribute($value)

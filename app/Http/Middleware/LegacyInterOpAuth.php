@@ -14,6 +14,11 @@ class LegacyInterOpAuth
 {
     private static function validateSignature(Request $request, string $fullUrl): ?string
     {
+        $secret = $GLOBALS['cfg']['osu']['legacy']['shared_interop_secret'];
+        if (!present($secret)) {
+            return 'unconfigured_secret';
+        }
+
         $timestamp = get_int($request->query('timestamp'));
         if ($timestamp === null) {
             return 'missing_timestamp';
@@ -29,7 +34,7 @@ class LegacyInterOpAuth
             return 'missing_signature';
         }
 
-        $expected = hash_hmac('sha1', $fullUrl, $GLOBALS['cfg']['osu']['legacy']['shared_interop_secret']);
+        $expected = hash_hmac('sha1', $fullUrl, $secret);
         if (!hash_equals($expected, $signature)) {
             return 'invalid_signature';
         }
@@ -51,7 +56,7 @@ class LegacyInterOpAuth
 
         $err = static::validateSignature($request, $fullUrl);
         if ($err !== null) {
-            abort(403, "{$err} ({$fullUrl})");
+            abort($err === 'unconfigured_secret' ? 503 : 403, $err);
         }
 
         $request->attributes->set(OsuAuthorize::REQUEST_IS_INTEROP_KEY, true);

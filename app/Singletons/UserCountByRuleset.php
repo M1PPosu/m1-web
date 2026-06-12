@@ -33,6 +33,16 @@ class UserCountByRuleset
                 ::getClass($rulesetName)
                 ::select('user_id')
                 ->count();
+
+            foreach (Beatmap::VARIANTS[$rulesetName] ?? [] as $variant) {
+                $key = "{$rulesetName}_{$variant}";
+                $class = UserStatistics\Model::getClass($rulesetName, $variant);
+
+                $counts['active'][$key] = $class::where('rank_score', '>', 0)
+                    ->whereHas('user', fn ($query) => $query->default())
+                    ->count();
+                $counts['all'][$key] = $class::select('user_id')->count();
+            }
         }
         $counts['all']['_all'] = max([...$counts['all'], Count::totalUsers()->count]);
 

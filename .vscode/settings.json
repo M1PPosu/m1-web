@@ -1,0 +1,14 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/public/build": true,
+    "**/storage/framework/views": true,
+    "**/vendor": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/public/build": true,
+    "**/storage/framework/views": true,
+    "**/vendor": true
+  }
+}

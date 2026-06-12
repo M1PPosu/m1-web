@@ -21,7 +21,6 @@ use App\Models\UserDonation;
 use App\Transformers\MenuImageTransformer;
 use Auth;
 use Carbon\CarbonImmutable;
-use DeviceDetector\DeviceDetector;
 use Request;
 
 /**
@@ -29,6 +28,9 @@ use Request;
  */
 class HomeController extends Controller
 {
+    private const LAUNCHER_RELEASES_URL = 'https://github.com/M1PPosu/m1pplauncher/releases';
+    private const LOCAL_LAUNCHER_PATH = 'downloads/M1PPLauncherSetup.exe';
+
     public function __construct()
     {
         $this->middleware('auth', [
@@ -62,57 +64,28 @@ class HomeController extends Controller
 
     public function getDownload()
     {
-        $lazerPlatformNames = [
-            'android' => osu_trans('home.download.os_version_or_later', ['os_version' => 'Android 5']),
-            'ios' => osu_trans('home.download.os_version_or_later', ['os_version' => 'iOS 13.4']),
-            'linux_x64' => 'Linux (x64)',
-            'macos_as' => osu_trans('home.download.os_version_or_later', ['os_version' => 'macOS 12']).' (Apple Silicon)',
-            'macos_intel' => osu_trans('home.download.os_version_or_later', ['os_version' => 'macOS 12']).' (Intel)',
-            'windows_x64' => osu_trans('home.download.os_version_or_later', ['os_version' => 'Windows 10']).' (x64)',
-        ];
-
-        $platform = get_string(request('platform'));
-        if (!array_key_exists($platform, $lazerPlatformNames)) {
-            $deviceDetector = new DeviceDetector(\Request::header('User-Agent') ?? '');
-            $deviceDetector->parse();
-            $family = $deviceDetector->getOs('family');
-
-            $platform = match ($family) {
-                // Try matching most likely platform first
-                'Windows' => 'windows_x64',
-                // current iPadOS declares itself as a desktop browser.
-                'iOS' => 'ios',
-                // FIXME: Figure out a way to differentiate Intel and Apple Silicon.
-                'Mac' => 'macos_as',
-                'Android' => 'android',
-                'GNU/Linux' => 'linux_x64',
-                default => 'windows_x64',
-            };
-        }
-
         $version = Build::where(['stream_id' => $GLOBALS['cfg']['osu']['client']['download_stream'], 'test_build' => false])
             ->orderBy('build_id', 'desc')
             ->first()
             ?->version;
 
-        $items = [];
-        foreach ($lazerPlatformNames as $key => $value) {
-            $items[] = ['id' => $key, 'text' => $value];
+        return ext_view('home.download', [
+            'launcherInfoUrl' => config('m1pposu.launcher.info_url') ?? static::LAUNCHER_RELEASES_URL,
+            'launcherUrl' => $this->launcherDownloadUrl(),
+            'version' => $version ?? osu_trans('home.download.windows_setup'),
+        ]);
+    }
+
+    private function launcherDownloadUrl(): ?string
+    {
+        $configuredUrl = config('m1pposu.launcher.download_windows_url') ?? config('m1pposu.launcher.download_url');
+        if ($configuredUrl !== null) {
+            return $configuredUrl;
         }
 
-        $selectOptions = [
-            'currentItem' => ['id' => $platform, 'text' => osu_trans('home.download.other_os')],
-            'items' => $items,
-            'modifiers' => 'download',
-            'type' => 'download',
-        ];
-
-        return ext_view('home.download', [
-            'lazerUrl' => osu_url("lazer_dl.{$platform}"),
-            'lazerPlatformName' => $lazerPlatformNames[$platform],
-            'selectOptions' => $selectOptions,
-            'version' => $version,
-        ]);
+        return is_file(public_path(static::LOCAL_LAUNCHER_PATH))
+            ? asset(static::LOCAL_LAUNCHER_PATH)
+            : null;
     }
 
     public function index()
@@ -121,6 +94,8 @@ class HomeController extends Controller
         $subdomain = substr($host, 0, strpos($host, '.'));
 
         if ($subdomain === 'store') {
+            abort_unless(get_bool(config('m1pposu.features.store') ?? false), 404);
+
             return ujs_redirect(route('store.products.index'));
         }
 
@@ -128,14 +103,21 @@ class HomeController extends Controller
         $news = NewsPost::default()->limit($newsLimit)->get();
 
         if (Auth::check()) {
-            $menuImages = json_collection(MenuContent::activeImages(), new MenuImageTransformer());
+            $menuImages = get_bool(config('m1pposu.private_server.enabled') ?? false)
+                ? []
+                : json_collection(MenuContent::activeImages(), new MenuImageTransformer());
             $newBeatmapsets = Beatmapset::latestRanked();
             $popularBeatmapsets = Beatmapset::popular()->get();
 
-            $dailyChallenge = Room::dailyChallengeFor(CarbonImmutable::now());
+            $dailyChallenge = get_bool(config('m1pposu.features.daily_challenge') ?? false)
+                ? Room::dailyChallengeFor(CarbonImmutable::now())
+                : null;
 
-            $livestream = new LivestreamCollection();
-            $featuredStream = $livestream->featured();
+            $featuredStream = null;
+            if (get_bool(config('m1pposu.features.livestreams') ?? false)) {
+                $livestream = new LivestreamCollection();
+                $featuredStream = $livestream->featured();
+            }
 
             return ext_view('home.user', compact(
                 'menuImages',
@@ -254,6 +236,10 @@ class HomeController extends Controller
 
     public function supportTheGame()
     {
+        if (!get_bool(config('m1pposu.features.store') ?? false)) {
+            return redirect()->away(config('m1pposu.community.discord_url'));
+        }
+
         $user = auth()->user();
 
         if ($user !== null) {
@@ -436,6 +422,10 @@ class HomeController extends Controller
                 ],
             ],
         ];
+
+        if (!get_bool(config('m1pposu.features.featured_artists') ?? false)) {
+            unset($pageLayout['support-reasons']['items']['featured-artists']['link']);
+        }
 
         return ext_view('home.support-the-game', [
             'supporterStatus' => $supporterStatus ?? [],

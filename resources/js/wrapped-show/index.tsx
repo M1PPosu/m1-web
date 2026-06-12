@@ -600,7 +600,7 @@ export default class WrappedShow extends React.Component<WrappedData> {
             {this.user.username}
           </a>
         </div>
-        <img className='wrapped__logo' src='/images/wrapped/logo.svg' />
+        <img className='wrapped__logo' src='/images/layout/m1pposu-logo.png' />
       </div>
     );
   }
@@ -629,7 +629,7 @@ export default class WrappedShow extends React.Component<WrappedData> {
               {this.user.username}
             </a>
           </div>
-          <img className='wrapped__summary-logo' src='/images/wrapped/wrapped-summary-logo.svg' />
+          <img className='wrapped__summary-logo' src='/images/layout/m1pposu-logo.png' />
         </div>
       </>
     );

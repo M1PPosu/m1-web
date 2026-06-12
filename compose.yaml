@@ -24,6 +24,11 @@ services:
   php:
     <<: *x-web
     command: ['octane', '--watch']
+    depends_on:
+      assets:
+        condition: service_completed_successfully
+      migrator:
+        condition: service_completed_successfully
     deploy:
       restart_policy:
         condition: on-failure
@@ -32,6 +37,11 @@ services:
   php-dusk:
     <<: *x-web
     command: ['octane', '--watch']
+    depends_on:
+      assets:
+        condition: service_completed_successfully
+      migrator:
+        condition: service_completed_successfully
     environment:
       <<: *x-env
       APP_ENV: dusk.local
@@ -39,11 +49,14 @@ services:
 
   assets:
     <<: *x-web
-    command: ["${ASSETS_COMMAND:-watch}"]
+    command: ['assets']
 
   job:
     <<: *x-web
     command: ['job']
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
 
   testjs:
     <<: *x-web
@@ -60,6 +73,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
 
   beatmap-difficulty-lookup-cache:
     image: pppy/osu-beatmap-difficulty-lookup-cache
@@ -73,6 +88,8 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     volumes:
       - .env:/app/.env
       - ./storage/oauth-public.key:/app/oauth-public.key
@@ -89,6 +106,8 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     volumes:
       - .env.dusk.local:/app/.env
       - ./storage/oauth-public.key:/app/oauth-public.key
@@ -161,6 +180,7 @@ services:
   score-indexer:
     image: pppy/osu-elastic-indexer:master
     command: ["queue", "watch"]
+    restart: unless-stopped
     depends_on:
       redis:
         condition: service_healthy
@@ -168,6 +188,8 @@ services:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     environment:
       <<: *x-env
       SCHEMA: "${SCHEMA:-1}"
@@ -175,6 +197,7 @@ services:
   score-indexer-test:
     image: pppy/osu-elastic-indexer:master
     command: ["queue", "watch"]
+    restart: unless-stopped
     depends_on:
       redis:
         condition: service_healthy

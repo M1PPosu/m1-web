@@ -8,7 +8,7 @@ return [
         'active' => 'Şu anda devam eden hiçbir osu!(lazer) :type_group oyununun içinde değilsin!',
         'ended' => 'Henüz tamamlanmış hiçbir osu!(lazer) :type_group oyunun yok!',
         'playlists' => 'oynama listesi',
-        'ranked-play' => 'dereceli oyun',
+        'ranked-play' => '',
         'realtime' => 'çok oyunculu',
     ],
 

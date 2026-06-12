@@ -5,16 +5,18 @@
 
 return [
     'landing' => [
-        'download' => 'Download now',
+        'download' => 'Download launcher',
+        'download_page' => 'Download page',
         'online' => '<strong>:players</strong> currently online in <strong>:games</strong> games',
+        'presence_unavailable' => 'live presence unavailable',
         'peak' => 'Peak, :count online users',
         'players' => '<strong>:count</strong> registered players',
         'title' => 'welcome',
         'see_more_news' => 'see more news',
 
         'slogan' => [
-            'main' => 'the bestest free-to-win rhythm game',
-            'sub' => 'rhythm is just a click away',
+            'main' => 'Download our custom launcher!',
+            'sub' => 'M1PPosu Launcher!',
         ],
     ],
 
@@ -83,19 +85,22 @@ return [
     ],
 
     'download' => [
-        'action_lazer_info' => 'check this page for more information',
+        'action_launcher_info' => 'check this page for more information',
         'download' => 'Download',
+        'download_disabled' => 'Downloads unavailable',
         'for_os' => 'for :os',
+        'launcher' => 'M1PPosu Launcher',
         'macos-fallback' => 'macOS users',
         'mirror' => 'mirror',
         'or' => 'or',
         'os_version_or_later' => ':os_version or later',
         'other_os' => 'other platforms',
         'quick_start_guide' => 'quick start guide',
-        'stable_text' => 'if you\'re looking for the older one',
-        'tagline_1' => 'let\'s get you',
-        'tagline_2' => 'started!',
+        'stable_text' => 'launcher builds are also available from GitHub releases',
+        'tagline_1' => 'M1PPosu',
+        'tagline_2' => 'Launcher',
         'video-guide' => 'video guide',
+        'windows_setup' => 'Windows setup',
 
         'help' => [
             '_' => 'if you have a problem starting the game or registering for an account, :help_forum_link or :support_button.',
@@ -110,19 +115,16 @@ return [
         ],
         'steps' => [
             'register' => [
-                'title' => 'get an account',
-                'description' => 'follow the prompts when starting the game to sign in or make a new account',
+                'title' => 'run launcher',
+                'description' => 'open the launcher after installation finishes',
             ],
             'download' => [
-                'title' => 'install the game',
-                'description' => 'click the button above to download the installer, then run it!',
+                'title' => 'install launcher',
+                'description' => 'download and run the Windows setup file',
             ],
             'beatmaps' => [
-                'title' => 'get beatmaps',
-                'description' => [
-                    '_' => ':browse the vast library of user-created beatmaps and start playing!',
-                    'browse' => 'browse',
-                ],
+                'title' => 'click launch',
+                'description' => 'sign in and start the game from the launcher',
             ],
         ],
     ],
@@ -138,6 +140,8 @@ return [
                 'friends' => 'Online Friends',
                 'games' => 'Games',
                 'online' => 'Online Users',
+                'presence' => 'Live Presence',
+                'unavailable' => 'Unavailable',
             ],
         ],
         'beatmaps' => [
@@ -148,9 +152,9 @@ return [
             'resets' => 'resets :ends',
         ],
         'buttons' => [
-            'download' => 'Download osu!',
-            'support' => 'Support osu!',
-            'store' => 'osu!store',
+            'download' => 'Download Custom Launcher',
+            'support' => 'Support M1PPosu',
+            'store' => 'M1PPosu Store',
         ],
         'livestream' => [
             'title' => 'Featured Livestream',

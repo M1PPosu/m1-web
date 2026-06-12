@@ -19,13 +19,18 @@
     ]])
         @slot('contentAppend')
             <div class="supporter-status">
-                <div class="supporter-status__pippi"></div>
+                <div class="supporter-status__brand-art"></div>
                 @if (!empty($supporterStatus))
-                    <!-- supporter status  -->
+                    <!-- Commented out: supporter status section with heart icon -->
+                    {{--
                     <div class="supporter-status__flex-container">
                         <a class="supporter-eyecatch__link" href="{{ route('store.products.show', Product::SUPPORTER_TAG_NAME) }}" title="{{ osu_trans('community.support.convinced.support') }}">
                             <div class="supporter-heart{{ $supporterStatus['current'] ? ' supporter-heart--active' : '' }}"></div>
                         </a>
+                        <div class="supporter-status__flex-container-inner">
+                    --}}
+                    {{-- Commented out supporter status --}}
+                    {{-- <div class="supporter-status__flex-container">
                         <div class="supporter-status__flex-container-inner">
                             <div class="supporter-status__progress-bar supporter-status__progress-bar--active">
                                 <div class="supporter-status__progress-bar-fill supporter-status__progress-bar-fill--active" style="width: {{ $supporterStatus['remainingPercent'] ?? '0' }}%;"></div>
@@ -68,7 +73,8 @@
                             </div>
                             @endif
                         </div>
-                    </div>
+                    {{-- </div> --}}
+                    {{-- End of commented out supporter status --}}
                     <!-- end: supporter status -->
                 @endif
             </div>
@@ -81,17 +87,15 @@
                 <div class="supporter-quote__body">
                     <div class="supporter-quote__quote-mark supporter-quote__quote-mark--left"><i class="fas fa-quote-left"></i></div>
                     <blockquote class="supporter-quote__content">
-                        I've always tried to run osu! exactly how I'd want to see it run if I were a player. While this does mean osu! will never be a super-profitable business, that was never the goal (nor will it ever be!). We intentionally avoid advertising, partnerships, etc because I feel that would detract from the core experience.
+                        Support helps cover hosting, maintenance, development, and future M1PPosu features.
                         <br/><br/>
-                        osu! is free-to-win – supporting osu! won’t give you any competitive advantage (but it might make you cooler amongst your friends!). I am hugely grateful, and honestly astounded, that we have come this far purely on donations, but this is where we are! Your contributions cover completely our small team's salaries, licensing efforts via the Featured Artist program, prizes and funding for official tournaments, but most importantly make sure we have quality servers and bandwidth available around the globe.
+                        M1PPosu supporter status belongs to M1PPosu only and is not an official supporter tag from osu.ppy.sh.
                         <br/><br/>
-                        I would like to offer thanks and gratitude on behalf of myself and the rest of the team, to those who have supported osu!.
-                        <br/><br/>
-                        You keep osu! running.
+                        {{ config('m1pposu.legal.non_affiliation') }}
                     </blockquote>
                     <div class="supporter-quote__quote-mark supporter-quote__quote-mark--right"><i class="fas fa-quote-right"></i></div>
                 </div>
-                <div class="supporter-quote__signature">— Dean "peppy" Herbert, creator of osu!</div>
+                <div class="supporter-quote__signature">M1PPosu</div>
             </div>
             <h3 class="supporter__title">
                 {{ osu_trans('community.support.why-support.title') }}
@@ -110,6 +114,8 @@
             <h3 class="supporter__title supporter__title--convinced">
                 {{ osu_trans('community.support.convinced.title') }}
             </h3>
+            {{-- Commented out: Supporter heart call-to-action section --}}
+            {{--
             <div class="supporter-eyecatch">
                 <div class="supporter-eyecatch__box">
                     <a class="supporter-eyecatch__link" href="{{ route('store.products.show', Product::SUPPORTER_TAG_NAME) }}">
@@ -126,6 +132,7 @@
                     </div>
                 </div>
             </div>
+            --}}
         </div>
     </div>
 @endsection

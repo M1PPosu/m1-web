@@ -73,7 +73,10 @@ class UserDonation extends Model
         $donation->cancel = true;
         $donation->timestamp = Carbon::now();
 
-        Log::debug($donation);
+        Log::debug('Creating donation cancellation record.', [
+            'target_user_id' => $donation->target_user_id,
+            'user_id' => $donation->user_id,
+        ]);
 
         $donation->saveOrExplode();
     }

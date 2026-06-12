@@ -6,6 +6,7 @@
 namespace App\Transformers;
 
 use App\Libraries\Beatmapset\NominateBeatmapset;
+use App\Libraries\M1pposu\BeatmapsetAssets;
 use App\Models\Beatmap;
 use App\Models\BeatmapDiscussion;
 use App\Models\Beatmapset;
@@ -62,7 +63,7 @@ class BeatmapsetCompactTransformer extends TransformerAbstract
             'anime_cover' => $beatmapset->anime_cover,
             'artist' => $beatmapset->artist,
             'artist_unicode' => $beatmapset->artist_unicode,
-            'covers' => $beatmapset->allCoverURLs(),
+            'covers' => array_merge($beatmapset->allCoverURLs(), BeatmapsetAssets::covers($beatmapset) ?? []),
             'creator' => $beatmapset->creator,
             'favourite_count' => $beatmapset->favourite_count,
             'genre_id' => $beatmapset->genre_id,
@@ -89,9 +90,11 @@ class BeatmapsetCompactTransformer extends TransformerAbstract
 
     public function includeAvailability(Beatmapset $beatmapset)
     {
+        $downloadUrl = BeatmapsetAssets::downloadUrl($beatmapset);
+
         return $this->primitive([
-            'download_disabled' => $beatmapset->download_disabled,
-            'more_information' => $beatmapset->download_disabled_url,
+            'download_disabled' => $downloadUrl === null ? $beatmapset->download_disabled : false,
+            'more_information' => $downloadUrl === null ? $beatmapset->download_disabled_url : null,
         ]);
     }
 

@@ -53,7 +53,7 @@ return [
         'users' => [
             'modding' => 'modding',
             'playlists' => 'listas de juego',
-            'ranked-play' => 'partidas clasificatorias',
+            'ranked-play' => '',
             'realtime' => 'multijugador',
             'show' => 'información',
         ],

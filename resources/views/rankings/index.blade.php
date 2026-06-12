@@ -5,7 +5,7 @@
 @php
     use App\Http\Controllers\RankingController;
 
-    if ($params['type'] === null) {
+    if ($params['type'] === null || !in_array($params['type'], RankingController::TYPES, true)) {
         $links = null;
     } else {
         $links = [];

@@ -6,6 +6,16 @@
     $stats = $stats ?? new App\Libraries\CurrentStats;
 @endphp
 <div class="user-online-status">
+    @if (!$stats->available)
+        <div>
+            <div class="user-online-status__label">
+                {{ osu_trans('home.user.header.stats.presence') }}
+            </div>
+            <div class="user-online-status__value">
+                {{ osu_trans('home.user.header.stats.unavailable') }}
+            </div>
+        </div>
+    @else
     <div>
         <div class="user-online-status__label">
             {{ osu_trans('home.user.header.stats.friends') }}
@@ -37,4 +47,5 @@
         class="js-fancy-graph user-online-status__chart"
         data-chart-data="{{ json_encode($stats->graphData) }}"
     ></div>
+    @endif
 </div>

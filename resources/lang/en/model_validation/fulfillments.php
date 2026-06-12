@@ -10,6 +10,6 @@ return [
         'reverting_username_mismatch' => 'Current username (:current) is not the same as change to revoke (:username)',
     ],
     'supporter_tag' => [
-        'insufficient_paid' => 'Donation is less than required for osu!supporter tag gift (:actual > :expected)',
+        'insufficient_paid' => 'Donation is less than required for M1PPosu supporter tag gift (:actual > :expected)',
     ],
 ];

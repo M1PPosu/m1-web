@@ -9,7 +9,7 @@ import { trans } from 'utils/lang';
 
 type LinkMode = 'modding' | 'show' | MultiplayerTypeGroup;
 
-const nonBotModes: LinkMode[] = ['modding', 'playlists', 'realtime', 'ranked-play'];
+const nonBotModes: LinkMode[] = ['modding', 'realtime'];
 
 const url = {
   modding: (userId: number) => route('users.modding.index', { user: userId }),

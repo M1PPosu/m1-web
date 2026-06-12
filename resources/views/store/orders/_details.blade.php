@@ -19,11 +19,11 @@
         </div>
         <div>
             <p>
-                <em class="store-text store-text--emphasis">ppy Pty Ltd</em><br />
-                ACN 163 593 413 a.t.f. Dean Herbert Family Trust
+                <em class="store-text store-text--emphasis">M1PPosu Store</em><br />
+                Private server store
             </p>
 
-            <p>{{ osu_trans('store.invoice.contact') }} pe@ppy.sh / +81 80 1381 1430</p>
+            <p>{{ osu_trans('store.invoice.contact') }} {{ config('mail.from.address') }}</p>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
                 <h4 class="store-text store-text--title store-text--title-small">{{ osu_trans('store.invoice.sent_via') }}</h4>
 
                 <div class='address'>
-                    osu!store
+                    M1PPosu Store
                 </div>
             </div>
 
@@ -66,7 +66,7 @@
             $showTrackingCode = ($order->isShipped() || $order->isDelivered() || Auth::user()->isAdmin()) && $order->tracking_code;
 
             $transactionDetails = [
-                osu_trans('store.order.details.salesperson') => 'osu!store',
+                osu_trans('store.order.details.salesperson') => 'M1PPosu Store',
                 osu_trans('store.order.details.order_number') => "#{$order->order_id}",
                 osu_trans('store.order.details.shipping_method') => $showTrackingCode ? 'EMS ('.trim($order->tracking_code).')' : 'N/A',
                 osu_trans('store.order.details.shipping_terms') => 'FOB Japan',

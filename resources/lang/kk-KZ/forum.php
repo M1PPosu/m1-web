@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => '',
             'total_posts' => '',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => '',

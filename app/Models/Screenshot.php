@@ -9,6 +9,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use RuntimeException;
 
 /**
  * @property int $screenshot_id
@@ -38,7 +39,12 @@ class Screenshot extends Model
 
     private static function hashForId(int $id): string
     {
-        return substr(md5($id.$GLOBALS['cfg']['osu']['screenshots']['shared_secret']), 0, 4);
+        $secret = $GLOBALS['cfg']['osu']['screenshots']['shared_secret'];
+        if (!present($secret)) {
+            throw new RuntimeException('SCREENSHOTS_SHARED_SECRET or APP_KEY must be configured.');
+        }
+
+        return substr(hash_hmac('sha256', (string) $id, $secret), 0, 16);
     }
 
     public static function lookup(int $id, ?string $hash): ?self

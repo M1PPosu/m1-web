@@ -88,8 +88,8 @@ return [
             '_' => 'možnosti pošiljanja',
             'beatmap_owner_change' => 'težavnost za goste',
             'beatmapset:modding' => 'modificiranje beatmape',
-            'channel_mention' => '',
             'channel_message' => 'zasebna sporočila',
+            'channel_mention' => '',
             'channel_team' => '',
             'comment_new' => 'novi komentarji',
             'forum_topic_reply' => 'odgovor na temo',
@@ -97,18 +97,6 @@ return [
             'mapping' => 'ustvarjalec beatmap',
             'news_post' => '',
             'push' => 'potisno',
-        ],
-
-        'tooltips' => [
-            'beatmap_owner_change' => '',
-            'beatmapset:modding' => '',
-            'channel_mention' => '',
-            'channel_message' => '',
-            'channel_team' => '',
-            'comment_new' => '',
-            'forum_topic_reply' => '',
-            'mapping' => '',
-            'news_post' => '',
         ],
     ],
 

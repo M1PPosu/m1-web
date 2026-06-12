@@ -1,0 +1,28 @@
+HTTP/1.1 302 Found
+Server: nginx/1.29.8
+Date: Mon, 27 Apr 2026 20:17:07 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 402
+Connection: keep-alive
+Cache-Control: no-cache, private
+Location: http://localhost:8088/wiki/en/Main_page
+Server-Timing: app; dur=9.6127986907959; desc="Application", timeline-event-0; dur=8.868932723999; desc="Controller"
+Set-Cookie: osu_session=eyJpdiI6InJzRVN0ME1QdGxnTzk3NGI2ZkxyTmc9PSIsInZhbHVlIjoidi9JS0NaTmt3YmJOMllxMHdEb1Q0bXc5bmpzTnJsbmx0Wnc5bk1TaUx3aUlRWVFrYXhUdE5RU2tqejRZMzZoRE5JUzZzOUVJbktLWFFwYjRZeHZZK1pzTGU0Tk5qTHJXSFcwcjFjczVQZXpMWkZNUTN0T2JTRmF0WkFwZ2ZQci9Ba1B4QUgxN3B6WlNoTDNBM2FsUFl3PT0iLCJtYWMiOiJmZWU3NjFhMmNkN2U0MzBhYjFjMDY3MTkxNDNhZTdlMDgxM2E0NzY3ZWU1M2U3NjE2NWNhODU2NzkzN2M4M2M5IiwidGFnIjoiIn0%3D; expires=Wed, 27 May 2026 20:17:07 GMT; Max-Age=2592000; path=/; httponly; samesite=lax
+X-Clockwork-Id: 1777321027-0561-533686472
+X-Clockwork-Version: 5.3.4
+X-Powered-By: PHP/8.4.20
+
+HTTP/1.1 200 OK
+Server: nginx/1.29.8
+Date: Mon, 27 Apr 2026 20:17:07 GMT
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: no-cache, private
+Server-Timing: app; dur=197.97897338867; desc="Application", timeline-event-0; dur=197.24082946777; desc="Controller", timeline-event-1; dur=7.5008869171143; desc="osu.web.search.fetch wiki_page_lookup wiki_pages", timeline-event-2; dur=3.7648677825928; desc="osu.web.search.fetch wiki_searchlocales wiki_pages"
+Set-Cookie: osu_session=eyJpdiI6Ik0vNVhEdmpmZnhHNG11V1B4ZklSa0E9PSIsInZhbHVlIjoidjBoYVp5RTl6RFhid2xJQTNKOVdVU3VQdTZVeWhIRHRDWWkxMkpMaHE0aU9KaDFiSXhOOXhucEhuVUxxbjVWSlptTklmSEFQWE9pQVAzQmhGM1pUZlliL0RrOXBZWlFZYlBsTDBFSzc5bFYxT3lOc0M1YmJqcngrdmNneXhvQVNaR1Vvc0MzNmlMSityaHNpbWJXMzlnPT0iLCJtYWMiOiJkNjc1MGNhM2UwMmQwMTI1MWFiYTFlOTJkYzNjN2ZhN2FmY2JlNGJkMjdkMmIyNTRjMGJkNDYwNGU3YWVjMTViIiwidGFnIjoiIn0%3D; expires=Wed, 27 May 2026 20:17:07 GMT; Max-Age=2592000; path=/; httponly; samesite=lax
+Set-Cookie: x-clockwork=%7B%22requestId%22%3A%221777321027-0686-946886614%22%2C%22version%22%3A%225.3.4%22%2C%22path%22%3A%22%5C%2F__clockwork%5C%2F%22%2C%22webPath%22%3A%22%5C%2Fclockwork%5C%2Fapp%22%2C%22token%22%3A%22b185b2e3%22%2C%22metrics%22%3Atrue%2C%22toolbar%22%3Atrue%7D; expires=Mon, 27 Apr 2026 20:18:07 GMT; Max-Age=60; path=/; samesite=lax
+X-Clockwork-Id: 1777321027-0686-946886614
+X-Clockwork-Version: 5.3.4
+X-Powered-By: PHP/8.4.20
+

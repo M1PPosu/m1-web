@@ -16,8 +16,8 @@ return [
             'by' => 'Jugat per',
             'played_on' => 'Jugat a',
             'submitted_on' => 'Enviat el',
-            'watched' => 'Vist',
-            'watched_count' => ':count_delimited vegada|:count_delimited vegades',
+            'watched' => '',
+            'watched_count' => '',
 
             'rank' => [
                 'country' => 'Classificació nacional',

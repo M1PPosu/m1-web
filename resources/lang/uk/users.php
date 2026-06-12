@@ -403,7 +403,7 @@ return [
                 'show_more' => 'бачити більше постiв',
             ],
             'ranked-play' => [
-                'title' => 'Матчі рейтингової гри',
+                'title' => '',
             ],
             'recent_activity' => [
                 'title' => 'Недавня активність',

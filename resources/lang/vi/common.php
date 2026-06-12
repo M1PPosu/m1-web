@@ -68,24 +68,24 @@ return [
     ],
 
     'count' => [
-        'badges' => ':count_delimited đơn vị|:count_delimited đơn vị',
-        'days' => ':count_delimited ngày|:count_delimited ngày',
+        'badges' => ':count huy hiệu',
+        'days' => ':count ngày',
         'hour_short_unit' => 'giờ',
-        'hours' => ':count_delimited giờ|:count_delimited giờ',
-        'item' => ':count_delimited đơn vị|:count_delimited đơn vị',
+        'hours' => ':count giờ',
+        'item' => ':count đơn vị',
         'minute_short_unit' => 'phút',
-        'minutes' => ':count_delimited phút|:count_delimited phút',
-        'months' => ':count_delimited tháng|:count_delimited tháng',
+        'minutes' => ':count phút',
+        'months' => ':count tháng',
         'notifications' => ':count_delimited thông báo|:count_delimited thông báo',
         'player' => ':count_delimited người chơi|:count_delimited người chơi',
-        'plus_others' => '+ :count_delimited khác!|+ :count_delimited khác!',
-        'post' => ':count_delimited bài viết|:count_delimited bài viết',
+        'plus_others' => '+ :count_delimited khác!',
+        'post' => ':count_delimited bài viết',
         'second_short_unit' => 'giây',
         'star_priority' => ':count_delimited ưu tiên sao|:count_delimited
 ưu tiên sao',
-        'update' => ':count_delimited cập nhật|:count_delimited cập nhật',
-        'view' => ':count_delimited lượt xem|:count_delimited lượt xem',
-        'years' => ':count_delimited năm trước|:count_delimited năm trước',
+        'update' => ':count_delimited cập nhật',
+        'view' => ':count_delimited lượt xem',
+        'years' => ':count năm',
     ],
 
     'countdown' => [
@@ -156,8 +156,8 @@ return [
     ],
 
     'time' => [
-        'days_ago' => ':count_delimited ngày trước|:count_delimited ngày trước',
-        'hours_ago' => ':count_delimited giờ trước|:count_delimited giờ trước',
+        'days_ago' => ':count ngày trước',
+        'hours_ago' => ':count giờ trước',
         'now' => 'bây giờ',
         'remaining' => 'Thời Gian Còn Lại',
     ],

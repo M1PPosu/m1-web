@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Poistetut viestit',
             'total_posts' => 'Vastauksia',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Tärkeys tällä hetkellä: +:count',

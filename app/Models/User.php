@@ -18,7 +18,7 @@ use App\Libraries\Uploader;
 use App\Libraries\User\AvatarHelper;
 use App\Libraries\User\Cover;
 use App\Libraries\User\DatadogLoginAttempt;
-use App\Libraries\User\ProfileCount;
+use App\Libraries\User\ProfileBeatmapset;
 use App\Libraries\User\UsernamesForDbLookup;
 use App\Libraries\UsernameValidation;
 use App\Models\Forum\TopicWatch;
@@ -85,6 +85,7 @@ use Request;
  * @property int $osu_kudostotal
  * @property float $osu_mapperrank
  * @property string|null $osu_playmode
+ * @property string|null $osu_playmode_variant
  * @property string[]|null $osu_playstyle
  * @property bool $osu_subscriber
  * @property Carbon|null $osu_subscriptionexpiry
@@ -92,6 +93,7 @@ use Request;
  * @property-write string|null $password
  * @property-write string|null $password_confirmation
  * @property-read string|null $playmode
+ * @property-read string|null $playmode_variant
  * @property bool $pm_friends_only
  * @property-read Collection<ProfileBanner> $profileBanners
  * @property-read Collection<Beatmapset> $profileBeatmapsetsGraveyard
@@ -113,11 +115,15 @@ use Request;
  * @property-read Collection<LegacyScoreFirst\Taiko> $scoresFirstTaiko
  * @property-read Collection<UserSeasonScoreAggregate> $seasonScores
  * @property-read UserStatistics\Fruits|null $statisticsFruits
+ * @property-read UserStatistics\FruitsRx|null $statisticsFruitsRx
  * @property-read UserStatistics\Mania|null $statisticsMania
  * @property-read UserStatistics\Mania4k|null $statisticsMania4k
  * @property-read UserStatistics\Mania7k|null $statisticsMania7k
  * @property-read UserStatistics\Osu|null $statisticsOsu
+ * @property-read UserStatistics\OsuAp|null $statisticsOsuAp
+ * @property-read UserStatistics\OsuRx|null $statisticsOsuRx
  * @property-read UserStatistics\Taiko|null $statisticsTaiko
+ * @property-read UserStatistics\TaikoRx|null $statisticsTaikoRx
  * @property-read Collection<Store\Address> $storeAddresses
  * @property ?int $support_length
  * @property-read Collection<UserDonation> $supporterTagPurchases
@@ -798,6 +804,7 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
             'osu_kudostotal',
             'osu_mapperrank',
             'osu_playmode',
+            'osu_playmode_variant',
             'osu_testversion',
             'remember_token',
             'support_length',
@@ -875,6 +882,7 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
             'displayed_last_visit' => $this->getDisplayedLastVisit(),
             'osu_playstyle' => $this->getOsuPlaystyle(),
             'playmode' => $this->getPlaymode(),
+            'playmode_variant' => presence($this->getRawAttribute('osu_playmode_variant')),
             'user_avatar' => AvatarHelper::url($this),
             'user_colour' => $this->getUserColour(),
             'user_rank' => $this->getUserRank(),
@@ -958,7 +966,11 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
             'statisticsMania4k',
             'statisticsMania7k',
             'statisticsOsu',
+            'statisticsOsuAp',
+            'statisticsOsuRx',
             'statisticsTaiko',
+            'statisticsTaikoRx',
+            'statisticsFruitsRx',
             'storeAddresses',
             'supporterTagPurchases',
             'supporterTags',
@@ -1112,7 +1124,8 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
 
     public function isOnline()
     {
-        return !$this->hide_presence
+        return get_bool(config('m1pposu.features.presence') ?? false)
+            && !$this->hide_presence
             && time() - $this->getRawAttribute('user_lastvisit') < $GLOBALS['cfg']['osu']['user']['online_window'];
     }
 
@@ -1370,9 +1383,24 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
         return $this->hasOne(UserStatistics\Osu::class);
     }
 
+    public function statisticsOsuRx()
+    {
+        return $this->hasOne(UserStatistics\OsuRx::class);
+    }
+
+    public function statisticsOsuAp()
+    {
+        return $this->hasOne(UserStatistics\OsuAp::class);
+    }
+
     public function statisticsFruits()
     {
         return $this->hasOne(UserStatistics\Fruits::class);
+    }
+
+    public function statisticsFruitsRx()
+    {
+        return $this->hasOne(UserStatistics\FruitsRx::class);
     }
 
     public function statisticsMania()
@@ -1395,6 +1423,11 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
         return $this->hasOne(UserStatistics\Taiko::class);
     }
 
+    public function statisticsTaikoRx()
+    {
+        return $this->hasOne(UserStatistics\TaikoRx::class);
+    }
+
     public function statistics(string $ruleset, bool $returnQuery = false, ?string $variant = null)
     {
         $relationName = static::statisticsRelationName($ruleset, $variant);
@@ -1406,22 +1439,22 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
 
     public function scoresFirstOsu()
     {
-        return $this->hasMany(LegacyScoreFirst\Osu::class);
+        return $this->hasMany(LegacyScoreFirst\Osu::class)->default();
     }
 
     public function scoresFirstFruits()
     {
-        return $this->hasMany(LegacyScoreFirst\Fruits::class);
+        return $this->hasMany(LegacyScoreFirst\Fruits::class)->default();
     }
 
     public function scoresFirstMania()
     {
-        return $this->hasMany(LegacyScoreFirst\Mania::class);
+        return $this->hasMany(LegacyScoreFirst\Mania::class)->default();
     }
 
     public function scoresFirstTaiko()
     {
-        return $this->hasMany(LegacyScoreFirst\Taiko::class);
+        return $this->hasMany(LegacyScoreFirst\Taiko::class)->default();
     }
 
     public function beatmapLeaders()
@@ -1683,6 +1716,11 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
         $this->osu_playmode = Beatmap::modeInt($value);
     }
 
+    public function setPlaymodeVariantAttribute($value)
+    {
+        $this->attributes['osu_playmode_variant'] = presence($value);
+    }
+
     public function blockedUserIds()
     {
         return $this->blocks->pluck('user_id');
@@ -1856,8 +1894,13 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
     {
         if ($this->userPage === null) {
             DB::transaction(function () use ($text) {
+                $forum = Forum\Forum::find($GLOBALS['cfg']['osu']['user']['user_page_forum_id']);
+                if ($forum === null) {
+                    throw new ModelNotSavedException('User page forum is not configured.');
+                }
+
                 $topic = Forum\Topic::createNew(
-                    Forum\Forum::find($GLOBALS['cfg']['osu']['user']['user_page_forum_id']),
+                    $forum,
                     [
                         'title' => "{$this->username}'s user page",
                         'user' => $this,
@@ -1974,11 +2017,7 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
 
             $newPostsCount = db_unsigned_increment('user_posts', $postsChangeCount);
         } else {
-            $newPostsCount = $this
-                ->forumPosts()
-                ->whereIn('forum_id', Forum\Authorize::postsCountedForums($this))
-                ->whereHas('topic', fn ($q) => $q->withoutTrashed())
-                ->count();
+            $newPostsCount = $this->forumPosts()->whereIn('forum_id', Forum\Authorize::postsCountedForums($this))->count();
         }
 
         $lastPost = $this->forumPosts()->select('post_time')->last();
@@ -2002,6 +2041,10 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
 
     public function scopeOnline($query)
     {
+        if (!get_bool(config('m1pposu.features.presence') ?? false)) {
+            return $query->whereRaw('1 = 0');
+        }
+
         return $query
             ->where('user_allow_viewonline', true)
             ->where('user_lastvisit', '>', time() - $GLOBALS['cfg']['osu']['user']['online_window']);
@@ -2245,9 +2288,10 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
             ->with('beatmaps');
     }
 
-    public function profileCount(): ProfileCount
+    public function profileBeatmapsetCountByGroupedStatus(string $status)
     {
-        return $this->memoize(__FUNCTION__, fn () => new ProfileCount($this));
+        return $this->memoize(__FUNCTION__, fn () =>
+            ProfileBeatmapset::countByGroupedStatus($this))[$status] ?? 0;
     }
 
     public function isSessionVerified()

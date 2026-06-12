@@ -37,9 +37,6 @@ class RankingController extends Controller
         'top_plays',
         'team',
         'playlists',
-        'matchmaking',
-        'daily_challenge',
-        'kudosu',
     ];
 
     public function __construct()
@@ -222,7 +219,9 @@ class RankingController extends Controller
                 }
 
                 $class = UserStatistics\Model::getClass($mode, $params['variant']);
-                $stats = $class::with(['user', 'user.country', 'user.team'])->where('rank_score', '>', 0);
+                $stats = $class::with(['user', 'user.country', 'user.team'])
+                    ->where('rank_score', '>', 0)
+                    ->whereHas('user', fn ($q) => $q->default());
 
                 if ($params['country'] === null) {
                     // force to order by rank(ed)_score instead of sucking down entire users table first.
@@ -244,6 +243,12 @@ class RankingController extends Controller
                     'score' => 'ranked_score',
                 ];
                 $stats->orderByDesc($sortColumns[$params['sort']]);
+                if ($params['sort'] === 'performance') {
+                    $stats->orderByDesc('ranked_score');
+                } else {
+                    $stats->orderByDesc('rank_score');
+                }
+                $stats->orderBy('user_id');
 
                 if ($params['filter'] === 'friends') {
                     $stats->friendsOf(\Auth::user());

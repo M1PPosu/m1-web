@@ -13,7 +13,7 @@ interface Variant {
   global_rank: number | null;
   mode: Ruleset;
   pp: number;
-  variant: '4k' | '7k';
+  variant: '4k' | '7k' | 'rx';
 }
 
 interface UserStatisticsBaseJson {

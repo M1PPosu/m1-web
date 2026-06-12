@@ -12,6 +12,7 @@ use Cache;
 
 class CurrentStats
 {
+    public bool $available;
     public int $currentOnline;
     public int $currentGames;
     public array $graphData;
@@ -20,11 +21,13 @@ class CurrentStats
 
     public function __construct()
     {
-        $data = Cache::remember('current_stats:v1', 300, function () {
-            $stats = BanchoStats::stats();
+        $presenceEnabled = get_bool(config('m1pposu.features.presence') ?? false);
+        $data = Cache::remember('current_stats:v2:'.($presenceEnabled ? '1' : '0'), 300, function () use ($presenceEnabled) {
+            $stats = $presenceEnabled ? BanchoStats::stats() : [];
             $latest = array_last($stats);
 
             return [
+                'available' => $latest !== null,
                 'currentOnline' => $latest['users'] ?? 0,
                 'currentGames' => ($latest['multiplayer_games'] ?? 0) + ($latest['multiplayer_games_lazer'] ?? 0),
                 'graphData' => array_to_graph_json($stats, 'users'),
@@ -32,7 +35,10 @@ class CurrentStats
             ];
         });
 
-        $this->onlineFriends = Auth::user() ? Auth::user()->friends()->online()->count() : 0;
+        $this->available = $data['available'];
+        $this->onlineFriends = $this->available && Auth::user()
+            ? Auth::user()->friends()->online()->count()
+            : 0;
         $this->currentOnline = $data['currentOnline'];
         $this->currentGames = $data['currentGames'];
         $this->graphData = $data['graphData'];

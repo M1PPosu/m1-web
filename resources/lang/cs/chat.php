@@ -50,11 +50,6 @@ return [
         'title' => 'kanál nenalezen',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Vytvořit',
         'disabled' => 'nejsme schopni odeslat tuto zprávu...',

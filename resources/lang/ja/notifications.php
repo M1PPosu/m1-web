@@ -125,12 +125,12 @@ return [
             ],
 
             'channel_mention' => [
-                '_' => 'チャットのメンション',
+                '_' => '',
 
                 'public' => [
-                    'channel_mention' => ':username が :name の ":title" であなたにメンションしました',
-                    'channel_mention_compact' => ':username ":title"',
-                    'channel_mention_group' => ':name でメンション',
+                    'channel_mention' => '',
+                    'channel_mention_compact' => '',
+                    'channel_mention_group' => '',
                 ],
             ],
 
@@ -270,7 +270,7 @@ return [
                 'channel_message' => ':usernameから新しいメッセージが届きました',
             ],
             'channel_mention' => [
-                'channel_mention' => ':username が :name の ":title" であなたにメンションしました',
+                'channel_mention' => '',
             ],
 
             'channel_team' => [

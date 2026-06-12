@@ -207,7 +207,7 @@ class Order extends Model
 
     public function getOrderName()
     {
-        return "osu!store order #{$this->order_id}";
+        return "M1PPosu Store order #{$this->order_id}";
     }
 
     public function getOrderNumber()

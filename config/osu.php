@@ -5,14 +5,6 @@ if ($profileScoresNotice !== null) {
     $profileScoresNotice = markdown_plain($profileScoresNotice);
 }
 
-$clientMinVersions = [];
-foreach (explode(',', env('CLIENT_MIN_VERSIONS') ?? '') as $entry) {
-    if ($entry !== '') {
-        [$platform, $minVersion] = explode('=', $entry, 2);
-        $clientMinVersions[$platform] = (int) $minVersion;
-    }
-}
-
 $clientTokenKeys = [];
 foreach (explode(',', env('CLIENT_TOKEN_KEYS') ?? '') as $entry) {
     if ($entry !== '') {
@@ -101,6 +93,10 @@ return [
         'key' => presence(env('CAMO_KEY')),
         'prefix' => env('CAMO_PREFIX', 'https://i.ppy.sh/'),
     ],
+    'server_fetch_allowed_base_urls' => array_values(array_filter(
+        array_map('trim', explode(',', env('SERVER_FETCH_ALLOWED_BASE_URLS', 'https://assets.ppy.sh/'))),
+        'present',
+    )),
     'captcha' => [
         'threshold' => get_int(env('CAPTCHA_THRESHOLD')) ?? 2,
     ],
@@ -123,7 +119,6 @@ return [
         'check_version' => get_bool(env('CLIENT_CHECK_VERSION')) ?? true,
         'default_build_id' => get_int(env('DEFAULT_BUILD_ID')) ?? 0,
         'download_stream' => get_int(env('CLIENT_DOWNLOAD_STREAM')) ?? 7,
-        'min_versions' => $clientMinVersions,
         'token_keys' => $clientTokenKeys,
         'token_lifetime' => (get_float(env('CLIENT_TOKEN_LIFETIME_HOUR')) ?? 0.25) * 3600,
         'token_queue' => env('CLIENT_TOKEN_QUEUE') ?? 'token-queue',
@@ -169,15 +164,14 @@ return [
     ],
     'is_development_deploy' => get_bool(env('IS_DEVELOPMENT_DEPLOY')) ?? true,
     'landing' => [
-        'video_url' => env('LANDING_VIDEO_URL', 'https://assets.ppy.sh/media/landing.mp4'),
+        'video_url' => env('LANDING_VIDEO_URL', '/videos/landing.mp4'),
     ],
     'legacy' => [
         'bancho_bot_user_id' => get_int(env('BANCHO_BOT_USER_ID')) ?? 3,
-        'shared_interop_secret' => env('SHARED_INTEROP_SECRET', ''),
+        'shared_interop_secret' => presence(env('SHARED_INTEROP_SECRET')),
     ],
     'multiplayer' => [
         'max_attempts_limit' => get_int(env('MULTIPLAYER_MAX_ATTEMPTS_LIMIT')) ?? 128,
-        'max_participants_limit' => get_int(env('MULTIPLAYER_MAX_PARTICIPANTS_LIMIT')) ?? 16,
         'room_close_grace_period_minutes' => get_int(env('MULTIPLAYER_ROOM_CLOSE_GRACE_PERIOD_MINUTES')) ?? 5,
     ],
     'notification' => [
@@ -233,36 +227,36 @@ return [
         'max_members' => get_int(env('TEAM_MAX_MEMBERS')) ?? 40,
     ],
     'totp' => [
-        'issuer_name' => env('TOTP_ISSUER_NAME', 'osu!dev'),
+        'issuer_name' => env('TOTP_ISSUER_NAME', 'M1PPosu'),
     ],
     'twitch_client_id' => presence(env('TWITCH_CLIENT_ID')),
     'twitch_client_secret' => presence(env('TWITCH_CLIENT_SECRET')),
     'urls' => [
         'base' => 'https://osu.ppy.sh',
         'bounty-form' => env('OS_BOUNTY_URL'),
-        'dev' => 'https://discord.gg/ppy',
-        'download_video' => env('OSU_URL_DOWNLOAD_VIDEO', 'https://assets.ppy.sh/media/festive.mp4'),
-        'installer' => 'https://m1.ppy.sh/r/osu!install.exe',
-        'installer-mirror' => 'https://m2.ppy.sh/r/osu!install.exe',
-        'lazer_dl.android' => presence(env('OSU_URL_LAZER_ANDROID')) ?? 'https://github.com/ppy/osu/releases/latest/download/sh.ppy.osulazer.apk',
-        'lazer_dl.ios' => presence(env('OSU_URL_LAZER_IOS')) ?? '/home/testflight',
-        'lazer_dl.linux_x64' => presence(env('OSU_URL_LAZER_LINUX_X64')) ?? 'https://github.com/ppy/osu/releases/latest/download/osu.AppImage',
-        'lazer_dl.macos_as' => presence(env('OSU_URL_LAZER_MACOS_AS')) ?? 'https://github.com/ppy/osu/releases/latest/download/osu.app.Apple.Silicon.zip',
-        'lazer_dl.macos_intel' => presence(env('OSU_URL_LAZER_MACOS_INTEL')) ?? 'https://github.com/ppy/osu/releases/latest/download/osu.app.Intel.zip',
-        'lazer_dl.windows_x64' => presence(env('OSU_URL_LAZER_WINDOWS_X64')) ?? 'https://github.com/ppy/osu/releases/latest/download/install.exe',
-        'lazer_dl_other' => presence(env('OSU_URL_LAZER_OTHER')) ?? 'https://github.com/ppy/osu/#running-osu',
+        'dev' => presence(env('OSU_URL_DEV')),
+        'download_video' => env('OSU_URL_DOWNLOAD_VIDEO', '/videos/download.mp4'),
+        'installer' => presence(env('OSU_URL_INSTALLER')),
+        'installer-mirror' => presence(env('OSU_URL_INSTALLER_MIRROR')),
+        'lazer_dl.android' => presence(env('OSU_URL_LAZER_ANDROID')),
+        'lazer_dl.ios' => presence(env('OSU_URL_LAZER_IOS')),
+        'lazer_dl.linux_x64' => presence(env('OSU_URL_LAZER_LINUX_X64')),
+        'lazer_dl.macos_as' => presence(env('OSU_URL_LAZER_MACOS_AS')),
+        'lazer_dl.macos_intel' => presence(env('OSU_URL_LAZER_MACOS_INTEL')),
+        'lazer_dl.windows_x64' => presence(env('OSU_URL_LAZER_WINDOWS_X64')),
+        'lazer_dl_other' => presence(env('OSU_URL_LAZER_OTHER')),
         'lazer_info' => presence(env('OSU_URL_LAZER_INFO')),
-        'menu_content' => presence(env('OSU_URL_MENU_CONTENT_JSON')) ?? 'https://assets.ppy.sh/menu-content.json',
-        'osx' => 'https://osx.ppy.sh',
-        'server_status' => 'https://status.ppy.sh',
+        'menu_content' => presence(env('OSU_URL_MENU_CONTENT_JSON')),
+        'osx' => presence(env('OSU_URL_OSX')),
+        'server_status' => presence(env('OSU_URL_SERVER_STATUS')),
         'smilies' => '/forum/images/smilies',
-        'social.twitter' => '/wiki/Twitter',
-        'source_code' => 'https://github.com/ppy',
+        'social.twitter' => presence(env('OSU_URL_SOCIAL_TWITTER')),
+        'source_code' => presence(env('OSU_URL_SOURCE_CODE')),
         'testflight.public' => env('TESTFLIGHT_LINK'),
         'testflight.supporter' => env('TESTFLIGHT_LINK_SUPPORTER'),
-        'user.recover' => '/wiki/Help_centre/Account#sign-in',
-        'user.restriction' => presence(env('OSU_URL_USER_RESTRICTION')) ?? '/wiki/Help_centre/Account_restrictions',
-        'user.rules' => '/wiki/Osu!:Rules',
+        'user.recover' => presence(env('OSU_URL_USER_RECOVER')) ?? '/help/contact',
+        'user.restriction' => presence(env('OSU_URL_USER_RESTRICTION')) ?? '/help/contact',
+        'user.rules' => presence(env('OSU_URL_USER_RULES')) ?? '/help/rules',
         'youtube-tutorial-playlist' => 'PLmWVQsxi34bMYwAawZtzuptfMmszUa_tl',
     ],
     'user' => [
@@ -346,7 +340,7 @@ return [
         'team_performance_weighting_factor' => get_float(env('TEAM_PERFORMANCE_WEIGHTING_FACTOR')) ?? 0.96,
     ],
     'screenshots' => [
-        'shared_secret' => presence(env('SCREENSHOTS_SHARED_SECRET')) ?? '1234567890abcd',
+        'shared_secret' => presence(env('SCREENSHOTS_SHARED_SECRET')) ?? presence(env('APP_KEY')),
         'legacy_id_cutoff' => presence(env('SCREENSHOTS_LEGACY_ID_CUTOFF')) ?? 1,
     ],
 ];

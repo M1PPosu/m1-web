@@ -13,6 +13,7 @@ interface SetOptions {
   resetMods?: boolean;
   toggleMod?: string | null;
   type?: ScoreboardType;
+  variant?: string | null;
 }
 
 export type ScoreLoadingState = null | 'error' | 'loading' | 'supporter_only' | 'unranked';
@@ -31,11 +32,13 @@ interface BeatmapScoresJson {
 interface StoredState {
   allData: Partial<Record<string, BeatmapScoresJson>>;
   currentType: ScoreboardType;
+  currentVariant: string | null;
   enabledMods: string[];
 }
 
 export default class Controller {
   @observable currentType: ScoreboardType = 'global';
+  @observable currentVariant: string | null = null;
   @observable enabledMods = new Set<string>();
 
   @observable private allData: Partial<Record<string, BeatmapScoresJson>> = {};
@@ -51,7 +54,7 @@ export default class Controller {
   get currentDataKey() {
     const beatmap = this.beatmap;
 
-    return `${beatmap.id}-${beatmap.mode}-${[...this.enabledMods].sort().join(':')}-${this.currentType}`;
+    return `${beatmap.id}-${beatmap.mode}-${this.effectiveVariant ?? 'standard'}-${[...this.enabledMods].sort().join(':')}-${this.currentType}`;
   }
 
   @computed
@@ -76,6 +79,16 @@ export default class Controller {
     return supporterTypes.has(this.currentType) || this.enabledMods.size > 0;
   }
 
+  @computed
+  get effectiveVariant() {
+    return this.supportsRelax ? this.currentVariant : null;
+  }
+
+  @computed
+  get supportsRelax() {
+    return this.beatmap.mode === 'osu' || this.beatmap.mode === 'taiko' || this.beatmap.mode === 'fruits';
+  }
+
   constructor(private readonly container: HTMLElement, private readonly getBeatmap: () => BeatmapExtendedJson) {
     let storedState: StoredState | null = null;
     try {
@@ -87,7 +100,13 @@ export default class Controller {
     if (storedState != null) {
       this.currentType = storedState.currentType;
       this.allData = storedState.allData;
+      this.currentVariant = storedState.currentVariant ?? null;
       this.enabledMods = new Set(storedState.enabledMods);
+    }
+
+    const variant = new URLSearchParams(window.location.search).get('variant');
+    if (variant === 'rx') {
+      this.currentVariant = 'rx';
     }
 
     makeObservable(this);
@@ -99,7 +118,7 @@ export default class Controller {
 
     this.disposers.add(reaction(
       () => `${this.beatmap.mode}:${this.beatmap.id}`,
-      () => this.setCurrent({ resetMods: true, type: 'global' }),
+      () => this.setCurrent({ resetMods: true, type: 'global', variant: this.effectiveVariant }),
     ));
   }
 
@@ -134,6 +153,12 @@ export default class Controller {
       this.currentType = options.type;
     }
 
+    if (options.variant !== undefined) {
+      this.currentVariant = options.variant === 'rx' && this.supportsRelax ? 'rx' : null;
+    } else if (!this.supportsRelax) {
+      this.currentVariant = null;
+    }
+
     const beatmap = this.beatmap;
 
     if (!forceReload && !this.data.blank) {
@@ -148,6 +173,7 @@ export default class Controller {
         mode: beatmap.mode,
         mods: [...this.enabledMods],
         type: this.currentType,
+        variant: this.effectiveVariant,
       },
       dataType: 'JSON',
       method: 'GET',
@@ -164,6 +190,7 @@ export default class Controller {
     const state: StoredState = {
       allData: this.allData,
       currentType: this.currentType,
+      currentVariant: this.currentVariant,
       enabledMods: [...this.enabledMods],
     };
 

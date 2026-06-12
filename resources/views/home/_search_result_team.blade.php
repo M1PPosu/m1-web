@@ -12,7 +12,7 @@
     @endphp
     <div
         class="team-card team-card--search"
-        {!! background_image($team->header()->url()) !!}
+        {!! background_image($team->headerUrl()) !!}
     >
         <a class="team-card__link-bg" href="{{ $url }}"></a>
 

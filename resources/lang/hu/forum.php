@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Törölt posztok',
             'total_posts' => 'Összes poszt',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Jelenlegi prioritás: +:count',

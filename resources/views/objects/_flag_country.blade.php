@@ -6,10 +6,14 @@
     if (is_string($country)) {
         $country = ['acronym' => $country];
     }
+
+    $hasFlag = !in_array($country['acronym'], ['A1', 'A2', 'AP', 'XX'], true);
 @endphp
-<span class="{{ class_with_modifiers('flag-country', $modifiers ?? []) }}"
-    @if (isset($country['name']))
-        title="{{ $country['name'] }}"
-    @endif
-    style="background-image: url('{{ flag_url($country['acronym']) }}');"
-></span>
+@if ($hasFlag)
+    <span class="{{ class_with_modifiers('flag-country', $modifiers ?? []) }}"
+        @if (isset($country['name']))
+            title="{{ $country['name'] }}"
+        @endif
+        style="background-image: url('{{ flag_url($country['acronym']) }}');"
+    ></span>
+@endif

@@ -11,7 +11,7 @@ import { usernameSortAscending } from 'models/user';
 import * as React from 'react';
 import { makeUrl, parseUrl } from 'utils/beatmapset-discussion-helper';
 import { groupColour } from 'utils/css';
-import { trans, transChoice } from 'utils/lang';
+import { trans } from 'utils/lang';
 import { getInt } from 'utils/math';
 import DiscussionsState from './discussions-state';
 
@@ -34,52 +34,44 @@ interface Props {
 @observer
 export class UserFilter extends React.Component<Props> {
   private get ownerId() {
-    return this.discussionsState.beatmapset.user_id;
+    return this.props.discussionsState.beatmapset.user_id;
   }
 
+  // TODO: add actual multi user selection.
   @computed
   private get options() {
-    const users = new Map<number, UserJson>();
+    const usersWithDicussions = new Map<number, UserJson>();
     for (const [, discussion] of this.props.store.discussions) {
-      if (discussion.message_type === 'hype' || discussion.posts == null) continue;
+      if (discussion.message_type === 'hype') continue;
 
-      for (const post of discussion.posts) {
-        const user = this.props.store.users.get(post.user_id);
-        if (user != null && !users.has(user.id)) {
-          users.set(user.id, user);
-        }
+      const user = this.props.store.users.get(discussion.user_id);
+      if (user != null && !usersWithDicussions.has(user.id)) {
+        usersWithDicussions.set(user.id, user);
       }
     }
 
     return [
       this.mapUserProperties(allUsers),
-      ...[...users.values()]
+      ...[...usersWithDicussions.values()]
         .sort(usernameSortAscending)
         .map(this.mapUserProperties),
     ];
   }
 
-  private get discussionsState() {
-    return this.props.discussionsState;
-  }
-
   @computed
   private get text() {
-    switch (this.discussionsState.selectedUsers.length) {
-      case 0:
-        return trans('beatmap_discussions.user_filter.label');
-      case 1: {
-        const user = this.discussionsState.selectedUsers[0];
-        return <span className='u-group-colour u-ellipsis-overflow' style={this.styleForUser(user)}>{user.username}</span>;
-      }
-      default:
-        return transChoice('beatmap_discussions.user_filter.multiple', this.discussionsState.selectedUsers.length);
+    const selectedUsers = this.props.discussionsState.selectedUsers;
+    if (selectedUsers.length === 0) {
+      return trans('beatmap_discussions.user_filter.label');
     }
+
+    const user = this.props.discussionsState.selectedUsers[0];
+    return <span className='u-group-colour u-ellipsis-overflow' style={this.styleForUser(user)}>{user.username}</span>;
   }
 
   @computed
   private get urlOptions() {
-    return parseUrl(this.discussionsState.url);
+    return parseUrl(this.props.discussionsState.url);
   }
 
   constructor(props: Props) {
@@ -90,12 +82,11 @@ export class UserFilter extends React.Component<Props> {
   render() {
     return (
       <SelectOptions
-        href={this.discussionsState.url}
+        href={this.props.discussionsState.url}
         modifiers='beatmap-discussions-user-filter'
         onSelect={this.handleSelect}
         options={this.options}
-        selected={this.discussionsState.selectedUserIds}
-        useCheckmark
+        selected={this.props.discussionsState.selectedUserIds}
       >
         {this.text}
       </SelectOptions>
@@ -111,17 +102,10 @@ export class UserFilter extends React.Component<Props> {
   @action
   private readonly handleSelect = (id?: string) => {
     const userId = getInt(id);
-    const selectedUserIds = this.discussionsState.selectedUserIds;
-
-    if (userId == null) {
-      selectedUserIds.clear();
-    } else if (selectedUserIds.has(userId)) {
-      selectedUserIds.delete(userId);
-    } else {
-      selectedUserIds.add(userId);
+    this.props.discussionsState.selectedUserIds.clear();
+    if (userId != null) {
+      this.props.discussionsState.selectedUserIds.add(userId);
     }
-
-    return true;
   };
 
   private isOwner(user?: Option): boolean {

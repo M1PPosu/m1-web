@@ -12,6 +12,7 @@ use App\Jobs\EsDocument;
 use App\Jobs\Notifications\TeamApplicationAccept;
 use App\Libraries\BBCodeForDB;
 use App\Libraries\Elasticsearch\Indexable;
+use App\Libraries\M1pposu\ImportedAssets;
 use App\Libraries\Transactions\AfterCommit;
 use App\Libraries\Uploader;
 use App\Libraries\User\Cover as UserCover;
@@ -70,11 +71,6 @@ class Team extends Model implements AfterCommit, Indexable, Traits\ReportableInt
     public function setDefaultRulesetIdAttribute(?int $value): void
     {
         $this->attributes['default_ruleset_id'] = Beatmap::MODES[Beatmap::modeStr($value) ?? 'osu'];
-    }
-
-    public function setDescriptionAttribute(?string $value): void
-    {
-        $this->attributes['description'] = app('chat-filters')->filter($value);
     }
 
     public function setFlagAttribute(?string $value): void
@@ -222,6 +218,16 @@ class Team extends Model implements AfterCommit, Indexable, Traits\ReportableInt
         );
     }
 
+    public function flagUrl(): string
+    {
+        $filename = $this->getRawAttribute('flag_file');
+        if (ImportedAssets::isMarker($filename)) {
+            return ImportedAssets::urlFromMarker($filename) ?? asset('images/m1pposu/default-team-flag.png');
+        }
+
+        return $this->flag()->url() ?? asset('images/m1pposu/default-team-flag.png');
+    }
+
     public function header(): Uploader
     {
         return $this->header ??= new Uploader(
@@ -233,6 +239,16 @@ class Team extends Model implements AfterCommit, Indexable, Traits\ReportableInt
                 'maxFilesize' => UserCover::CUSTOM_COVER_MAX_FILESIZE,
             ]],
         );
+    }
+
+    public function headerUrl(): string
+    {
+        $filename = $this->getRawAttribute('header_file');
+        if (ImportedAssets::isMarker($filename)) {
+            return ImportedAssets::urlFromMarker($filename) ?? asset('images/m1pposu/default-team-header.png');
+        }
+
+        return $this->header()->url() ?? asset('images/m1pposu/default-team-header.png');
     }
 
     public function isValid(): bool

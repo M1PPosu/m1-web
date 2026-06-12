@@ -198,6 +198,7 @@ class ScoresControllerTest extends TestCase
         UserStatistics\Model::getClass($this->score->getMode())::factory()->create(['user_id' => $this->user->getKey()]);
 
         $this->otherUser = User::factory()->create();
+        \Cache::forget("view:score_replay:{$this->score->getKey()}:{$this->otherUser->getKey()}");
     }
 
     private function actAsPasswordClientUser(User $user): static

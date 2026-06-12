@@ -199,7 +199,7 @@ return [
         'is_supporter' => 'osu!supporter',
         'joined_at' => 'Členem od :date',
         'lastvisit' => 'Naposledy spatřen :date',
-        'lastvisit_online' => 'Momentálně online',
+        'lastvisit_online' => 'Momentálně aktivní',
         'missingtext' => 'Možná jste se přepsal! (nebo byl uživatel zabanován)',
         'origin_country' => 'Z :country',
         'previous_usernames' => 'dříve znám jako',
@@ -395,7 +395,7 @@ return [
                 'title' => 'Medaile',
             ],
             'playlists' => [
-                'title' => 'Hry playlistů',
+                'title' => 'Hry playlistu',
             ],
             'posts' => [
                 'title' => 'Příspěvky',
@@ -403,7 +403,7 @@ return [
                 'show_more' => 'zobrazit více příspěvků',
             ],
             'ranked-play' => [
-                'title' => 'Zápasy hodnocené hry',
+                'title' => '',
             ],
             'recent_activity' => [
                 'title' => 'Nedávné',
@@ -475,7 +475,7 @@ return [
         ],
 
         'matchmaking' => [
-            'title' => 'Hodnocená hra',
+            'title' => 'Rychlá hra',
         ],
 
         'not_found' => [

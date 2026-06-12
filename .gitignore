@@ -18,6 +18,7 @@ composer.phar
 Thumbs.db
 Icon*
 desktop.ini
+*.swp
 
 # node directory and yarn log
 /node_modules
@@ -77,6 +78,12 @@ composer-installer
 /storage/oauth-public.key
 /storage/oauth-private.key
 
+# local private-server database dumps
+*.sql
+*.sql.gz
+*.dump
+/storage/private-server-imports/
+
 # cache files
 /.eslintcache
 /.phpunit.result.cache
@@ -86,3 +93,13 @@ composer-installer
 
 /database/ip2asn/*.idx
 /database/ip2asn/*.tsv
+
+/public/videos/*.mp4
+!/public/videos/.gitkeep
+
+
+/public/videos/*.mp4
+!/public/videos/.gitkeep
+/public/downloads/*.exe
+!/public/downloads/.gitkeep
+

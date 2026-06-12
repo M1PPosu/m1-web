@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace App\Libraries\User;
 
 use App\Libraries\ImageProcessor;
+use App\Libraries\M1pposu\ImportedAssets;
+use App\Libraries\M1pposu\UserAssets;
 use App\Libraries\StorageUrl;
 use App\Models\User;
 
@@ -40,8 +42,16 @@ class AvatarHelper
     {
         $value = $user->getRawAttribute('user_avatar');
 
-        return present($value)
-            ? StorageUrl::make(static::DISK, strtr($value, '_', '?'))
-            : $GLOBALS['cfg']['osu']['avatar']['default'];
+        if (ImportedAssets::isMarker($value)) {
+            return ImportedAssets::urlFromMarker($value)
+                ?? UserAssets::avatarUrl($user)
+                ?? $GLOBALS['cfg']['osu']['avatar']['default'];
+        }
+
+        if (present($value)) {
+            return StorageUrl::make(static::DISK, strtr($value, '_', '?'));
+        }
+
+        return UserAssets::avatarUrl($user) ?? $GLOBALS['cfg']['osu']['avatar']['default'];
     }
 }

@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Buradong mga Post',
             'total_posts' => 'Kabuuang mga Post',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Kasalukuyang Prayoridad: +:count',

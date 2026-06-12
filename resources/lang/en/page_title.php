@@ -81,8 +81,14 @@ return [
             'get_download' => 'download',
             'index' => 'dashboard',
             'search' => 'search',
-            'support_the_game' => 'support the game',
+            'support_the_game' => 'support M1PPosu',
             'testflight' => 'testflight',
+        ],
+        'help_controller' => [
+            '_' => 'help',
+            'contact' => 'contact us',
+            'report_abuse' => 'report abuse',
+            'rules' => 'rules',
         ],
         'legacy_matches_controller' => [
             '_' => 'matches',

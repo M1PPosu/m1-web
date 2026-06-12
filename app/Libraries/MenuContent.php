@@ -20,6 +20,10 @@ class MenuContent
      */
     public static function activeImages(): array
     {
+        if (osu_url('menu_content') === null) {
+            return [];
+        }
+
         return cache_remember_mutexed('menu-content-active-images', 60, [], function () {
             $images = self::parse(self::fetch());
             $now = Carbon::now();

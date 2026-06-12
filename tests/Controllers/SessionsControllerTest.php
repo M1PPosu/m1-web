@@ -5,13 +5,23 @@
 
 namespace Tests\Controllers;
 
+use App\Libraries\M1pposu\SourceAuthenticator;
 use App\Models\Country;
 use App\Models\LoginAttempt;
 use App\Models\User;
+use RuntimeException;
 use Tests\TestCase;
 
 class SessionsControllerTest extends TestCase
 {
+    public function testLoginForm()
+    {
+        $this->get(route('login-form'))
+            ->assertSuccessful()
+            ->assertSee('name="username"', false)
+            ->assertSee('name="password"', false);
+    }
+
     public function testLogin()
     {
         $password = 'password1';
@@ -115,6 +125,23 @@ class SessionsControllerTest extends TestCase
         $this->assertSame(1, $record->unique_ids);
         $this->assertSame(1, $record->failed_attempts);
         $this->assertSame(1, $record->total_attempts);
+    }
+
+    public function testSourceProjectionFailureDoesNotLookLikeWrongPassword(): void
+    {
+        $this->app->instance(SourceAuthenticator::class, new class {
+            public function attempt(string $login, string $password): ?User
+            {
+                throw new RuntimeException('projector failed');
+            }
+        });
+
+        $this->post(route('login'), [
+            'username' => 'source-user',
+            'password' => 'password1',
+        ])->assertStatus(503);
+
+        $this->assertGuest();
     }
 
     public function testLoginWrongPasswordTwiceDifferent()

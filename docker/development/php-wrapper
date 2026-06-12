@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "$(id -u)" -eq 0 ]; then
+    exec runuser -u osuweb -- /usr/bin/php "$@"
+fi
+
+exec /usr/bin/php "$@"

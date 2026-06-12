@@ -14,7 +14,7 @@
         <span class="sort__item sort__item--title">
             {{ osu_trans('sort._') }}
         </span>
-        @foreach ($searchParams->validSortFields() as $field)
+        @foreach (TeamSearchParams::VALID_SORT_FIELDS as $field)
             @php
                 $active = $field === $searchParams->sortField;
                 if ($active) {

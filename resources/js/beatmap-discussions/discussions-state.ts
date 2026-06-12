@@ -2,7 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 import BeatmapJson from 'interfaces/beatmap-json';
-import { BeatmapsetDiscussionJsonForShow } from 'interfaces/beatmapset-discussion-json';
+import BeatmapsetDiscussionJson from 'interfaces/beatmapset-discussion-json';
 import { BeatmapsetStatus } from 'interfaces/beatmapset-json';
 import BeatmapsetWithDiscussionsJson from 'interfaces/beatmapset-with-discussions-json';
 import Ruleset from 'interfaces/ruleset';
@@ -70,9 +70,7 @@ export default class DiscussionsState {
   @observable repliesIncludeSelectedUsers = false;
   @observable selectedNominatedRulesets: Ruleset[] = [];
   @observable readonly selectedUserIds = new Set<number>();
-  // this toggle affects All and deleted discussion filters, and replies;
-  // other filters don't include deleted discussions but they can include deleted replies.
-  @observable showDeleted = true;
+  @observable showDeleted = true; // this toggle only affects All and deleted discussion filters, other filters don't show deleted
   @observable showOtherReplies = true;
   @observable sort: Record<DiscussionMode, Sort> = {
     general: 'updated_at',
@@ -110,7 +108,7 @@ export default class DiscussionsState {
    */
   @computed
   get discussionsByFilter() {
-    const groups: Record<Filter, BeatmapsetDiscussionJsonForShow[]> = {
+    const groups: Record<Filter, BeatmapsetDiscussionJson[]> = {
       deleted: [],
       hype: [],
       mapperNotes: [],
@@ -122,7 +120,7 @@ export default class DiscussionsState {
     };
 
     const currentUser = core.currentUser;
-    const reviewsWithPending = new Set<BeatmapsetDiscussionJsonForShow>();
+    const reviewsWithPending = new Set<BeatmapsetDiscussionJson>();
 
     for (const discussion of this.discussionForSelectedBeatmap) {
       if (discussion.deleted_at != null) {
@@ -171,7 +169,7 @@ export default class DiscussionsState {
   get discussionsByMode() {
     const discussions = this.discussionsByFilter[this.currentFilter];
 
-    const value: Record<DiscussionMode, BeatmapsetDiscussionJsonForShow[]> = {
+    const value: Record<DiscussionMode, BeatmapsetDiscussionJson[]> = {
       general: [],
       generalAll: [],
       reviews: [],
@@ -215,7 +213,7 @@ export default class DiscussionsState {
       return this.discussionsByMode;
     }
 
-    const value: Record<DiscussionMode, BeatmapsetDiscussionJsonForShow[]> = {
+    const value: Record<DiscussionMode, BeatmapsetDiscussionJson[]> = {
       general: [],
       generalAll: [],
       reviews: [],
@@ -225,7 +223,7 @@ export default class DiscussionsState {
     for (const mode of discussionModes) {
       value[mode] = this.discussionsByMode[mode].filter(
         (discussion) => this.selectedUserIds.has(discussion.user_id)
-        || this.repliesIncludeSelectedUsers && discussion.posts?.some((post) => this.selectedUserIds.has(post.user_id) && (post.deleted_at == null || this.showDeleted)),
+        || this.repliesIncludeSelectedUsers && discussion.posts?.some((post) => this.selectedUserIds.has(post.user_id)),
       );
     }
 
@@ -295,13 +293,6 @@ export default class DiscussionsState {
   @computed
   get eligibleMainRulesets() {
     return new Set(this.beatmapset.eligible_main_rulesets);
-  }
-
-  @computed
-  get filtersForCurrentUser() {
-    return core.currentUser?.is_admin ?? false
-      ? filters
-      : filters.filter((filter) => filter !== 'deleted');
   }
 
   @computed
@@ -591,11 +582,8 @@ export default class DiscussionsState {
       highlightedDiscussionId: this.highlightedDiscussionId,
       pinnedNewDiscussion: this.pinnedNewDiscussion,
       readPostIds: [...this.readPostIds],
-      repliesIncludeSelectedUsers: this.repliesIncludeSelectedUsers,
       selectedUserIds: [...this.selectedUserIds],
       showDeleted: this.showDeleted,
-      showOtherReplies: this.showOtherReplies,
-      sort: this.sort,
     };
   }
 

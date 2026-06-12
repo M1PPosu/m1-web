@@ -125,12 +125,12 @@ return [
             ],
 
             'channel_mention' => [
-                '_' => 'Упоминание в чате',
+                '_' => '',
 
                 'public' => [
-                    'channel_mention' => ':username упомянул вас в канале :name с сообщением ":title"',
-                    'channel_mention_compact' => ':username написал: ":title"',
-                    'channel_mention_group' => 'упоминание в канале :name',
+                    'channel_mention' => '',
+                    'channel_mention_compact' => '',
+                    'channel_mention_group' => '',
                 ],
             ],
 
@@ -270,7 +270,7 @@ return [
                 'channel_message' => 'Вы получили новое сообщение от :username',
             ],
             'channel_mention' => [
-                'channel_mention' => ':username упомянул вас в канале :name с сообщением ":title"',
+                'channel_mention' => '',
             ],
 
             'channel_team' => [

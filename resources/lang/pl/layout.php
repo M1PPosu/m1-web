@@ -53,7 +53,7 @@ return [
         'users' => [
             'modding' => 'modowanie',
             'playlists' => 'tryb asynchroniczny',
-            'ranked-play' => 'gra rankingowa',
+            'ranked-play' => '',
             'realtime' => 'tryb wieloosobowy',
             'show' => 'informacje',
         ],

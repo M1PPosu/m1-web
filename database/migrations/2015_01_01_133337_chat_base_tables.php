@@ -31,6 +31,7 @@ class ChatBaseTables extends Migration
             $table->index('name', 'name');
             $table->index('creation_time', 'creation_time');
         });
+        $this->setRowFormat($connection, 'channels', 'DYNAMIC');
 
         $builder->create('messages', function (Blueprint $table) {
             $table->increments('message_id');
@@ -43,6 +44,7 @@ class ChatBaseTables extends Migration
             $table->index(['user_id', 'timestamp'], 'user_history');
         });
         $connection->statement('ALTER TABLE `messages` DROP PRIMARY KEY, ADD PRIMARY KEY (`message_id`, `timestamp`)');
+        $this->setRowFormat($connection, 'messages', 'COMPRESSED');
 
         $builder->create('messages_private', function (Blueprint $table) {
             $table->increments('message_id');
@@ -55,6 +57,7 @@ class ChatBaseTables extends Migration
             $table->index('target_id', 'target_id');
         });
         $connection->statement('ALTER TABLE `messages_private` DROP PRIMARY KEY, ADD PRIMARY KEY (`message_id`, `timestamp`)');
+        $this->setRowFormat($connection, 'messages_private', 'COMPRESSED');
     }
 
     /**
@@ -69,5 +72,10 @@ class ChatBaseTables extends Migration
         $builder->drop('channels');
         $builder->drop('messages');
         $builder->drop('messages_private');
+    }
+
+    private function setRowFormat($connection, $table, $format)
+    {
+        $connection->statement("ALTER TABLE `{$table}` ROW_FORMAT={$format};");
     }
 }

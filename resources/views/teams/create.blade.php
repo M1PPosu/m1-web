@@ -25,9 +25,7 @@
                     {{ osu_trans('teams.create.intro.title') }}
                 </h2>
                 <div>
-                    {!! osu_trans('teams.create.intro.description', [
-                        'search_link' => tag('a', ['href' => route('search', ['mode' => 'team'])], osu_trans('teams.create.intro.search_link')),
-                    ]) !!}
+                    {{ osu_trans('teams.create.intro.description') }}
                 </div>
             </div>
 

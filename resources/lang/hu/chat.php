@@ -50,11 +50,6 @@ return [
         'title' => 'csatorna nem található',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => 'Létrehozás',
         'disabled' => 'üzenet küldése sikertelen...',

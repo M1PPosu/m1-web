@@ -5,7 +5,7 @@ import { action, autorun, isObservableSet, makeObservable, observable } from 'mo
 import { disposeOnUnmount, observer } from 'mobx-react';
 import * as React from 'react';
 import { blackoutToggle } from 'utils/blackout';
-import { classWithModifiers, Modifiers } from 'utils/css';
+import { classWithModifiers, Modifiers, ModifiersExtended } from 'utils/css';
 
 const bn = 'select-options';
 
@@ -25,12 +25,11 @@ interface Props<T> {
   onSelect?: (id?: string) => boolean | void;
   options: Iterable<RenderableOption<T>>;
   selected: RenderableOption<T>['id'] | Set<RenderableOption<T>['id']>;
-  useCheckmark: boolean;
 }
 
 @observer
 export default class SelectOptions<T extends string | number> extends React.PureComponent<Props<T>> {
-  static readonly defaultProps = { blackout: true, useCheckmark: false };
+  static readonly defaultProps = { blackout: true };
 
   private readonly ref = React.createRef<HTMLDivElement>();
   @observable private showingSelector = false;
@@ -62,7 +61,7 @@ export default class SelectOptions<T extends string | number> extends React.Pure
     return (
       <div ref={this.ref} className={className}>
         <div className={`${bn}__select`}>
-          <a className={classWithModifiers(`${bn}__option`, 'selector')} href={this.props.href} onClick={this.toggleSelector}>
+          <a className={`${bn}__option`} href={this.props.href} onClick={this.toggleSelector}>
             {this.renderText(this.props.children)}
             <div className={`${bn}__decoration`}>
               <span className='fas fa-chevron-down' />
@@ -98,20 +97,15 @@ export default class SelectOptions<T extends string | number> extends React.Pure
     }
   };
 
-  private renderOption(option: RenderableOption<T>, selected: boolean) {
+  private renderOption(option: RenderableOption<T>, modifiers?: ModifiersExtended) {
     return (
       <a
         key={option.id}
-        className={classWithModifiers(`${bn}__option`, { selected })}
+        className={classWithModifiers(`${bn}__option`, modifiers)}
         data-id={option.id ?? undefined}
         href={option.href}
         onClick={this.optionSelected}
       >
-        {this.props.useCheckmark && (
-          <span className={`${bn}__checkmark`}>
-            {selected && <span className='fas fa-check' />}
-          </span>
-        )}
         {this.renderText(option.text)}
       </a>
     );
@@ -124,7 +118,7 @@ export default class SelectOptions<T extends string | number> extends React.Pure
         ? this.props.selected.has(option.id)
         : this.props.selected === option.id;
 
-      yield this.renderOption(option, selected);
+      yield this.renderOption(option, { selected });
     }
   }
 

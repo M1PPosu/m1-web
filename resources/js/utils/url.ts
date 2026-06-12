@@ -34,7 +34,7 @@ export function changelogBuild(build: ChangelogBuild): string {
 }
 
 export function giftSupporterTagUrl(user: { username: string }) {
-  return route('store.products.show', { product: 'supporter-tag', target: user.username });
+  return route('support-the-game', { target: user.username });
 }
 
 // external link

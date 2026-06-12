@@ -4,8 +4,8 @@
 // See the LICENCE file in the repository root for full licence text.
 
 return [
-    'confirmation' => 'Tem a certeza?',
-    'confirmation_unsaved' => 'Alterações não guardadas serão perdidas. Tem a certeza?',
+    'confirmation' => 'Tens a certeza?',
+    'confirmation_unsaved' => 'As alterações não guardadas serão perdidas. Tens a certeza?',
     'saved' => 'Guardado',
 
     'array_and' => [
@@ -27,10 +27,10 @@ return [
         'cancel' => 'Cancelar',
         'change' => 'mudar',
         'clear' => 'Limpar',
-        'click_to_copy' => 'clique para copiar para o bloco de notas',
+        'click_to_copy' => 'clica para copiar para o bloco de notas',
         'click_to_copy_copied' => 'copiado para o bloco de notas!',
         'close' => 'Fechar',
-        'collapse' => 'recolher',
+        'collapse' => 'colapsar',
         'delete' => 'Apagar',
         'edit' => 'Editar',
         'expand' => 'expandir',
@@ -40,7 +40,7 @@ return [
         'post' => 'Publicar',
         'read_more' => 'ler mais',
         'refresh' => 'Atualizar',
-        'reply' => 'Responder',
+        'reply' => 'Resposta',
         'reply_reopen' => 'Responder e reabrir',
         'reply_resolve' => 'Responder e resolver',
         'reset' => 'Reiniciar',
@@ -56,7 +56,7 @@ return [
         'show_more' => 'mostrar mais',
         'show_more_options' => 'mostrar mais opções',
         'submit' => 'Submeter',
-        'unpin' => 'desafixar',
+        'unpin' => 'despregar',
         'update' => 'Atualizar',
         'upload_image' => 'carregar imagem',
 
@@ -67,23 +67,23 @@ return [
     ],
 
     'count' => [
-        'badges' => ':count_delimited distintivo|:count_delimited distintivos',
-        'days' => ':count_delimited dia|:count_delimited dias',
+        'badges' => ':count crachá|:count crachás',
+        'days' => ':count dia|:count dias',
         'hour_short_unit' => 'hr|hrs',
-        'hours' => ':count_delimited hora|:count_delimited horas',
-        'item' => ':count_delimited unidade|:count_delimited unidades',
+        'hours' => ':count hora|:count horas',
+        'item' => ':count unidade|:count unidades',
         'minute_short_unit' => 'min|mins',
-        'minutes' => ':count_delimited minuto|:count_delimited minutos',
-        'months' => ':count_delimited mês|:count_delimited meses',
+        'minutes' => ':count minuto|:count minutos',
+        'months' => ':count mês|:count meses',
         'notifications' => ':count_delimited notificação|:count_delimited notificações',
-        'player' => ':count_delimited jogador|:count_delimited jogadores',
+        'player' => '',
         'plus_others' => '+ :count_delimited outro!|+ :count_delimited outros!',
         'post' => ':count_delimited publicação|:count_delimited publicações',
         'second_short_unit' => 'seg|segs',
         'star_priority' => ':count_delimited prioridade estrela|:count_delimited prioridades estrela',
         'update' => ':count_delimited atualização|:count_delimited atualizações',
         'view' => ':count_delimited visualização|:count_delimited visualizações',
-        'years' => ':count_delimited ano|:count_delimited anos',
+        'years' => ':count ano|:count anos',
     ],
 
     'countdown' => [
@@ -95,10 +95,10 @@ return [
 
     'datetime' => [
         'month' => [
-            'php' => 'm',
+            'php' => '',
         ],
         'year' => [
-            'php' => 'a',
+            'php' => '',
         ],
         'year_month' => [
             'moment' => 'MMMM YYYY',
@@ -117,7 +117,7 @@ return [
     ],
 
     'dropzone' => [
-        'target' => 'largue aqui para carregar',
+        'target' => 'larga aqui para carregar',
     ],
 
     'input' => [
@@ -126,7 +126,7 @@ return [
 
     'pagination' => [
         'previous' => 'anterior',
-        'next' => 'seguinte',
+        'next' => 'próximo',
     ],
 
     'score_count' => [
@@ -143,8 +143,8 @@ return [
         'dd' => '%d d',
         'h' => '%d h',
         'hh' => '%d h',
-        'm' => 'agora',
-        'mm' => 'agora',
+        'm' => '%d min',
+        'mm' => '%d min',
         'month' => '%d m',
         'months' => '%d m',
         'past' => '',
@@ -154,18 +154,18 @@ return [
     ],
 
     'time' => [
-        'days_ago' => ':count_delimited dia atrás|:count_delimited dias atrás',
-        'hours_ago' => ':count_delimited hora atrás|:count_delimited horas atrás',
+        'days_ago' => ':count dia atrás|:count dias atrás',
+        'hours_ago' => ':count hora atrás|:count horas atrás',
         'now' => 'agora',
         'remaining' => 'Tempo restante',
     ],
 
     'title' => [
-        'notice' => 'Aviso',
+        'notice' => 'Notícia',
     ],
 
     'wrong_user' => [
-        '_' => 'Está autenticado como :user. :logout_link.',
-        'logout_link' => 'Clique aqui para iniciar sessão com um utilizador diferente',
+        '_' => 'Estás autenticado como :user. :logout_link.',
+        'logout_link' => 'Clica aqui para iniciar sessão com um utilizador diferente',
     ],
 ];

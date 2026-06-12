@@ -5,42 +5,42 @@
 
 return [
     'index' => [
-        'description' => 'Coleções pré-empacotadas de mapas baseadas num tema em comum.',
+        'description' => 'Coleções pré-empacotadas de beatmaps baseadas num tema em comum.',
         'empty' => 'Brevemente!',
         'nav_title' => 'listagem',
-        'title' => 'Pacotes de mapas',
+        'title' => 'Pacotes de beatmap',
 
         'blurb' => [
-            'important' => 'LEIA ISTO ANTES DE TRANSFERIR',
-            'install_instruction' => 'Instalação: Assim que um pacote for transferido, extraia o seu conteúdo para a pasta Songs do osu! e o jogo tratará do resto.',
+            'important' => 'LÊ ISTO ANTES DE TRANSFERIR',
+            'install_instruction' => 'Instalação: Assim que um pacote for transferido, extrai o seu conteúdo na tua pasta Songs do osu! e ele fará o resto.',
         ],
     ],
 
     'show' => [
-        'created_by' => 'criado por :author',
+        'created_by' => 'por :author',
         'download' => 'Transferir',
         'item' => [
             'cleared' => 'concluído',
             'not_cleared' => 'não concluído',
         ],
         'no_diff_reduction' => [
-            '_' => ':link não poderá ser usado para concluír este pacote.',
-            'link' => 'Modificações de redução da dificuldade',
+            '_' => ':link não poderá ser usado para limpar este pacote.',
+            'link' => 'Mods de redução da dificuldade',
         ],
     ],
 
     'mode' => [
         'artist' => 'Artista/Álbum',
-        'chart' => 'Destaques',
+        'chart' => 'Em destaque',
         'featured' => 'Artista Destacado',
-        'loved' => 'Projeto Adorado',
+        'loved' => 'Project Loved',
         'standard' => 'Padrão',
         'theme' => 'Tema',
         'tournament' => 'Torneio',
     ],
 
     'require_login' => [
-        '_' => 'Tem de estar :link para transferir',
+        '_' => 'Tu precisas de estar :link para transferir',
         'link_text' => 'autenticado',
     ],
 ];

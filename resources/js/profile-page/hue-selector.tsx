@@ -163,7 +163,7 @@ export default class HueSelector extends React.Component<Props> {
         mappings={{
           link: (
             <a
-              href={route('store.products.show', { product: 'supporter-tag' })}
+              href={route('support-the-game')}
               rel='noreferrer'
               target='_blank'
             >

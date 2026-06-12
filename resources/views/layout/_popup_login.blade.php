@@ -91,13 +91,13 @@
 
             <div class="login-box__row login-box__row--actions">
                 <div class="login-box__action">
-                    <a href="{{ route('download') }}" class="btn-osu-big btn-osu-big--nav-popup">
+                    <a href="{{ route('register') }}" class="btn-osu-big btn-osu-big--nav-popup">
                         <div class="btn-osu-big__content">
                             <span class="btn-osu-big__left">
                                 {{ osu_trans('layout.popup_login.register.download') }}
                             </span>
 
-                            <span class="fas fa-fw fa-download"></span>
+                            <span class="fas fa-fw fa-user-plus"></span>
                         </div>
                     </a>
                 </div>

@@ -66,16 +66,18 @@
                 ></video>
             </div>
 
-            <div class="landing-hero__pippi">
-                <div class="landing-hero__pippi-logo"></div>
-            </div>
+            <div class="landing-hero__brand-art"></div>
 
             <div class="landing-hero__info">
                 {!! osu_trans("home.landing.players", ['count' => i18n_number_format($stats->totalUsers)]) !!},
-                {!! osu_trans("home.landing.online", [
-                    'players' => i18n_number_format($stats->currentOnline),
-                    'games' => i18n_number_format($stats->currentGames)]
-                ) !!}
+                @if ($stats->available)
+                    {!! osu_trans("home.landing.online", [
+                        'players' => i18n_number_format($stats->currentOnline),
+                        'games' => i18n_number_format($stats->currentGames)]
+                    ) !!}
+                @else
+                    {{ osu_trans('home.landing.presence_unavailable') }}
+                @endif
             </div>
 
             <div class="landing-hero__messages">
@@ -110,15 +112,20 @@
                                 </span>
                             </span>
                         </a>
+                        <a href="{{ route('download') }}" class="landing-hero__download-link">
+                            {{ osu_trans('home.landing.download_page') }}
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="landing-hero__graph js-landing-graph"></div>
+            @if ($stats->available)
+                <div class="landing-hero__graph js-landing-graph"></div>
 
-            <script id="json-stats" type="application/json">
-                {!! json_encode($stats->graphData) !!}
-            </script>
+                <script id="json-stats" type="application/json">
+                    {!! json_encode($stats->graphData) !!}
+                </script>
+            @endif
         </div>
     </div>
 
@@ -145,9 +152,11 @@
             <a href="{{ route('support-the-game') }}" class="landing-footer-social__icon landing-footer-social__icon--support">
                 <span class="fas fa-heart"></span>
             </a>
-            <a href="{{ osu_url('social.twitter') }}" class="landing-footer-social__icon landing-footer-social__icon--twitter">
-                <span class="fab fa-twitter"></span>
-            </a>
+            @if (($twitterUrl = osu_url('social.twitter')) !== null)
+                <a href="{{ $twitterUrl }}" class="landing-footer-social__icon landing-footer-social__icon--twitter">
+                    <span class="fab fa-twitter"></span>
+                </a>
+            @endif
         </div>
 
         @include('layout.footer', ['modifiers' => ['landing'], 'withLinks' => false])
@@ -165,28 +174,28 @@
     {
       "@context": "https://schema.org",
       "@type": "VideoGame",
-      "name": "osu!",
-      "url": "https://osu.ppy.sh/",
-      "image": "https://assets.ppy.sh/logo-with-background.png",
-      "description": "rhythm is just a click away",
+      "name": "{{ config('m1pposu.site_title') }}",
+      "url": "{{ config('app.url') }}/",
+      "image": "{{ asset('images/layout/m1pposu-logo.png') }}",
+      "description": "M1PPosu website. Not affiliated with ppy Pty Ltd, osu!, or osu.ppy.sh.",
       "author": {
         "@type": "Organization",
-        "name": "ppy"
+        "name": "{{ config('m1pposu.site_title') }}"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "ppy"
+        "name": "{{ config('m1pposu.site_title') }}"
       },
       "producer": {
         "@type": "Organization",
-        "name": "ppy"
+        "name": "{{ config('m1pposu.site_title') }}"
       },
       "applicationCategory": "Game",
       "gamePlatform": ["Windows", "macOS", "Linux", "Android", "iOS"],
       "playMode": ["SinglePlayer","MultiPlayer"],
       "genre": "Rhythm",
       "inLanguage": ["en", "be", "bg", "ca", "cs", "da", "de", "el", "es", "fi", "fr", "hr-hr", "hu", "id", "it", "ja", "ko", "lt", "lv-lv", "ms-my", "nl", "no", "pl", "pt", "pt-br", "ro", "ru", "sk", "sl", "sr", "sv", "th", "tr", "uk", "vi", "zh", "zh_hant"],
-      "sameAs": "https://github.com/ppy/osu",
+      "sameAs": "{{ config('m1pposu.legal.source_code_url') ?? osu_url('source_code') }}",
       "datePublished": "2007-09-16"
     }
     </script>

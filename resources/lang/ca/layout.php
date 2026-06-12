@@ -53,7 +53,7 @@ return [
         'users' => [
             'modding' => 'moding',
             'playlists' => 'llistes d\'àudio',
-            'ranked-play' => 'partida classificatòria',
+            'ranked-play' => '',
             'realtime' => 'multijugador',
             'show' => 'info',
         ],

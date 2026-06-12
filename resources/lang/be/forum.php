@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Выдалена допісаў',
             'total_posts' => 'Агульна допісаў',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Бягучы прыярытэт: +:count',

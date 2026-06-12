@@ -9,7 +9,7 @@ return [
     ],
 
     'defaults' => [
-        'page_description' => 'osu! - Rhythm is just a *click* away!  With Ouendan/EBA, Taiko and original gameplay modes, as well as a fully functional level editor.',
+        'page_description' => 'M1PPosu is a custom osu! server. M1PPosu is not affiliated with ppy Pty Ltd, osu!, or osu.ppy.sh.',
     ],
 
     'header' => [
@@ -75,12 +75,12 @@ return [
             '_' => 'community',
             'dev' => 'development',
         ],
-        'help' => [
-            '_' => 'help',
+        'rules' => [
+            '_' => 'rules',
             'getAbuse' => 'report abuse',
             'getFaq' => 'faq',
             'getRules' => 'rules',
-            'getSupport' => 'no, really, i need help!',
+            'getSupport' => 'contact us',
         ],
         'home' => [
             '_' => 'home',
@@ -100,14 +100,15 @@ return [
             'home' => 'Home',
             'changelog-index' => 'Changelog',
             'beatmaps' => 'Beatmap Listing',
-            'download' => 'Download osu!',
+            'download' => 'Download Custom Launcher',
         ],
         'help' => [
             '_' => 'Help & Community',
+            'contact' => 'Contact Us',
             'faq' => 'Frequently Asked Questions',
             'forum' => 'Community Forums',
             'livestreams' => 'Live Streams',
-            'report' => 'Report an Issue',
+            'report' => 'Report Abuse',
             'wiki' => 'Wiki',
         ],
         'legal' => [
@@ -187,8 +188,8 @@ return [
         ],
 
         'register' => [
-            'download' => 'Download',
-            'info' => 'Download osu! to create your own account!',
+            'download' => 'Create account',
+            'info' => 'Create an account here, then download the launcher to play.',
             'title' => "Don't have an account?",
         ],
     ],
@@ -196,11 +197,10 @@ return [
     'popup_user' => [
         'links' => [
             'account-edit' => 'Settings',
-            'create_team' => 'Create Team',
             'follows' => 'Watchlists',
             'friends' => 'Friends',
             'legacy_score_only_toggle' => 'Lazer mode',
-            'legacy_score_only_toggle_tooltip' => 'Lazer mode shows scores set from lazer with a new scoring algorithm',
+            'legacy_score_only_toggle_tooltip' => 'Lazer score display is disabled until private-server lazer support is available.',
             'logout' => 'Sign Out',
             'profile' => 'My Profile',
             'scoring_mode_toggle' => 'Classic scoring',

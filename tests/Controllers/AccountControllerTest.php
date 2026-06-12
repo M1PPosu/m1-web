@@ -235,6 +235,34 @@ class AccountControllerTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function testUpdateDefaultPlaymodeVariant(): void
+    {
+        $this->actingAsVerified($this->user())
+            ->json('PUT', route('account.options'), [
+                'user' => [
+                    'playmode' => 'osu',
+                    'playmode_variant' => 'rx',
+                ],
+            ])
+            ->assertSuccessful()
+            ->assertJsonPath('playmode', 'osu')
+            ->assertJsonPath('playmode_variant', 'rx');
+
+        $this->assertSame('rx', $this->user->fresh()->playmode_variant);
+    }
+
+    public function testUpdateDefaultPlaymodeRejectsUnsupportedVariant(): void
+    {
+        $this->actingAsVerified($this->user())
+            ->json('PUT', route('account.options'), [
+                'user' => [
+                    'playmode' => 'mania',
+                    'playmode_variant' => '4k',
+                ],
+            ])
+            ->assertStatus(422);
+    }
+
     public static function dataProviderForUpdateCountry(): array
     {
         return [

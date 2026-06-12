@@ -49,7 +49,6 @@ class BuildsUpdatePropagationHistory extends Command
 
             $builds = Build::propagationHistory()
                 ->whereIn('stream_id', $GLOBALS['cfg']['osu']['changelog']['update_streams'])
-                ->where('users', '>', 0)
                 ->get();
 
             foreach ($builds as $build) {

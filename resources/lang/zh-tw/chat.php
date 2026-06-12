@@ -50,11 +50,6 @@ return [
         'title' => '找不到頻道',
     ],
 
-    'not_joined' => [
-        'message' => '',
-        'join' => '',
-    ],
-
     'input' => [
         'create' => '建立',
         'disabled' => '無法傳送訊息...',

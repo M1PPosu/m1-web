@@ -26,9 +26,10 @@ class DbCreate extends Command
 
         foreach ($GLOBALS['cfg']['database']['connections'] as $connection) {
             $db = $connection['database'];
+            $quotedDb = str_replace('`', '``', $db);
 
             $this->info("Creating database '{$db}'");
-            $pdo->exec("CREATE DATABASE IF NOT EXISTS {$db} DEFAULT CHARSET utf8mb4");
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$quotedDb}` DEFAULT CHARSET utf8mb4");
         }
     }
 }

@@ -6,16 +6,6 @@
     $requestedLocale = $page->requestedLocale;
 @endphp
 <div class="header-buttons">
-    <div class="header-buttons__item">
-        <a
-            class="btn-osu-big btn-osu-big--rounded-thin"
-            href="{{ $page->editUrl() }}"
-            title="{{ osu_trans('wiki.show.edit.link') }}"
-        >
-            <i class="fab fa-github"></i>
-        </a>
-    </div>
-
     @if (priv_check('WikiPageRefresh')->can())
         <div class="header-buttons__item">
             <button

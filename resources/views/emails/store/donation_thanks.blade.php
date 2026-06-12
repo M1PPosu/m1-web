@@ -5,17 +5,17 @@
 
 Hi {{ $donor->username }},
 
-Thanks a lot for your {{ $continued ? 'continued ': '' }}support towards osu!.
-It is thanks to people like you that osu! is able to keep the game and community running smoothly without any advertisements or forced payments.
-{{ $isGift ? 'Your giftee(s)' : 'You' }} will now have access to osu!direct and many other supporter benefits{{ !$isGift ? ' for '.\App\Models\SupporterTag::getDurationText($duration, 'en') : '' }}.
+Thanks a lot for your {{ $continued ? 'continued ': '' }}support towards M1PPosu.
+It is thanks to people like you that M1PPosu is able to keep the server and community running smoothly without any advertisements or forced payments.
+{{ $isGift ? 'Your giftee(s)' : 'You' }} will now have access to M1PPosu supporter benefits{{ !$isGift ? ' for '.\App\Models\SupporterTag::getDurationText($duration, 'en') : '' }}.
 More new supporter benefits will appear over time, as well!
 
-Your support keeps osu! running for around {{ $minutes }} minutes! It may not seem like much, but it all adds up :).
+Your support keeps M1PPosu running for around {{ $minutes }} minutes! It may not seem like much, but it all adds up :).
 
 If you have any questions or feedback, don't hesitate to reply to this mail; I'll get back to you as soon as possible!
 
 Regards,
-Dean Herbert (peppy)
+M1PPosu Staff
 @if (app()->getLocale() !== 'en'
     && trans_exists('mail.donation_thanks.keep_free', app()->getLocale())
     && trans_exists('mail.donation_thanks.support.first', app()->getLocale())
@@ -43,5 +43,5 @@ Dean Herbert (peppy)
 {!! osu_trans('mail.donation_thanks.feedback') !!}
 
 {!! osu_trans('mail.common.closing') !!}
-Dean Herbert (peppy)
+M1PPosu Staff
 @endif

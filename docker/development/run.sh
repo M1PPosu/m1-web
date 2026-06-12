@@ -13,16 +13,17 @@ fi
 
 # commands
 _assets() {
+    yarn --network-timeout 100000
     exec yarn dev
 }
 
 _job() {
-    exec ./artisan queue:listen --queue=notification,default,beatmap_high,beatmap_default,imagesize --tries=3 --timeout=1000
+    exec php artisan queue:listen --queue=notification,default,beatmap_high,beatmap_default,imagesize --tries=3 --timeout=1000
 }
 
 _migrate() {
-    ./artisan db:create
-    exec ./artisan migrate:fresh-or-run
+    php artisan db:create || exit $?
+    exec php artisan migrate:fresh-or-run
 }
 
 _octane() {
@@ -38,7 +39,7 @@ _octane() {
         sleep 1
     done
 
-    exec ./artisan octane:start --host=0.0.0.0 "$@"
+    exec php artisan octane:start --host=0.0.0.0 "$@"
 }
 
 _schedule() {
@@ -61,7 +62,7 @@ _test() {
 
 _test_browser() {
     export APP_ENV=dusk.local
-    exec ./artisan dusk "$@"
+    exec php artisan dusk "$@"
 }
 
 
@@ -71,7 +72,7 @@ _watch() {
 }
 
 case "$command" in
-    artisan) exec ./artisan "$@";;
+    artisan) exec php artisan "$@";;
     assets|job|migrate|octane|schedule|test|watch) "_$command" "$@";;
     *) exec "$command" "$@";;
 esac

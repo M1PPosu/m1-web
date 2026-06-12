@@ -9,6 +9,8 @@ use App\Exceptions\ModelNotSavedException;
 use App\Exceptions\ValidationException;
 use App\Http\Middleware\RequestCost;
 use App\Libraries\ClientCheck;
+use App\Libraries\M1pposu\ProjectedScoreVariant;
+use App\Libraries\M1pposu\SourceRegistrar;
 use App\Libraries\RateLimiter;
 use App\Libraries\Search\ForumSearch;
 use App\Libraries\Search\ForumSearchRequestParams;
@@ -19,7 +21,6 @@ use App\Models\Beatmap;
 use App\Models\BeatmapDiscussion;
 use App\Models\IpBan;
 use App\Models\Log;
-use App\Models\Solo\Score;
 use App\Models\User;
 use App\Models\UserAccountHistory;
 use App\Models\UserAchievement;
@@ -31,6 +32,7 @@ use App\Transformers\UserMonthlyPlaycountTransformer;
 use App\Transformers\UserReplaysWatchedCountTransformer;
 use App\Transformers\UserTransformer;
 use Auth;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Request;
 use romanzipp\Turnstile\Validator as TurnstileValidator;
@@ -44,8 +46,6 @@ class UsersController extends Controller
 {
     // more limited list of UserProfileCustomization::SECTIONS for now.
     const LAZY_EXTRA_PAGES = ['beatmaps', 'kudosu', 'recent_activity', 'top_ranks', 'historical'];
-
-    const MAX_RESULTS = 100;
 
     const PER_PAGE = [
         'scoreReplayStats' => 5,
@@ -68,10 +68,13 @@ class UsersController extends Controller
         'recentlyReceivedKudosu' => 5,
     ];
 
+    protected $maxResults = 100;
+
     private ?string $mode = null;
     private ?int $offset = null;
     private ?int $perPage = null;
     private ?User $user = null;
+    private ?string $variant = null;
 
     public function __construct()
     {
@@ -119,7 +122,7 @@ class UsersController extends Controller
 
     public function create()
     {
-        if (!$GLOBALS['cfg']['osu']['user']['registration_mode']['web']) {
+        if (!$GLOBALS['cfg']['osu']['user']['registration_mode']['web'] && !app(SourceRegistrar::class)->enabled()) {
             return abort(403, osu_trans('users.store.from_client'));
         }
 
@@ -152,25 +155,32 @@ class UsersController extends Controller
 
     public function extraPages($_id, $page)
     {
+        // TODO: counts basically duplicated from UserCompactTransformer
         switch ($page) {
             case 'beatmaps':
                 return [
-                    'favourite' => $this->getExtraSection('favouriteBeatmapsets'),
-                    'graveyard' => $this->getExtraSection('graveyardBeatmapsets'),
-                    'guest' => $this->getExtraSection('guestBeatmapsets'),
-                    'loved' => $this->getExtraSection('lovedBeatmapsets'),
-                    'nominated' => $this->getExtraSection('nominatedBeatmapsets'),
-                    'ranked' => $this->getExtraSection('rankedBeatmapsets'),
-                    'pending' => $this->getExtraSection('pendingBeatmapsets'),
+                    'favourite' => $this->getExtraSection('favouriteBeatmapsets', $this->user->profileBeatmapsetsFavourite()->count()),
+                    'graveyard' => $this->getExtraSection('graveyardBeatmapsets', $this->user->profileBeatmapsetCountByGroupedStatus('graveyard')),
+                    'guest' => $this->getExtraSection('guestBeatmapsets', $this->user->profileBeatmapsetsGuest()->count()),
+                    'loved' => $this->getExtraSection('lovedBeatmapsets', $this->user->profileBeatmapsetCountByGroupedStatus('loved')),
+                    'nominated' => $this->getExtraSection('nominatedBeatmapsets', $this->user->profileBeatmapsetsNominated()->count()),
+                    'ranked' => $this->getExtraSection('rankedBeatmapsets', $this->user->profileBeatmapsetCountByGroupedStatus('ranked')),
+                    'pending' => $this->getExtraSection('pendingBeatmapsets', $this->user->profileBeatmapsetCountByGroupedStatus('pending')),
                 ];
 
             case 'historical':
                 return [
-                    'beatmap_playcounts' => $this->getExtraSection('beatmapPlaycounts'),
+                    'beatmap_playcounts' => $this->getExtraSection('beatmapPlaycounts', $this->user->beatmapPlaycounts()->count()),
                     'monthly_playcounts' => json_collection($this->user->monthlyPlaycounts, new UserMonthlyPlaycountTransformer()),
-                    'recent' => $this->getExtraSection('scoresRecent'),
+                    'recent' => $this->getExtraSection(
+                        'scoresRecent',
+                        $this->recentScoresQuery(false)->count(),
+                    ),
                     'replays_watched_counts' => json_collection($this->user->replaysWatchedCounts, new UserReplaysWatchedCountTransformer()),
-                    'score_replay_stats' => $this->getExtraSection('scoreReplayStats'),
+                    'score_replay_stats' => $this->getExtraSection(
+                        'scoreReplayStats',
+                        min($this->maxResults, $this->user->scoreReplayStats()->whereHas('score.beatmap.beatmapset')->count()),
+                    ),
                 ];
 
             case 'kudosu':
@@ -181,9 +191,20 @@ class UsersController extends Controller
 
             case 'top_ranks':
                 return [
-                    'best' => $this->getExtraSection('scoresBest'),
-                    'firsts' => $this->getExtraSection('scoresFirsts'),
-                    'pinned' => $this->getExtraSection('scoresPinned'),
+                    'best' => $this->getExtraSection(
+                        'scoresBest',
+                        count($this->user->beatmapBestScoreIds($this->mode))
+                    ),
+                    'firsts' => $this->getExtraSection(
+                        'scoresFirsts',
+                        $this->variant === null
+                            ? $this->user->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))->count()
+                            : 0
+                    ),
+                    'pinned' => $this->getExtraSection(
+                        'scoresPinned',
+                        $this->user->scorePins()->forRuleset($this->mode)->withVisibleScore()->count()
+                    ),
                 ];
 
             default:
@@ -214,7 +235,7 @@ class UsersController extends Controller
 
     public function storeWeb()
     {
-        if (!$GLOBALS['cfg']['osu']['user']['registration_mode']['web']) {
+        if (!$GLOBALS['cfg']['osu']['user']['registration_mode']['web'] && !app(SourceRegistrar::class)->enabled()) {
             return error_popup(osu_trans('users.store.from_client'), 403);
         }
 
@@ -651,12 +672,17 @@ class UsersController extends Controller
             abort(404);
         }
 
+        $currentVariant = $this->variantFromRequest(
+            $currentMode,
+            $mode === null ? $user->playmode_variant : null,
+        );
+
         // preload and set relation for opengraph header and transformer sharing data
-        $user->statistics($currentMode)?->setRelation('user', $user);
+        $user->statistics($currentMode, false, $currentVariant)?->setRelation('user', $user);
 
         $userArray = $this->fillDeprecatedDuplicateFields(json_item(
             $user,
-            (new UserTransformer())->setMode($currentMode),
+            (new UserTransformer())->setMode($currentMode, $currentVariant),
             $this->showUserIncludes(),
         ));
 
@@ -672,6 +698,7 @@ class UsersController extends Controller
             $initialData = [
                 'achievements' => $achievements,
                 'current_mode' => $currentMode,
+                'current_variant' => $currentVariant,
                 'scores_notice' => $GLOBALS['cfg']['osu']['user']['profile_scores_notice'],
                 'user' => $userArray,
                 'user_cover_presets' => $userCoverPresets ?? [],
@@ -735,18 +762,23 @@ class UsersController extends Controller
     {
         $this->user = FindForProfilePage::find(request()->route('user'), 'id');
 
-        $this->mode = request()->route('mode') ?? request()->input('mode') ?? $this->user->playmode;
+        $requestedMode = request()->route('mode') ?? request()->input('mode');
+        $this->mode = $requestedMode ?? $this->user->playmode;
         if (!Beatmap::isModeValid($this->mode)) {
             abort(404);
         }
+        $this->variant = $this->variantFromRequest(
+            $this->mode,
+            $requestedMode === null ? $this->user->playmode_variant : null,
+        );
 
         $this->offset = max(0, get_int(Request::input('offset')) ?? 0);
 
-        if ($this->offset >= static::MAX_RESULTS) {
+        if ($this->offset >= $this->maxResults) {
             $this->perPage = 0;
         } else {
             $perPage = $this->sanitizedLimitParam();
-            $this->perPage = min($perPage, static::MAX_RESULTS - $this->offset);
+            $this->perPage = min($perPage, $this->maxResults - $this->offset);
         }
     }
 
@@ -764,7 +796,7 @@ class UsersController extends Controller
                 $transformer = 'BeatmapPlaycount';
                 $query = $this->user->beatmapPlaycounts()
                     ->with('beatmap', 'beatmap.beatmapset')
-                    ->whereHas('beatmap')
+                    ->whereHas('beatmap.beatmapset')
                     ->orderBy('playcount', 'desc')
                     ->orderBy('beatmap_id', 'desc'); // for consistent sorting
                 break;
@@ -833,7 +865,7 @@ class UsersController extends Controller
                 $transformer = new ScoreReplayStatsTransformer();
                 $includes = ScoreReplayStatsTransformer::USER_PROFILE_INCLUDES;
                 $query = $this->user->scoreReplayStats()
-                    ->whereHas('score.beatmap')
+                    ->whereHas('score.beatmap.beatmapset')
                     ->orderByDesc('watch_count')
                     ->with(ScoreReplayStatsTransformer::USER_PROFILE_INCLUDES_PRELOAD);
                 break;
@@ -846,44 +878,65 @@ class UsersController extends Controller
                     $this->mode,
                     $perPage,
                     $offset,
-                    ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD
+                    ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD,
+                    $this->variant,
                 );
-                Score::preloadDifficultyRatings($collection, $this->mode);
                 $userRelationColumn = 'user';
                 break;
             case 'scoresFirsts':
                 $transformer = new ScoreTransformer();
                 $includes = ScoreTransformer::USER_PROFILE_INCLUDES;
-                $query = $this
-                    ->user
-                    ->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))
-                    ->default()
-                    ->with(prefix_strings('score.', ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD))
-                    ->orderByDesc('score_id');
+                if ($this->variant !== null) {
+                    $collection = new EloquentCollection();
+                } else {
+                    $query = $this
+                        ->user
+                        ->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))
+                        ->with(array_map(
+                            fn ($include) => "score.{$include}",
+                            ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD,
+                        ))
+                        ->orderByDesc('score_id');
+                    $collectionFn = fn ($scoreFirst) => $scoreFirst->map->score;
+                }
                 $userRelationColumn = 'user';
-                $collectionFn = fn ($scoreFirst) => Score::preloadDifficultyRatings($scoreFirst->map->score, $this->mode);
                 break;
             case 'scoresPinned':
                 $transformer = new ScoreTransformer();
                 $includes = ScoreTransformer::USER_PROFILE_INCLUDES;
-                $query = $this->user
-                    ->scorePins()
-                    ->forRuleset($this->mode)
-                    ->withVisibleScore()
-                    ->with(array_map(fn ($include) => "score.{$include}", ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD))
-                    ->reorderBy('display_order', 'asc');
-                $collectionFn = fn ($pins) => Score::preloadDifficultyRatings($pins->map->score, $this->mode);
+                if ($this->variant !== null) {
+                    $collection = new EloquentCollection();
+                } else {
+                    $query = $this->user
+                        ->scorePins()
+                        ->forRuleset($this->mode)
+                        ->withVisibleScore()
+                        ->with(array_map(fn ($include) => "score.{$include}", ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD))
+                        ->reorderBy('display_order', 'asc');
+                    $collectionFn = fn ($pins) => $pins->map->score;
+                }
                 $userRelationColumn = 'user';
                 break;
             case 'scoresRecent':
                 $transformer = new ScoreTransformer();
                 $includes = ScoreTransformer::USER_PROFILE_INCLUDES;
-                $query = $this->user->soloScores()
-                    ->recent($this->mode, $options['includeFails'] ?? false)
-                    ->reorderBy('ended_at', 'desc')
+                $query = $this->recentScoresQuery($options['includeFails'] ?? false)
                     ->with(ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD);
+                if ($this->variant !== null) {
+                    $collection = $query->limit($perPage)->offset($offset)->get();
+                } elseif (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+                    $collection = $query->limit($perPage)->offset($offset)->get();
+
+                    if ($collection->isEmpty()) {
+                        $collection = $this->recentScoresFallbackQuery($options['includeFails'] ?? false)
+                            ->reorderBy('ended_at', 'desc')
+                            ->with(ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD)
+                            ->limit($perPage)
+                            ->offset($offset)
+                            ->get();
+                    }
+                }
                 $userRelationColumn = 'user';
-                $collectionFn = fn ($scores) => Score::preloadDifficultyRatings($scores, $this->mode);
                 break;
         }
 
@@ -904,7 +957,38 @@ class UsersController extends Controller
         return json_collection($collection, $transformer, $includes ?? []);
     }
 
-    private function getExtraSection(string $section)
+    private function recentScoresQuery(bool $includeFails)
+    {
+        if ($this->variant !== null) {
+            return $this->recentScoresFallbackQuery($includeFails)->reorderBy('ended_at', 'desc');
+        }
+
+        $query = $this->user->soloScores()
+            ->recent($this->mode, $includeFails)
+            ->reorderBy('ended_at', 'desc');
+
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            ProjectedScoreVariant::apply($query, $this->mode, null);
+        }
+
+        return $query;
+    }
+
+    private function recentScoresFallbackQuery(bool $includeFails)
+    {
+        $query = $this->user->soloScores()
+            ->default()
+            ->forRuleset($this->mode)
+            ->includeFails($includeFails);
+
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            ProjectedScoreVariant::apply($query, $this->mode, $this->variant);
+        }
+
+        return $query;
+    }
+
+    private function getExtraSection(string $section, ?int $count = null)
     {
         // TODO: replace with cursor.
         $items = $this->getExtra($section, [], static::PER_PAGE[$section] + 1);
@@ -920,7 +1004,6 @@ class UsersController extends Controller
             ],
         ];
 
-        $count = $this->user->profileCount()->get($section, $this->mode);
         if ($count !== null) {
             $response['count'] = $count;
         }
@@ -983,6 +1066,23 @@ class UsersController extends Controller
         return $userIncludes;
     }
 
+    private function variantFromRequest(string $mode, ?string $defaultVariant = null): ?string
+    {
+        $variant = request()->has('variant')
+            ? get_string(request('variant'))
+            : $defaultVariant;
+
+        if ($variant === 'all') {
+            $variant = null;
+        }
+
+        if (!Beatmap::isVariantValid($mode, $variant)) {
+            abort(422, 'invalid variant parameter specified');
+        }
+
+        return $variant;
+    }
+
     private function fillDeprecatedDuplicateFields(array $userJson): array
     {
         static $map = [
@@ -1023,9 +1123,18 @@ class UsersController extends Controller
         $params['user_lang'] = \App::getLocale();
 
         $registration = new UserRegistration($params);
+        $sourceRegistrar = app(SourceRegistrar::class);
 
         try {
             $registration->assertValid();
+
+            if ($sourceRegistrar->active()) {
+                if (!$sourceRegistrar->enabled()) {
+                    return error_popup('Account registration is currently unavailable', 403);
+                }
+
+                $sourceRegistrar->assertValid($registration);
+            }
 
             if (get_bool($rawParams['check'] ?? null)) {
                 return response()->noContent();
@@ -1045,10 +1154,11 @@ class UsersController extends Controller
                 }
             }
 
-            $registration->save();
-            app(RateLimiter::class)->hit($throttleKey, 600);
+            $user = $sourceRegistrar->enabled()
+                ? $sourceRegistrar->register($registration, $countryCode)
+                : tap($registration, fn ($registration) => $registration->save())->user();
 
-            $user = $registration->user();
+            app(RateLimiter::class)->hit($throttleKey, 600);
 
             // report unknown country code but ignore non-country from cloudflare
             if (

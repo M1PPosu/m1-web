@@ -2,11 +2,12 @@
 // See the LICENCE file in the repository root for full licence text.
 
 import IconExpand from 'components/icon-expand';
-import { BeatmapsetDiscussionJsonForShow } from 'interfaces/beatmapset-discussion-json';
+import BeatmapsetDiscussionJson, { BeatmapsetDiscussionJsonForShow } from 'interfaces/beatmapset-discussion-json';
 import BeatmapsetDiscussionsStore from 'interfaces/beatmapset-discussions-store';
 import { action, computed, makeObservable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
+import { canModeratePosts } from 'utils/beatmapset-discussion-helper';
 import { classWithModifiers } from 'utils/css';
 import { trans } from 'utils/lang';
 import { Discussion } from './discussion';
@@ -41,7 +42,7 @@ export class Discussions extends React.Component<Props> {
 
     const discussions = this.discussionsState.discussionsForSelectedUserByMode[this.discussionsState.currentPage];
 
-    return discussions.slice().sort((a, b) => {
+    return discussions.slice().sort((a: BeatmapsetDiscussionJson, b: BeatmapsetDiscussionJson) => {
       const mapperNoteCompare =
         // no sticky for timeline sort
         this.discussionsState.currentSort !== 'timeline'
@@ -70,12 +71,13 @@ export class Discussions extends React.Component<Props> {
           {trans('beatmaps.discussions.title')}
         </div>
         <div className={`${bn}__toolbar`}>
-          <div className={`${bn}__toolbar-content`}>
+          <div className={`${bn}__toolbar-content ${bn}__toolbar-content--left`}>
             <div className={`${bn}__toolbar-item`}>
               {this.renderSortOptions()}
             </div>
           </div>
           <div className={`${bn}__toolbar-content ${bn}__toolbar-content--right`}>
+            {this.renderShowDeletedToggle()}
             {this.renderExpandCollapseAllButton('collapse')}
             {this.renderExpandCollapseAllButton('expand')}
           </div>
@@ -155,6 +157,25 @@ export class Discussions extends React.Component<Props> {
     );
   }
 
+  private renderShowDeletedToggle() {
+    if (!canModeratePosts()) return null;
+
+    return (
+      <button
+        className={`${bn}__toolbar-item ${bn}__toolbar-item--link`}
+        onClick={this.toggleShowDeleted}
+        type='button'
+      >
+        <span className={`${bn}__toolbar-link-content`}>
+          <span className={this.discussionsState.showDeleted ? 'fas fa-check-square' : 'far fa-square'} />
+        </span>
+        <span className={`${bn}__toolbar-link-content`}>
+          {trans('beatmaps.discussions.show_deleted')}
+        </span>
+      </button>
+    );
+  }
+
   private renderSortOptions() {
     const presets: Sort[] = this.discussionsState.currentPage === 'timeline'
       ? ['timeline', 'updated_at']
@@ -188,4 +209,9 @@ export class Discussions extends React.Component<Props> {
       />
     );
   }
+
+  @action
+  private readonly toggleShowDeleted = () => {
+    this.discussionsState.showDeleted = !this.discussionsState.showDeleted;
+  };
 }

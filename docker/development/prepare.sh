@@ -20,7 +20,7 @@ for envfile in .env .env.testing .env.dusk.local; do
         echo "Copying env file '${envfile}'"
         cp "${envfile}.example" "${envfile}"
     fi
-    if [ "${envfile}" != .env.testing ] && ! grep -q '^APP_KEY=.' "${envfile}"; then
+    if [ "${envfile}" != .env.testing ] && ! grep -q '^APP_KEY=[^[:space:]]' "${envfile}"; then
         echo "Generating app key for env file '${envfile}'"
         sed -i -e '/^APP_KEY=.*/d' "${envfile}"
         : ${APP_KEY="base64:$(head -c 32 /dev/urandom | base64)"}

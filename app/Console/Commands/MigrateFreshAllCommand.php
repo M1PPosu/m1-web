@@ -34,30 +34,46 @@ class MigrateFreshAllCommand extends FreshCommand
 
         foreach (array_keys($connections) as $database) {
             $this->warn($database);
-            $this->call('db:wipe', [
+            $exitCode = $this->call('db:wipe', [
                 '--database' => $database,
                 '--drop-views' => true,
             ]);
+
+            if ($exitCode !== self::SUCCESS) {
+                return $exitCode;
+            }
         }
 
         $this->info('Dropped all tables successfully.');
 
-        $this->call('migrate', [
+        $exitCode = $this->call('migrate', [
             '--path' => $this->input->getOption('path'),
         ]);
 
+        if ($exitCode !== self::SUCCESS) {
+            return $exitCode;
+        }
+
         $this->info('Setup elasticsearch indices.');
 
-        $this->call('es:index-documents', [
+        $exitCode = $this->call('es:index-documents', [
             '--cleanup' => true,
             '--no-interaction' => $this->option('no-interaction'),
         ]);
 
-        $this->call('es:index-wiki', [
+        if ($exitCode !== self::SUCCESS) {
+            return $exitCode;
+        }
+
+        $exitCode = $this->call('es:index-wiki', [
             '--cleanup' => true,
             '--create-only' => true,
             '--no-interaction' => $this->option('no-interaction'),
         ]);
+
+        if ($exitCode !== self::SUCCESS) {
+            return $exitCode;
+        }
 
         if ($this->needsSeeding()) {
             $this->runSeeder(null);

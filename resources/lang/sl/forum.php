@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Odstranjene objave',
             'total_posts' => 'Skupaj objav',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Trenutna prioriteta: +:count',

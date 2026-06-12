@@ -66,7 +66,7 @@ return [
         'daily_challenge' => 'desafío diario',
         'global' => 'global',
         'kudosu' => 'kudosu',
-        'matchmaking' => 'partidas clasificatorias',
+        'matchmaking' => 'partidas rápidas',
         'playlists' => 'listas de juego',
         'team' => 'equipos',
         'top_plays' => 'mejores jugadas',

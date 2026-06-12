@@ -287,7 +287,6 @@ return [
         'show' => [
             'deleted-posts' => 'Publicações Excluídas',
             'total_posts' => 'Total de publicações',
-            'total_watches' => '',
 
             'feature_vote' => [
                 'current' => 'Prioridade Atual: +:count',

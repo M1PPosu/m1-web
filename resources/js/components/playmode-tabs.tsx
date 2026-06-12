@@ -12,12 +12,16 @@ interface Entry {
   disabled: boolean;
   href?: string;
   mode: Ruleset;
+  variant?: string | null;
 }
 
 interface Props {
   currentMode: Ruleset;
+  currentVariant?: string | null;
   defaultMode?: Ruleset;
+  defaultVariant?: string | null;
   entries: Entry[];
+  extraContent?: React.ReactNode;
   modifiers?: Modifiers;
   onClick?: (event: React.MouseEvent<HTMLAnchorElement>, mode: Ruleset) => void;
 }
@@ -26,6 +30,7 @@ export default class PlaymodeTabs extends React.Component<Props> {
   render() {
     return (
       <ul className={classWithModifiers('game-mode', this.props.modifiers)}>
+        {this.props.extraContent}
         {this.props.entries.map(this.renderLink)}
       </ul>
     );
@@ -34,8 +39,9 @@ export default class PlaymodeTabs extends React.Component<Props> {
   private readonly onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     const target = e.currentTarget;
     const mode = target.dataset.mode as Ruleset;
+    const variant = target.dataset.variant == null || target.dataset.variant === '' ? null : target.dataset.variant;
 
-    if (this.props.currentMode !== mode) {
+    if (this.props.currentMode !== mode || (this.props.currentVariant ?? null) !== variant) {
       this.props.onClick?.(e, mode);
 
       return;
@@ -52,6 +58,7 @@ export default class PlaymodeTabs extends React.Component<Props> {
           title={entry.disabled ? undefined : trans(`beatmaps.mode.${entry.mode}`)}
         />
         {entry.mode === this.props.defaultMode &&
+          (entry.variant ?? null) === (this.props.defaultVariant ?? null) &&
           <span
             className='game-mode-link__icon'
             title={trans('users.show.edit.default_playmode.is_default_tooltip')}
@@ -76,6 +83,7 @@ export default class PlaymodeTabs extends React.Component<Props> {
             <a
               className={className}
               data-mode={entry.mode}
+              data-variant={entry.variant ?? ''}
               href={entry.href ?? '#'}
               onClick={this.onClick}
             >

@@ -41,10 +41,10 @@
     "clipboard-polyfill": "^2.3.0",
     "coffee-loader": "^5.0.0",
     "coffeescript": "^1.12.6",
-    "copy-webpack-plugin": "^11.0.0",
+    "copy-webpack-plugin": "^14.0.0",
     "cross-env": "^5.2.0",
     "css-loader": "^6.8.1",
-    "css-minimizer-webpack-plugin": "^5.0.1",
+    "css-minimizer-webpack-plugin": "^8.0.0",
     "d3": "^7.1.1",
     "dotenv": "^8.2.0",
     "fork-ts-checker-webpack-plugin": "^8.0",
@@ -71,7 +71,7 @@
     "moment": "^2.29.4",
     "normalize.css": "^8.0.1",
     "photoswipe": "^4.1.1",
-    "postcss": "^8.5.10",
+    "postcss": "^8.4.31",
     "postcss-loader": "^7.3.3",
     "qtip2": "https://github.com/notbakaneko/qTip2.git#cd5f038667d2b23a44f4274c46de01834d704ce6",
     "react": "^17.0.2",
@@ -87,7 +87,7 @@
     "slate-history": "^0.66.0",
     "slate-react": "^0.83.0",
     "terser": "^4.8.1",
-    "terser-webpack-plugin": "^5.3.9",
+    "terser-webpack-plugin": "^5.6.0",
     "timeago": "^1.5.0",
     "ts-loader": "^9.4.4",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
@@ -113,7 +113,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-typescript-sort-keys": "^3.3.0",
     "jasmine-core": "^4.1.0",
-    "karma": "^6.4.1",
+    "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.1.1",
     "karma-jasmine": "^5.1.0",
     "karma-mocha-reporter": "^2.2.5",
@@ -124,6 +124,14 @@
     "webpack-build-notifier": "^2.3.0"
   },
   "resolutions": {
-    "is-plain-object": "^5.0.0"
+    "**/ajv/fast-uri": "^3.1.2",
+    "**/anymatch/picomatch": "^2.3.2",
+    "**/micromatch/picomatch": "^2.3.2",
+    "**/readdirp/picomatch": "^2.3.2",
+    "@stylistic/eslint-plugin/picomatch": "^4.0.4",
+    "is-plain-object": "^5.0.0",
+    "socket.io-parser": "4.2.6",
+    "webpack/terser-webpack-plugin": "^5.6.0",
+    "ziggy-js/qs": "^6.14.2"
   }
 }

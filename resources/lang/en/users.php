@@ -113,14 +113,14 @@ return [
         'invalid_captcha' => 'Too many failed login attempts, please complete the captcha and try again. (Refresh page if captcha is not visible)',
         'locked_ip' => 'Your IP address is locked. Please wait a few minutes.',
         'password' => 'Password',
-        'register' => "Don't have an osu! account? Make a new one",
+        'register' => "Don't have a M1PPosu account? Make a new one",
         'remember' => 'Remember this computer',
         'title' => 'Please sign in to proceed',
         'username' => 'Username',
 
         'beta' => [
             'main' => 'Beta access is currently restricted to privileged users.',
-            'small' => '(osu!supporters will get in soon)',
+            'small' => '(M1PPosu supporters will get in soon)',
         ],
     ],
 
@@ -188,15 +188,19 @@ return [
     ],
     'restricted_banner' => [
         'title' => 'Your account has been restricted!',
-        'message' => 'While restricted, you will be unable to interact with other players and your scores will only be visible to you. This is usually the result of an automated process and will usually be lifted within 24 hours. :link',
+        'message' => 'While restricted, your public profile, rankings, and community interactions are limited. If you believe this is a mistake, contact server staff. :link',
         'message_link' => 'Check this page to learn more.',
+    ],
+    'silenced_banner' => [
+        'title' => 'You are currently silenced.',
+        'message' => 'You may not be able to post, chat, or reply until the silence expires.',
     ],
     'show' => [
         'age' => ':age years old',
         'change_avatar' => 'change your avatar!',
         'first_members' => 'Here since the beginning',
-        'is_developer' => 'osu!developer',
-        'is_supporter' => 'osu!supporter',
+        'is_developer' => 'M1PPosu developer',
+        'is_supporter' => 'M1PPosu supporter',
         'joined_at' => 'Joined :date',
         'lastvisit' => 'Last seen :date',
         'lastvisit_online' => 'Currently online',
@@ -248,7 +252,7 @@ return [
 
                     'restriction_info' => [
                         '_' => 'Upload available for :link only',
-                        'link' => 'osu!supporters',
+                        'link' => 'M1PPosu supporters',
                     ],
                 ],
             ],
@@ -264,7 +268,7 @@ return [
 
                 'supporter' => [
                     '_' => 'Custom colour themes available for :link only',
-                    'link' => 'osu!supporters',
+                    'link' => 'M1PPosu supporters',
                 ],
             ],
         ],
@@ -493,7 +497,7 @@ return [
 
             'restriction_info' => [
                 '_' => 'You need to be an :link to unlock this feature.',
-                'link' => 'osu!supporter',
+                'link' => 'M1PPosu supporter',
             ],
         ],
         'post_count' => [
@@ -533,11 +537,6 @@ return [
         ],
     ],
 
-    'silenced_banner' => [
-        'title' => 'You are currently silenced.',
-        'message' => 'Some actions may be unavailable.',
-    ],
-
     'status' => [
         'all' => 'All',
         'online' => 'Online',
@@ -545,7 +544,7 @@ return [
     ],
     'store' => [
         'from_client' => 'please register via the game client instead!',
-        'from_web' => 'please complete registration using the osu! website',
+        'from_web' => 'please complete registration using the website',
         'saved' => 'User created',
     ],
     'verify' => [

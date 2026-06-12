@@ -9,6 +9,8 @@ use App\Exceptions\Handler as ExceptionsHandler;
 use App\Jobs\BeatmapsetDelete;
 use App\Libraries\BeatmapsetDiscussion\Review;
 use App\Libraries\CommentBundle;
+use App\Libraries\M1pposu\BeatmapsetAssets;
+use App\Libraries\M1pposu\PrivateBeatmapsetSearch;
 use App\Libraries\Search\BeatmapsetSearchCached;
 use App\Libraries\Search\BeatmapsetSearchRequestParams;
 use App\Models\Beatmap;
@@ -180,8 +182,9 @@ class BeatmapsetsController extends Controller
         }
 
         $beatmapset = Beatmapset::findOrFail($id);
+        $privateDownloadUrl = BeatmapsetAssets::downloadUrl($beatmapset);
 
-        if ($beatmapset->download_disabled) {
+        if ($beatmapset->download_disabled && $privateDownloadUrl === null) {
             abort(404);
         }
 
@@ -195,6 +198,18 @@ class BeatmapsetsController extends Controller
 
         if ($recentlyDownloaded > $user->beatmapsetDownloadAllowance()) {
             abort(429, osu_trans('beatmapsets.download.limit_exceeded'));
+        }
+
+        if ($privateDownloadUrl !== null) {
+            BeatmapDownload::create([
+                'user_id' => $userId,
+                'timestamp' => time(),
+                'beatmapset_id' => $beatmapset->beatmapset_id,
+                'fulfilled' => 1,
+                'mirror_id' => 0,
+            ]);
+
+            return redirect($privateDownloadUrl);
         }
 
         $noVideo = get_bool(Request::input('noVideo', false));
@@ -374,7 +389,34 @@ class BeatmapsetsController extends Controller
 
     private function getSearchResponse(?array $params = null)
     {
-        $params = new BeatmapsetSearchRequestParams($params ?? request()->all(), auth()->user());
+        $rawParams = $params ?? request()->all();
+
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            $search = new PrivateBeatmapsetSearch($rawParams, auth()->user());
+
+            $records = datadog_timing(function () use ($search) {
+                return $search->records();
+            }, $GLOBALS['cfg']['datadog-helper']['prefix_web'].'.search', ['type' => 'beatmapset']);
+
+            return [
+                'content' => array_merge([
+                    'beatmapsets' => json_collection(
+                        $records,
+                        new BeatmapsetTransformer(),
+                        ['beatmaps.max_combo', 'pack_tags']
+                    ),
+                    'search' => [
+                        'sort' => $search->getSort(),
+                    ],
+                    'recommended_difficulty' => null,
+                    'error' => null,
+                    'total' => $search->count(),
+                ], cursor_for_response(null)),
+                'status' => 200,
+            ];
+        }
+
+        $params = new BeatmapsetSearchRequestParams($rawParams, auth()->user());
         $search = new BeatmapsetSearchCached($params);
 
         $records = datadog_timing(function () use ($search) {
