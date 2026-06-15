@@ -6,6 +6,7 @@
 namespace Tests\Controllers;
 
 use App\Models\User;
+use App\Models\UserTotpKey;
 use Database\Factories\UserFactory;
 use OTPHP\Factory;
 use Tests\TestCase;
@@ -65,5 +66,22 @@ class UserTotpControllerTest extends TestCase
             ->withPersistentSession($session)
             ->post(route('authenticator-app.store'), ['key' => '000000'])
             ->assertRedirect(route('authenticator-app.create'));
+    }
+
+    public function testDestroyRequiresCurrentPassword(): void
+    {
+        $user = User::factory()->create();
+        UserTotpKey::createOrFirstForUser($user);
+        $this->actingAsVerified($user);
+
+        $this
+            ->delete(route('authenticator-app.destroy'), ['password' => 'wrong'])
+            ->assertStatus(422);
+        $this->assertNotNull($user->fresh()->userTotpKey);
+
+        $this
+            ->delete(route('authenticator-app.destroy'), ['password' => UserFactory::DEFAULT_PASSWORD])
+            ->assertRedirect(route('account.edit').'#authenticator-app');
+        $this->assertNull($user->fresh()->userTotpKey);
     }
 }

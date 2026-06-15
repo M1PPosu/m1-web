@@ -2047,7 +2047,10 @@ class OsuAuthorize
         $page = $pageOwner->userPage;
 
         if ($page === null) {
-            if (!$user->hasSupported()) {
+            if (
+                !get_bool(config('m1pposu.private_server.enabled') ?? false)
+                && !$user->hasSupported()
+            ) {
                 return $prefix.'require_supporter_tag';
             }
         } else {

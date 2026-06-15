@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace App\Libraries\M1pposu;
 
-use App\Libraries\UsernameValidation;
 use App\Models\Count;
 use App\Models\Country;
 use App\Models\M1pposuExternalUser;
@@ -149,7 +148,7 @@ class UserProjector
 
         $user->getConnection()->transaction(function () use ($group, $user) {
             User::findAndRenameUserForInactive($user->username);
-            $user->saveOrExplode();
+            $user->saveOrExplode(['skipValidations' => true]);
             $user->setDefaultGroup($group);
             Count::totalUsers()->incrementInstance('count');
         });
@@ -209,7 +208,7 @@ class UserProjector
             return false;
         }
 
-        $user->saveOrExplode();
+        $user->saveOrExplode(['skipValidations' => true]);
 
         return true;
     }
@@ -257,7 +256,7 @@ class UserProjector
             return false;
         }
 
-        $user->saveOrExplode();
+        $user->saveOrExplode(['skipValidations' => true]);
 
         return true;
     }
@@ -388,7 +387,7 @@ class UserProjector
             return false;
         }
 
-        $user->saveOrExplode();
+        $user->saveOrExplode(['skipValidations' => true]);
 
         return true;
     }
@@ -575,26 +574,21 @@ class UserProjector
 
     private function sourceUsernameFailureReason(object $sourceUser): ?string
     {
-        $rawSourceName = (string) ($sourceUser->name ?? '');
-        if ($rawSourceName !== trim($rawSourceName)) {
-            return 'unsupported username: username has leading or trailing spaces';
-        }
-
-        $sourceName = $this->nullableString($rawSourceName);
-        if ($sourceName === null) {
+        $sourceName = (string) ($sourceUser->name ?? '');
+        if ($sourceName === '') {
             return 'missing username';
         }
 
-        foreach (
-            [
-                UsernameValidation::validateUsername($sourceName),
-                UsernameValidation::validateAvailability($sourceName),
-                UsernameValidation::validateUsersOfUsername($sourceName),
-            ] as $errors
-        ) {
-            if ($errors->isAny()) {
-                return 'unsupported username: '.$errors->toSentence('; ');
-            }
+        if (strlen($sourceName) > 255) {
+            return 'unsupported username: exceeds destination column length';
+        }
+
+        if (preg_match('/[\x00-\x1f\x7f]/u', $sourceName) === 1) {
+            return 'unsupported username: contains control characters';
+        }
+
+        if (User::where('username_clean', User::cleanUsername($sourceName))->exists()) {
+            return 'unsupported username: destination username already exists without an external mapping';
         }
 
         return null;

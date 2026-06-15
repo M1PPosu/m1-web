@@ -9,6 +9,19 @@ use Tests\TestCase;
 
 class HelpLegalControllerTest extends TestCase
 {
+    public function testContactPageUsesProductionSupportChannelsWithoutMissingForumLink(): void
+    {
+        config_set('m1pposu.contact_email', 'contact@m1pposu.dev');
+        config_set('m1pposu.community.discord_url', 'https://discord.gg/2ujhGaZ6Z9');
+
+        $this
+            ->get(route('help.contact'))
+            ->assertSuccessful()
+            ->assertSee('mailto:contact@m1pposu.dev', false)
+            ->assertSee('https://discord.gg/2ujhGaZ6Z9', false)
+            ->assertDontSee(route('forum.forums.show', ['forum' => 0]), false);
+    }
+
     public function testCustomHelpPagesRenderInFallbackEnglishForPolish(): void
     {
         $this

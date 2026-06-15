@@ -206,6 +206,7 @@ class ChangelogController extends Controller
     public function github()
     {
         $token = $GLOBALS['cfg']['osu']['changelog']['github_token'];
+        abort_unless(present($token), 404);
 
         $signatureHeader = explode('=', request()->header('X-Hub-Signature') ?? '');
 

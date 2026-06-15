@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Beatmap;
 use App\Models\Team;
 use App\Models\TeamStatistics;
 use Illuminate\Console\Command;
@@ -26,10 +25,11 @@ class RankingsRecalculateTeamStats extends Command
 
         $teams = Team::chunkById(100, function ($teamChunk) {
             foreach ($teamChunk as $team) {
-                foreach (Beatmap::MODES as $rulesetId) {
+                foreach (TeamStatistics::supportedRulesetVariants() as $mode) {
                     TeamStatistics::createOrFirst([
                         'team_id' => $team->getKey(),
-                        'ruleset_id' => $rulesetId,
+                        'ruleset_id' => $mode['rulesetId'],
+                        'variant' => $mode['variant'],
                     ])->recalculate();
                     $this->bar->advance();
                 }

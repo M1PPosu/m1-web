@@ -162,9 +162,9 @@ return [
         'client_id' => presence(env('GITHUB_CLIENT_ID')),
         'client_secret' => presence(env('GITHUB_CLIENT_SECRET')),
     ],
-    'is_development_deploy' => get_bool(env('IS_DEVELOPMENT_DEPLOY')) ?? true,
+    'is_development_deploy' => get_bool(env('IS_DEVELOPMENT_DEPLOY')) ?? false,
     'landing' => [
-        'video_url' => env('LANDING_VIDEO_URL', '/videos/landing.mp4'),
+        'video_url' => presence(env('LANDING_VIDEO_URL')) ?? '/videos/landing.mp4',
     ],
     'legacy' => [
         'bancho_bot_user_id' => get_int(env('BANCHO_BOT_USER_ID')) ?? 3,
@@ -235,7 +235,7 @@ return [
         'base' => 'https://osu.ppy.sh',
         'bounty-form' => env('OS_BOUNTY_URL'),
         'dev' => presence(env('OSU_URL_DEV')),
-        'download_video' => env('OSU_URL_DOWNLOAD_VIDEO', '/videos/download.mp4'),
+        'download_video' => presence(env('OSU_URL_DOWNLOAD_VIDEO')) ?? '/videos/download.mp4',
         'installer' => presence(env('OSU_URL_INSTALLER')),
         'installer-mirror' => presence(env('OSU_URL_INSTALLER_MIRROR')),
         'lazer_dl.android' => presence(env('OSU_URL_LAZER_ANDROID')),

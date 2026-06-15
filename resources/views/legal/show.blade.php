@@ -5,6 +5,7 @@
 @php
     $legalPage = osu_trans("legal.pages.{$pageKey}");
     $contactEmail = config('m1pposu.contact_email');
+    $discordUrl = config('m1pposu.community.discord_url');
     $title = $legalPage['title'];
     $url = route('legal', ['locale' => $locale, 'path' => ucfirst($pageKey)]);
     $sourceCodeUrl = config('m1pposu.legal.source_code_url');
@@ -112,7 +113,11 @@
 
                     <h2 id="contact" class="osu-md__header osu-md__header--2">{{ osu_trans('legal.contact') }}</h2>
                     <p class="osu-md__paragraph">
-                        <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>
+                        @if ($contactEmail !== null)
+                            <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>
+                        @else
+                            <a href="{{ $discordUrl }}">{{ $discordUrl }}</a>
+                        @endif
                     </p>
 
                     <p class="osu-md__paragraph">

@@ -25,14 +25,16 @@
         </div>
     </div>
 
-    <div>
-        <div class="user-online-status__label">
-            {{ osu_trans('home.user.header.stats.games') }}
+    @if ($stats->currentGames !== null)
+        <div>
+            <div class="user-online-status__label">
+                {{ osu_trans('home.user.header.stats.games') }}
+            </div>
+            <div class="user-online-status__value">
+                {{ i18n_number_format($stats->currentGames) }}
+            </div>
         </div>
-        <div class="user-online-status__value">
-            {{ i18n_number_format($stats->currentGames) }}
-        </div>
-    </div>
+    @endif
 
     <div>
         <div class="user-online-status__label">

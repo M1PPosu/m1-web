@@ -27,6 +27,7 @@ class M1pposuSyncScores extends Command
     private const DEFAULT_CHUNK_SIZE = 1000;
     private const MAX_BATCH_LIMIT = 10000;
     private const MAX_CHUNK_SIZE = 5000;
+    private const PROCESS_HISTORY_TABLE = 'solo_scores_process_history';
 
     private const SOURCE_SCORE_COLUMNS = [
         'id',
@@ -64,8 +65,11 @@ class M1pposuSyncScores extends Command
     protected $signature = 'm1pposu:sync:scores
         {--username= : Sync scores for one source username}
         {--external-user-id= : Sync scores for one source users.id}
+        {--score-id=* : Sync exact source scores.id values}
         {--limit= : Maximum source scores to scan}
         {--all : Sync every source score using chunked processing}
+        {--include-failed : Include failed scores for live recent-play projection}
+        {--fail-on-skip : Return a failure when any exact score cannot be projected}
         {--chunk-size= : Source scores to scan per chunk when using --all or --limit}
         {--dry-run : Show what would be synced without writing data}';
 
@@ -78,29 +82,50 @@ class M1pposuSyncScores extends Command
     {
         $dryRun = get_bool($this->option('dry-run'));
         $all = get_bool($this->option('all'));
+        $includeFailed = get_bool($this->option('include-failed'));
+        $failOnSkip = get_bool($this->option('fail-on-skip'));
         $username = $this->nullableString($this->option('username'));
         $externalUserId = $this->nullableString($this->option('external-user-id'));
+        $scoreIds = $this->parseScoreIds($this->option('score-id'));
         $limit = $this->parsePositiveInt($this->option('limit'), '--limit', self::MAX_BATCH_LIMIT, true);
         $chunkSize = $this->parsePositiveInt($this->option('chunk-size'), '--chunk-size', self::MAX_CHUNK_SIZE, true) ?? self::DEFAULT_CHUNK_SIZE;
 
-        if ($limit === false || $chunkSize === false) {
+        if ($scoreIds === false || $limit === false || $chunkSize === false) {
             return static::FAILURE;
         }
 
-        if ($username !== null && $externalUserId !== null) {
-            $this->error('Use either --username or --external-user-id, not both.');
+        $selectors = array_filter([
+            'username' => $username,
+            'external user ID' => $externalUserId,
+            'score IDs' => $scoreIds === [] ? null : $scoreIds,
+        ], fn ($value) => $value !== null);
+
+        if (count($selectors) > 1) {
+            $this->error('Use only one of --username, --external-user-id, or --score-id.');
 
             return static::FAILURE;
         }
 
-        if ($all && ($username !== null || $externalUserId !== null || $limit !== null)) {
-            $this->error('Use --all by itself, not with --username, --external-user-id, or --limit.');
+        if ($all && ($selectors !== [] || $limit !== null)) {
+            $this->error('Use --all by itself, not with a score selector or --limit.');
 
             return static::FAILURE;
         }
 
-        if ($username === null && $externalUserId === null && $limit === null && !$all) {
-            $this->error('Refusing to run an unbounded score sync. Use --username, --external-user-id, --limit, or --all.');
+        if ($selectors === [] && $limit === null && !$all) {
+            $this->error('Refusing to run an unbounded score sync. Use --username, --external-user-id, --score-id, --limit, or --all.');
+
+            return static::FAILURE;
+        }
+
+        if ($includeFailed && $scoreIds === []) {
+            $this->error('--include-failed is only allowed with exact --score-id values.');
+
+            return static::FAILURE;
+        }
+
+        if ($failOnSkip && $scoreIds === []) {
+            $this->error('--fail-on-skip is only allowed with exact --score-id values.');
 
             return static::FAILURE;
         }
@@ -125,8 +150,8 @@ class M1pposuSyncScores extends Command
         $summary = $this->emptySummary();
 
         try {
-            $this->forEachSourceScoreBatch($sourceUserId, $limit, $all, $chunkSize, function (Collection $sourceScores) use ($backend, $dryRun, &$summary) {
-                $this->processSourceScoreBatch($sourceScores, $backend, $dryRun, $summary);
+            $this->forEachSourceScoreBatch($sourceUserId, $scoreIds, $limit, $all, $chunkSize, function (Collection $sourceScores) use ($backend, $dryRun, $includeFailed, &$summary) {
+                $this->processSourceScoreBatch($sourceScores, $backend, $dryRun, $includeFailed, $summary);
             });
         } catch (Throwable $e) {
             $this->error("Unable to query source scores: {$e->getMessage()}");
@@ -136,10 +161,12 @@ class M1pposuSyncScores extends Command
 
         $this->printSummary($summary, $dryRun);
 
-        return static::SUCCESS;
+        return $failOnSkip && $summary['skipped_scores'] > 0
+            ? static::FAILURE
+            : static::SUCCESS;
     }
 
-    private function processSourceScoreBatch(Collection $sourceScores, string $backend, bool $dryRun, array &$summary): void
+    private function processSourceScoreBatch(Collection $sourceScores, string $backend, bool $dryRun, bool $includeFailed, array &$summary): void
     {
         if ($sourceScores->isEmpty()) {
             return;
@@ -155,7 +182,7 @@ class M1pposuSyncScores extends Command
             $summary['source_scores_scanned']++;
 
             try {
-                $reason = $this->unsupportedSourceScoreReason($sourceScore);
+                $reason = $this->unsupportedSourceScoreReason($sourceScore, $includeFailed);
                 if ($reason !== null) {
                     $this->skipScore($sourceScore, $summary, $reason);
 
@@ -295,7 +322,8 @@ class M1pposuSyncScores extends Command
     {
         $endedAt = Carbon::parse((string) $sourceScore->play_time);
         $startedAt = $endedAt->copy()->subMilliseconds(max(0, (int) $sourceScore->time_elapsed));
-        $isBest = (int) $sourceScore->status === self::STATUS_BEST;
+        $status = (int) $sourceScore->status;
+        $isBest = $status === self::STATUS_BEST;
         $isRanked = $isBest && $this->isRankedBeatmap($beatmap);
         $rulesetId = SourceMode::rulesetId((int) $sourceScore->mode);
 
@@ -307,7 +335,7 @@ class M1pposuSyncScores extends Command
             'preserve' => $isBest,
             'ranked' => $isRanked,
             'rank' => $this->normalRank($sourceScore->grade),
-            'passed' => true,
+            'passed' => $status !== self::STATUS_FAILED,
             'accuracy' => $this->normalAccuracy($sourceScore->acc),
             'max_combo' => max(0, (int) $sourceScore->max_combo),
             'total_score' => max(0, (int) $sourceScore->score),
@@ -337,16 +365,16 @@ class M1pposuSyncScores extends Command
 
     private function upsertScoreProcessHistory(int $scoreId): void
     {
-        $existing = DB::table('score_process_history')->where('score_id', $scoreId)->first();
+        $existing = DB::table(self::PROCESS_HISTORY_TABLE)->where('score_id', $scoreId)->first();
         $attributes = [
             'processed_version' => 1,
             'processed_at' => now(),
         ];
 
         if ($existing === null) {
-            DB::table('score_process_history')->insert(['score_id' => $scoreId, ...$attributes]);
+            DB::table(self::PROCESS_HISTORY_TABLE)->insert(['score_id' => $scoreId, ...$attributes]);
         } else {
-            DB::table('score_process_history')->where('score_id', $scoreId)->update($attributes);
+            DB::table(self::PROCESS_HISTORY_TABLE)->where('score_id', $scoreId)->update($attributes);
         }
     }
 
@@ -426,14 +454,15 @@ class M1pposuSyncScores extends Command
             ->all();
     }
 
-    private function unsupportedSourceScoreReason(object $sourceScore): ?string
+    private function unsupportedSourceScoreReason(object $sourceScore, bool $includeFailed): ?string
     {
         if (SourceMode::mode((int) $sourceScore->mode) === null) {
             return "unsupported mode {$sourceScore->mode}";
         }
 
-        if (!in_array((int) $sourceScore->status, self::SUPPORTED_STATUSES, true)) {
-            return (int) $sourceScore->status === self::STATUS_FAILED
+        $status = (int) $sourceScore->status;
+        if (!in_array($status, self::SUPPORTED_STATUSES, true) && !($includeFailed && $status === self::STATUS_FAILED)) {
+            return $status === self::STATUS_FAILED
                 ? 'failed score not projected in this profile slice'
                 : "unsupported status {$sourceScore->status}";
         }
@@ -449,8 +478,16 @@ class M1pposuSyncScores extends Command
         return null;
     }
 
-    private function forEachSourceScoreBatch(?string $sourceUserId, ?int $limit, bool $all, int $chunkSize, callable $callback): void
+    private function forEachSourceScoreBatch(?string $sourceUserId, array $scoreIds, ?int $limit, bool $all, int $chunkSize, callable $callback): void
     {
+        if ($scoreIds !== []) {
+            foreach (array_chunk($scoreIds, $chunkSize) as $scoreIdChunk) {
+                $callback($this->sourceScoresQuery()->whereIn('id', $scoreIdChunk)->get());
+            }
+
+            return;
+        }
+
         $lastId = 0;
         $remaining = $all || $sourceUserId !== null ? null : $limit;
 
@@ -650,6 +687,34 @@ class M1pposuSyncScores extends Command
         }
 
         return $value;
+    }
+
+    private function parseScoreIds($values): array|false
+    {
+        if (!is_array($values)) {
+            return false;
+        }
+
+        $ids = [];
+        foreach ($values as $value) {
+            $value = $this->nullableString($value);
+            if ($value === null || !ctype_digit($value) || (int) $value <= 0) {
+                $this->error('--score-id values must be positive integers.');
+
+                return false;
+            }
+
+            $ids[] = (int) $value;
+        }
+
+        $ids = array_values(array_unique($ids));
+        if (count($ids) > self::MAX_BATCH_LIMIT) {
+            $this->error('--score-id accepts at most '.self::MAX_BATCH_LIMIT.' unique values.');
+
+            return false;
+        }
+
+        return $ids;
     }
 
     private function hasChanged(object $existing, array $attributes): bool

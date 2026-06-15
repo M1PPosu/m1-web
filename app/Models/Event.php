@@ -5,6 +5,7 @@
 
 namespace App\Models;
 
+use App\Libraries\M1pposu\SourceMode;
 use App\Models\Traits\WithDbCursorHelper;
 use Carbon\Carbon;
 use Sentry\State\Scope;
@@ -176,8 +177,9 @@ class Event extends Model
             case 'rank':
                 $beatmap = $options['beatmap'];
                 $ruleset = $options['ruleset'];
-                $rulesetName = osu_trans("beatmaps.mode.{$ruleset}");
-                $beatmapLink = static::beatmapLink($beatmap, $ruleset);
+                $variant = $options['variant'] ?? null;
+                $rulesetName = static::rulesetName($ruleset, $variant);
+                $beatmapLink = static::beatmapLink($beatmap, $ruleset, $variant);
                 $user = $options['user'];
                 $userLink = static::userLink($user);
                 $positionAfter = $options['position_after'];
@@ -195,17 +197,19 @@ class Event extends Model
                     // copy-pasted from https://github.com/peppy/osu-web-10/blob/2821062bbb668bc85fd655bd1c777d6e610c51b7/www/web/osu-submit-20190809.php#L1208
                     'epicfactor' => ($positionAfter === 1 && $ruleset === 'osu' && $beatmap->passcount > 250 ? 8 : ($positionAfter < 10 ? 4 : ($positionAfter < 40 ? 2 : 1))),
                     'legacy_score_event' => $legacyScoreEvent,
+                    'date' => $options['date'] ?? Carbon::now(),
                 ];
                 break;
 
             case 'rankLost':
                 $beatmap = $options['beatmap'];
                 $ruleset = $options['ruleset'];
+                $variant = $options['variant'] ?? null;
                 $user = $options['user'];
                 $legacyScoreEvent = $options['legacy_score_event'];
 
-                $rulesetName = osu_trans("beatmaps.mode.{$ruleset}");
-                $beatmapLink = static::beatmapLink($beatmap, $ruleset);
+                $rulesetName = static::rulesetName($ruleset, $variant);
+                $beatmapLink = static::beatmapLink($beatmap, $ruleset, $variant);
                 $userLink = static::userLink($user);
 
                 $template = '%s has lost first place on %s (%s)';
@@ -218,6 +222,7 @@ class Event extends Model
                     'private' => false,
                     'epicfactor' => 2,
                     'legacy_score_event' => $legacyScoreEvent,
+                    'date' => $options['date'] ?? Carbon::now(),
                 ];
                 break;
 
@@ -347,6 +352,10 @@ class Event extends Model
                 return 'taiko';
             case 'osu!':
                 return 'osu';
+            case 'osu! Relax':
+                return 'osu';
+            case 'osu! Autopilot':
+                return 'osu';
             case 'Catch the Beat':
             case 'osu!catch':
                 return 'fruits';
@@ -447,6 +456,7 @@ class Event extends Model
             'scoreRank' => $matches['scoreRank'],
             'rank' => intval($matches['rank']),
             'mode' => $mode,
+            'variant' => static::variantFromModeName($matches['mode']),
             'beatmap' => $this->arrayBeatmap($matches),
             'user' => $this->arrayUser($matches),
         ];
@@ -461,6 +471,7 @@ class Event extends Model
 
         return [
             'mode' => $mode,
+            'variant' => static::variantFromModeName($matches['mode']),
             'beatmap' => $this->arrayBeatmap($matches),
             'user' => $this->arrayUser($matches),
         ];
@@ -550,13 +561,37 @@ class Event extends Model
         ];
     }
 
-    private static function beatmapLink($beatmap, $ruleset)
+    private static function beatmapLink($beatmap, $ruleset, $variant = null)
     {
-        $url = route('beatmaps.show', ['beatmap' => $beatmap, 'ruleset' => $ruleset], false);
+        $url = route('beatmaps.show', array_filter([
+            'beatmap' => $beatmap,
+            'ruleset' => $ruleset,
+            'variant' => $variant,
+        ], fn ($value) => $value !== null), false);
         $title = "{$beatmap->beatmapset->artist} - {$beatmap->beatmapset->title} [{$beatmap->version}]";
         return [
             'html' => sprintf('<a href=\'%s\'>%s</a>', e($url), e($title)),
             'clean' => "[{$GLOBALS['cfg']['app']['url']}{$url} {$title}]",
         ];
+    }
+
+    private static function rulesetName(string $ruleset, ?string $variant): string
+    {
+        $name = osu_trans("beatmaps.mode.{$ruleset}");
+
+        return match ($variant) {
+            SourceMode::VARIANT_RELAX => "{$name} Relax",
+            SourceMode::VARIANT_AUTOPILOT => "{$name} Autopilot",
+            default => $name,
+        };
+    }
+
+    private static function variantFromModeName(string $mode): ?string
+    {
+        return match ($mode) {
+            'osu! Relax' => SourceMode::VARIANT_RELAX,
+            'osu! Autopilot' => SourceMode::VARIANT_AUTOPILOT,
+            default => null,
+        };
     }
 }

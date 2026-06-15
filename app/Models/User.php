@@ -12,6 +12,7 @@ use App\Jobs\EsDocument;
 use App\Libraries\BBCodeForDB;
 use App\Libraries\ChangeUsername;
 use App\Libraries\Elasticsearch\Indexable;
+use App\Libraries\M1pposu\LivePresence;
 use App\Libraries\Session\Store as SessionStore;
 use App\Libraries\Transactions\AfterCommit;
 use App\Libraries\Uploader;
@@ -1124,9 +1125,7 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
 
     public function isOnline()
     {
-        return get_bool(config('m1pposu.features.presence') ?? false)
-            && !$this->hide_presence
-            && time() - $this->getRawAttribute('user_lastvisit') < $GLOBALS['cfg']['osu']['user']['online_window'];
+        return app(LivePresence::class)->isUserOnline($this);
     }
 
     public function isPrivileged()
@@ -1462,10 +1461,22 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
         return $this->hasMany(BeatmapLeader::class);
     }
 
-    public function scoresFirst(string $mode, null | true $legacyOnly)
+    public function m1pposuScoreLeaders()
+    {
+        return $this->hasMany(M1pposuScoreLeader::class);
+    }
+
+    public function scoresFirst(string $mode, null | true $legacyOnly, ?string $variant = null)
     {
         if (!Beatmap::isModeValid($mode)) {
             return;
+        }
+
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            return $this->m1pposuScoreLeaders()
+                ->whereHas('beatmap.beatmapset')
+                ->whereHas('score')
+                ->rulesetVariant($mode, $variant);
         }
 
         if ($legacyOnly) {
@@ -2041,13 +2052,12 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
 
     public function scopeOnline($query)
     {
-        if (!get_bool(config('m1pposu.features.presence') ?? false)) {
-            return $query->whereRaw('1 = 0');
-        }
+        $onlineUserIds = app(LivePresence::class)->snapshot()['user_ids'];
+        $model = $query->getModel();
 
         return $query
-            ->where('user_allow_viewonline', true)
-            ->where('user_lastvisit', '>', time() - $GLOBALS['cfg']['osu']['user']['online_window']);
+            ->where($model->qualifyColumn('user_allow_viewonline'), true)
+            ->whereIn($model->qualifyColumn('user_id'), $onlineUserIds);
     }
 
     public function scopeWithoutBots(Builder $query): Builder

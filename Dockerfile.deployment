@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM almalinux:10-minimal as buildenv
+FROM --platform=$BUILDPLATFORM almalinux:10-minimal AS buildenv
 
 COPY .php-version .node-version /
 
@@ -48,7 +48,7 @@ COPY package.json yarn.lock ./
 RUN yarn --prod --ignore-optional --frozen-lockfile
 
 
-FROM almalinux:10-minimal as runenv
+FROM almalinux:10-minimal AS runenv
 
 COPY .php-version /
 
@@ -91,10 +91,11 @@ RUN rm -f /var/log/nginx/access.log /var/log/nginx/error.log && \
     ln -s /dev/stderr /var/log/nginx/error.log
 
 
-FROM buildenv as build
+FROM buildenv AS build
 
 COPY . .
 RUN mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/views storage/framework/sessions public/uploads public/uploads-avatar public/uploads-replay
+ENV APP_ENV=build
 
 ARG APP_URL
 ARG DOCS_URL
@@ -111,13 +112,13 @@ ARG GIT_SHA
 RUN printf "%s" "$GIT_SHA" > version
 
 
-FROM runenv as run
+FROM runenv AS run
 
 COPY --from=build /app /app
 WORKDIR /app
 
 RUN useradd -m osuweb
-RUN chown -R osuweb /var/lib/nginx bootstrap/cache storage
+RUN chown -R osuweb /var/lib/nginx bootstrap/cache storage public/uploads public/uploads-avatar public/uploads-replay
 USER osuweb
 ENV LOG_CHANNEL stderr
 # fix broken readline in php console

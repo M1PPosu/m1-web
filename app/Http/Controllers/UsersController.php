@@ -11,6 +11,7 @@ use App\Http\Middleware\RequestCost;
 use App\Libraries\ClientCheck;
 use App\Libraries\M1pposu\ProjectedScoreVariant;
 use App\Libraries\M1pposu\SourceRegistrar;
+use App\Libraries\M1pposu\UserpageBridge;
 use App\Libraries\RateLimiter;
 use App\Libraries\Search\ForumSearch;
 use App\Libraries\Search\ForumSearchRequestParams;
@@ -197,9 +198,11 @@ class UsersController extends Controller
                     ),
                     'firsts' => $this->getExtraSection(
                         'scoresFirsts',
-                        $this->variant === null
-                            ? $this->user->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))->count()
-                            : 0
+                        $this->user->scoresFirst(
+                            $this->mode,
+                            ScoreSearchParams::showLegacyForUser(\Auth::user()),
+                            $this->variant,
+                        )->count()
                     ),
                     'pinned' => $this->getExtraSection(
                         'scoresPinned',
@@ -700,6 +703,7 @@ class UsersController extends Controller
                 'current_mode' => $currentMode,
                 'current_variant' => $currentVariant,
                 'scores_notice' => $GLOBALS['cfg']['osu']['user']['profile_scores_notice'],
+                'userpage_edit_enabled' => get_bool(config('m1pposu.private_server.enabled') ?? false),
                 'user' => $userArray,
                 'user_cover_presets' => $userCoverPresets ?? [],
             ];
@@ -733,13 +737,16 @@ class UsersController extends Controller
         return response()->noContent();
     }
 
-    public function updatePage($id)
+    public function updatePage($id, UserpageBridge $userpageBridge)
     {
         $user = User::findOrFail($id);
 
         priv_check('UserPageEdit', $user)->ensureCan();
 
         try {
+            if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+                $userpageBridge->write($user, (string) request('body'));
+            }
             $user = $user->updatePage(request('body'));
 
             if (!$user->is(auth()->user())) {
@@ -886,19 +893,19 @@ class UsersController extends Controller
             case 'scoresFirsts':
                 $transformer = new ScoreTransformer();
                 $includes = ScoreTransformer::USER_PROFILE_INCLUDES;
-                if ($this->variant !== null) {
-                    $collection = new EloquentCollection();
-                } else {
-                    $query = $this
-                        ->user
-                        ->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))
-                        ->with(array_map(
-                            fn ($include) => "score.{$include}",
-                            ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD,
-                        ))
-                        ->orderByDesc('score_id');
-                    $collectionFn = fn ($scoreFirst) => $scoreFirst->map->score;
-                }
+                $query = $this
+                    ->user
+                    ->scoresFirst(
+                        $this->mode,
+                        ScoreSearchParams::showLegacyForUser(\Auth::user()),
+                        $this->variant,
+                    )
+                    ->with(array_map(
+                        fn ($include) => "score.{$include}",
+                        ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD,
+                    ))
+                    ->orderByDesc('score_id');
+                $collectionFn = fn ($scoreFirst) => $scoreFirst->map->score;
                 $userRelationColumn = 'user';
                 break;
             case 'scoresPinned':

@@ -105,7 +105,7 @@ export default class Main extends React.Component<Props> {
   private readonly onChangeVariant = (event: React.MouseEvent<HTMLButtonElement>) => {
     this.controller.setCurrent({
       forceReload: true,
-      variant: event.currentTarget.dataset.value === 'rx' ? 'rx' : null,
+      variant: event.currentTarget.dataset.value === 'all' ? null : event.currentTarget.dataset.value,
     });
   };
 
@@ -217,7 +217,7 @@ export default class Main extends React.Component<Props> {
   }
 
   private renderVariantSwitch() {
-    if (!this.controller.supportsRelax) return null;
+    if (this.controller.supportedVariants.length === 0) return null;
 
     return (
       <Sort
@@ -226,7 +226,7 @@ export default class Main extends React.Component<Props> {
         onChange={this.onChangeVariant}
         showTitle={false}
         transPrefix={`beatmaps.variant.${this.controller.beatmap.mode}.`}
-        values={['all', 'rx']}
+        values={['all', ...this.controller.supportedVariants]}
       />
     );
   }

@@ -19,6 +19,15 @@
         <env name="BEATMAPSET_REQUIRED_HYPE" value="0"/>
         <env name="BROADCAST_DRIVER" value="log"/>
         <env name="CHAT_PRIVATE_LIMIT" value="2"/>
+        <env name="DB_DATABASE" value="osu_test" force="true"/>
+        <env name="DB_DATABASE_CHARTS" value="osu_charts_test" force="true"/>
+        <env name="DB_DATABASE_CHAT" value="osu_chat_test" force="true"/>
+        <env name="DB_DATABASE_MP" value="osu_mp_test" force="true"/>
+        <env name="DB_DATABASE_STORE" value="osu_store_test" force="true"/>
+        <env name="DB_DATABASE_UPDATES" value="osu_updates_test" force="true"/>
+        <env name="ES_INDEX_PREFIX" value="test_" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="QUEUE_DRIVER" value="sync" force="true"/>
 
         <env name="ADMIN_FORUM_ID" value="0"/>
         <env name="CLIENT_CHECK_VERSION" value="0"/>
@@ -28,6 +37,9 @@
         <env name="INITIAL_HELP_FORUM_IDS" value="0"/>
         <env name="ISSUE_FORUM_IDS" value="0"/>
         <env name="M1PP_FEATURE_STORE" value="true"/>
+        <env name="PAYPAL_CLIENT_ID" value="test-client-id"/>
+        <env name="PAYPAL_CLIENT_SECRET" value="test-client-secret"/>
+        <env name="PAYPAL_URL" value="https://api-m.sandbox.paypal.com"/>
         <env name="SHARED_INTEROP_SECRET" value="test-shared-interop-secret"/>
         <env name="SLACK_WATCH_FORUM_IDS" value="0"/>
         <env name="SLACK_WATCH_TOPIC_IDS" value="0"/>

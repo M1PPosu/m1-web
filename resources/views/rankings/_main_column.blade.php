@@ -34,6 +34,7 @@
             'ruleset' => $params['mode'],
             'sort' => $params['sort'],
             'team' => $object,
+            'variant' => $params['variant'],
         ]) }}"
     >
         <span class="ranking-page-table-main__flag">

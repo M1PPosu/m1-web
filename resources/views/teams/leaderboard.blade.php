@@ -11,6 +11,7 @@
         'ruleset' => $ruleset,
         'sort' => $sort,
         'team' => $team->getKey(),
+        'variant' => $variant,
     ];
 @endphp
 
@@ -23,12 +24,41 @@
         @slot('linksAppend')
             @include('objects._ruleset_selector', [
                 'currentRuleset' => $ruleset,
-                'urlFn' => fn ($r) => route('teams.leaderboard', [...$params, 'ruleset' => $r]),
+                'urlFn' => fn ($r) => route('teams.leaderboard', [
+                    ...$params,
+                    'ruleset' => $r,
+                    'variant' => App\Libraries\M1pposu\SourceMode::sourceMode($r, $variant) === null ? null : $variant,
+                ]),
             ])
         @endslot
     @endcomponent
 
     <div class="osu-page osu-page--generic">
+        @php
+            $variants = array_values(array_filter(
+                App\Models\Beatmap::VARIANTS[$ruleset] ?? [],
+                fn ($candidate) => App\Libraries\M1pposu\SourceMode::sourceMode($ruleset, $candidate) !== null,
+            ));
+            array_unshift($variants, 'all');
+        @endphp
+        <div class="sort">
+            <div class="sort__items">
+                <div class="sort__item sort__item--title">
+                    {{ osu_trans('rankings.filter.variant.title') }}
+                </div>
+                @foreach ($variants as $v)
+                    @php
+                        $selectedVariant = $v === 'all' ? null : $v;
+                    @endphp
+                    <a
+                        class="{{ class_with_modifiers('sort__item', 'button', ['active' => $variant === $selectedVariant]) }}"
+                        href="{{ route('teams.leaderboard', [...$params, 'variant' => $selectedVariant]) }}"
+                    >
+                        {{ osu_trans("beatmaps.variant.{$ruleset}.{$v}") }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
         <div class="sort">
             <div class="sort__items">
                 <div class="sort__item sort__item--title">

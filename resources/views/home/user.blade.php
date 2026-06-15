@@ -92,9 +92,10 @@
                     ])
 
                     @include('home._user_giant_button', [
-                        'href' => route('support-the-game'),
-                        'label' => osu_trans('home.user.buttons.support'),
-                        'icon' => 'heart',
+                        'href' => config('m1pposu.community.discord_url'),
+                        'label' => osu_trans('home.user.buttons.community'),
+                        'icon' => 'discord',
+                        'external' => true,
                         'colour' => 'c-pink-darker'
                     ])
 

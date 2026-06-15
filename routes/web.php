@@ -411,12 +411,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('ipn', 'PaypalController@ipn')->name('ipn');
         });
 
-        Route::group(['as' => 'xsolla.', 'prefix' => 'xsolla'], function () {
-            Route::get('completed', 'XsollaController@completed')->name('completed');
-            Route::post('token', 'XsollaController@token')->name('token');
-            Route::post('callback', 'XsollaController@callback')->name('callback');
-        });
-
         Route::group(['as' => 'shopify.', 'prefix' => 'shopify'], function () {
             Route::post('callback', 'ShopifyController@callback')->name('callback');
         });

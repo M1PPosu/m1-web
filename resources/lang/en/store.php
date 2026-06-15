@@ -204,8 +204,4 @@ return [
             'link_text' => 'signed in',
         ],
     ],
-
-    'xsolla' => [
-        'distributor' => 'Payment is not available right now.',
-    ],
 ];

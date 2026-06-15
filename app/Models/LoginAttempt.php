@@ -58,7 +58,7 @@ class LoginAttempt extends Model
 
     public static function hashInvalidPassword($password)
     {
-        // The goal is just to allow same password (or other passwords
+        // The goal is just to allow same password (or other 
         // with colliding hash) to be excluded from being counted as additional
         // attempt.
         return substr(sha1('osu_unique_'.md5($password)), 8, 12);

@@ -150,7 +150,7 @@ abstract class PaymentProcessor implements \ArrayAccess
         // This update before anything is so we have something to refer to if anything explodes.
         if ($order !== null) {
             $order->transaction_id = $this->getTransactionId();
-            if ($order->reference === null) { // this only affects xsolla at this stage.
+            if ($order->reference === null) {
                 $order->reference = $this->getPaymentTransactionId();
             }
             $order->save();

@@ -60,7 +60,6 @@ class Order extends Model
     const PROVIDER_FREE = 'free';
     const PROVIDER_PAYPAL = 'paypal';
     const PROVIDER_SHOPIFY = 'shopify';
-    const PROVIDER_XSOLLA = 'xsolla';
 
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_DELIVERED = 'delivered';
@@ -253,7 +252,6 @@ class Order extends Model
      *
      * For Paypal, is the IPN txn_id or captured Id of the payment item in the payment transaction.
      *  (not the payment itself).
-     * For Xsolla, it is the Xsolla transaction id and should be the same as reference.
      * For Shopify, it is the Shopify order number.
      *
      * TODO: remove the splitting and remove the provider prefix? (was for legacy purposes).

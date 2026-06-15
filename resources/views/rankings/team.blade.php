@@ -5,6 +5,31 @@
 @extends('rankings.index', ['hasFilter' => false])
 
 @section('scores-header')
+    @php
+        $variants = array_values(array_filter(
+            App\Models\Beatmap::VARIANTS[$params['mode']] ?? [],
+            fn ($variant) => App\Libraries\M1pposu\SourceMode::sourceMode($params['mode'], $variant) !== null,
+        ));
+        array_unshift($variants, 'all');
+    @endphp
+    <div class="sort">
+        <div class="sort__items">
+            <div class="sort__item sort__item--title">
+                {{ osu_trans('rankings.filter.variant.title') }}
+            </div>
+            @foreach ($variants as $v)
+                @php
+                    $variant = $v === 'all' ? null : $v;
+                @endphp
+                <a
+                    class="{{ class_with_modifiers('sort__item', 'button', ['active' => ($params['variant'] ?? null) === $variant]) }}"
+                    href="{{ route('rankings', [...$params, 'variant' => $variant, 'page' => null]) }}"
+                >
+                    {{ osu_trans("beatmaps.variant.{$params['mode']}.{$v}") }}
+                </a>
+            @endforeach
+        </div>
+    </div>
     <div class="sort">
         <div class="sort__items">
             <div class="sort__item sort__item--title">

@@ -3,7 +3,14 @@
     See the LICENCE file in the repository root for full licence text.
 --}}
 
-<a href="{{ $href }}" class="{{ class_with_modifiers('btn-home', $colour ?? null) }}">
+<a
+    href="{{ $href }}"
+    class="{{ class_with_modifiers('btn-home', $colour ?? null) }}"
+    @if ($external ?? false)
+        rel="noopener noreferrer"
+        target="_blank"
+    @endif
+>
     <span class="btn-home__text">{{ $label }}</span>
     <span class="btn-home__icon">
         <i class="fas fa-fw fa-{{$icon}}"></i>

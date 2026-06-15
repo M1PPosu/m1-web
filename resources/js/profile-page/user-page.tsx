@@ -73,9 +73,9 @@ export default class UserPage extends React.Component<ExtraPageProps> {
     return (
       <div className='profile-extra-user-page profile-extra-user-page--new'>
         <p className='profile-extra-user-page__new-content'>
-          <button
-            className='btn-osu-big btn-osu-big--user-page-edit'
-            disabled={!this.props.controller.state.user.has_supported}
+            <button
+              className='btn-osu-big btn-osu-big--user-page-edit'
+              disabled={!this.props.controller.userpageEditEnabled && !this.props.controller.state.user.has_supported}
             onClick={this.editStart}
             type='button'
           >
@@ -92,7 +92,7 @@ export default class UserPage extends React.Component<ExtraPageProps> {
           className='profile-extra-user-page__new-content'
         />
 
-        {!this.props.controller.state.user.has_supported && (
+        {!this.props.controller.userpageEditEnabled && !this.props.controller.state.user.has_supported && (
           <p className='profile-extra-user-page__new-content'>
             <StringWithComponent
               mappings={{

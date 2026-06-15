@@ -6,6 +6,7 @@
 namespace App\Providers;
 
 use App\Hashing\OsuBcryptHasher;
+use App\Libraries\M1pposu\RuntimeConfiguration;
 use App\Libraries\MorphMap;
 use App\Libraries\OsuCookieJar;
 use App\Libraries\OsuMessageSelector;
@@ -54,6 +55,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        RuntimeConfiguration::validate();
+
         Relation::morphMap(MorphMap::flippedMap());
 
         $GLOBALS['cfg'] = \Config::all();

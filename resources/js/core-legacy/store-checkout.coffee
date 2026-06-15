@@ -5,7 +5,6 @@
 
 import { route } from 'laroute'
 import { StorePaypal } from 'store-paypal'
-import { StoreXsolla } from 'store-xsolla'
 import { onError } from 'utils/ajax'
 import { hideLoadingOverlay, showLoadingOverlay } from 'utils/loading-overlay'
 
@@ -22,7 +21,6 @@ export class StoreCheckout
       switch provider
         when 'free' then init['free'] = Promise.resolve()
         when 'paypal' then init['paypal'] = Promise.resolve()
-        when 'xsolla' then init['xsolla'] = StoreXsolla.promiseInit(orderNumber)
 
     $(@CHECKOUT_SELECTOR).on 'click.checkout', (event) =>
       { orderId, provider } = event.target.dataset
@@ -45,13 +43,6 @@ export class StoreCheckout
       when 'paypal'
         StorePaypal.fetchApprovalLink(orderId).then (link) ->
           window.location.href = link
-
-      when 'xsolla'
-        new Promise (resolve) ->
-          # FIXME: flickering when transitioning to widget
-          XPayStationWidget.open()
-          hideLoadingOverlay()
-          resolve()
 
 
   @handleError: (error) ->

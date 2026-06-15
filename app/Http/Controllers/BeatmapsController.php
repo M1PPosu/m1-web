@@ -137,7 +137,7 @@ class BeatmapsController extends Controller
         $baseQuery = static::privateServerBeatmapScoreQuery($beatmap, $ruleset, $variant, $mods, $type, $currentUser);
         $scoreTransformer = new ScoreTransformer($legacyFormat);
 
-        $rankedScores = static::privateServerDedupedScoresQuery(clone $baseQuery);
+        $rankedScores = static::privateServerDedupedScoresQuery(clone $baseQuery, $variant);
         $scoreIds = (clone $rankedScores)
             ->limit($limit)
             ->pluck('id')
@@ -168,7 +168,7 @@ class BeatmapsController extends Controller
 
             if ($userScore !== null) {
                 $results['user_score'] = [
-                    'position' => static::privateServerBeatmapScoreRank($rankedScores, $userScore),
+                    'position' => static::privateServerBeatmapScoreRank($rankedScores, $userScore, $variant),
                     'score' => json_item($userScore->loadMissing(['beatmap', 'user.country', 'user.team']), $scoreTransformer, static::DEFAULT_SCORE_INCLUDES),
                 ];
                 $results['userScore'] = $results['user_score'];
@@ -195,39 +195,36 @@ class BeatmapsController extends Controller
         return $query;
     }
 
-    private static function privateServerDedupedScoresQuery($query)
+    private static function privateServerDedupedScoresQuery($query, ?string $variant)
     {
+        $metric = $variant === null ? 'legacy_total_score' : 'pp';
         $rankedScoreRows = $query->select([
             'scores.id',
             'scores.user_id',
             'scores.legacy_total_score',
             'scores.pp',
-            DB::raw('ROW_NUMBER() OVER (PARTITION BY scores.user_id ORDER BY scores.legacy_total_score DESC, scores.pp DESC, scores.id ASC) AS user_score_rank'),
+            DB::raw("ROW_NUMBER() OVER (PARTITION BY scores.user_id ORDER BY scores.{$metric} DESC, scores.id ASC) AS user_score_rank"),
         ]);
 
         return DB::query()
             ->fromSub($rankedScoreRows->toBase(), 'leaderboard_scores')
             ->where('user_score_rank', 1)
-            ->orderByDesc('legacy_total_score')
-            ->orderByDesc('pp')
+            ->orderByDesc($metric)
             ->orderBy('id');
     }
 
-    private static function privateServerBeatmapScoreRank($rankedScores, SoloScore $score): int
+    private static function privateServerBeatmapScoreRank($rankedScores, SoloScore $score, ?string $variant): int
     {
+        $metric = $variant === null ? 'legacy_total_score' : 'pp';
+        $metricValue = $score->$metric;
+
         return (clone $rankedScores)
-            ->where(function ($query) use ($score) {
+            ->where(function ($query) use ($metric, $metricValue, $score) {
                 $query
-                    ->where('legacy_total_score', '>', $score->legacy_total_score)
-                    ->orWhere(function ($scoreQuery) use ($score) {
+                    ->where($metric, '>', $metricValue)
+                    ->orWhere(function ($scoreQuery) use ($metric, $metricValue, $score) {
                         $scoreQuery
-                            ->where('legacy_total_score', $score->legacy_total_score)
-                            ->where('pp', '>', $score->pp);
-                    })
-                    ->orWhere(function ($scoreQuery) use ($score) {
-                        $scoreQuery
-                            ->where('legacy_total_score', $score->legacy_total_score)
-                            ->where('pp', $score->pp)
+                            ->where($metric, $metricValue)
                             ->where('id', '<', $score->getKey());
                     });
             })

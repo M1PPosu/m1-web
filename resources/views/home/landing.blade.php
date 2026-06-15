@@ -71,10 +71,16 @@
             <div class="landing-hero__info">
                 {!! osu_trans("home.landing.players", ['count' => i18n_number_format($stats->totalUsers)]) !!},
                 @if ($stats->available)
-                    {!! osu_trans("home.landing.online", [
-                        'players' => i18n_number_format($stats->currentOnline),
-                        'games' => i18n_number_format($stats->currentGames)]
-                    ) !!}
+                    @if ($stats->currentGames === null)
+                        {!! osu_trans("home.landing.online_players", [
+                            'players' => i18n_number_format($stats->currentOnline),
+                        ]) !!}
+                    @else
+                        {!! osu_trans("home.landing.online", [
+                            'players' => i18n_number_format($stats->currentOnline),
+                            'games' => i18n_number_format($stats->currentGames)]
+                        ) !!}
+                    @endif
                 @else
                     {{ osu_trans('home.landing.presence_unavailable') }}
                 @endif
@@ -149,8 +155,14 @@
         </div>
 
         <div class="landing-footer-social">
-            <a href="{{ route('support-the-game') }}" class="landing-footer-social__icon landing-footer-social__icon--support">
-                <span class="fas fa-heart"></span>
+            <a
+                href="{{ config('m1pposu.community.discord_url') }}"
+                class="landing-footer-social__icon landing-footer-social__icon--support"
+                rel="noopener noreferrer"
+                target="_blank"
+                title="{{ osu_trans('home.user.buttons.community') }}"
+            >
+                <span class="fab fa-discord"></span>
             </a>
             @if (($twitterUrl = osu_url('social.twitter')) !== null)
                 <a href="{{ $twitterUrl }}" class="landing-footer-social__icon landing-footer-social__icon--twitter">

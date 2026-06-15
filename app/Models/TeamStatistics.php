@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Libraries\M1pposu\SourceMode;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -22,7 +23,29 @@ class TeamStatistics extends Model
 
     protected $attributes = self::DEFAULT_ATTRIBUTES;
     protected $primaryKey = ':composite';
-    protected $primaryKeys = ['team_id', 'ruleset_id'];
+    protected $primaryKeys = ['team_id', 'ruleset_id', 'variant'];
+
+    public static function supportedRulesetVariants(): array
+    {
+        $modes = collect(Beatmap::MODES)
+            ->map(fn ($rulesetId, $ruleset) => compact('ruleset', 'rulesetId') + ['variant' => ''])
+            ->values();
+
+        if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            foreach (SourceMode::supportedSourceModes() as $sourceMode) {
+                $mode = SourceMode::mode($sourceMode);
+                if ($mode['variant'] !== null) {
+                    $modes->push([
+                        'ruleset' => $mode['ruleset'],
+                        'rulesetId' => Beatmap::modeInt($mode['ruleset']),
+                        'variant' => $mode['variant'],
+                    ]);
+                }
+            }
+        }
+
+        return $modes->unique(fn ($mode) => "{$mode['rulesetId']}:{$mode['variant']}")->values()->all();
+    }
 
     public function team(): BelongsTo
     {
@@ -40,6 +63,7 @@ class TeamStatistics extends Model
             ? null
             : 1 + static
             ::where('ruleset_id', $this->ruleset_id)
+            ->where('variant', $this->variant)
             ->where('performance', '>', $this->performance)
             ->count();
     }
@@ -50,7 +74,10 @@ class TeamStatistics extends Model
             ::where('team_id', $this->team_id)
             ->whereHas('user', fn ($q) => $q->default())
             ->select('user_id');
-        $userStatisticsQuery = UserStatistics\Model::getClass(Beatmap::modeStr($this->ruleset_id))
+        $userStatisticsQuery = UserStatistics\Model::getClass(
+            Beatmap::modeStr($this->ruleset_id),
+            presence($this->variant),
+        )
             ::whereIn('user_id', $userIdsQuery);
 
         $statistics = $userStatisticsQuery

@@ -14,7 +14,7 @@ class MigrateFreshAllCommand extends FreshCommand
 {
     public function handle()
     {
-        if (!$this->confirmToProceed()) {
+        if (!$this->option('force') && !$this->confirmToProceed()) {
             return 1;
         }
 
@@ -37,6 +37,7 @@ class MigrateFreshAllCommand extends FreshCommand
             $exitCode = $this->call('db:wipe', [
                 '--database' => $database,
                 '--drop-views' => true,
+                '--force' => $this->option('force'),
             ]);
 
             if ($exitCode !== self::SUCCESS) {
@@ -47,6 +48,7 @@ class MigrateFreshAllCommand extends FreshCommand
         $this->info('Dropped all tables successfully.');
 
         $exitCode = $this->call('migrate', [
+            '--force' => $this->option('force'),
             '--path' => $this->input->getOption('path'),
         ]);
 
@@ -90,7 +92,7 @@ class MigrateFreshAllCommand extends FreshCommand
     protected function getOptions()
     {
         return [
-            ['force', null, InputOption::VALUE_NONE, 'This option is ignored.'],
+            ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
             ['path', null, InputOption::VALUE_OPTIONAL, 'The path of migrations files to be executed.'],
             ['seed', null, InputOption::VALUE_NONE, 'Indicates if the seed task should be re-run.'],
             ['seeder', null, InputOption::VALUE_OPTIONAL, 'The class name of the root seeder.'],

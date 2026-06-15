@@ -26,6 +26,40 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        if (get_bool(config('m1pposu.private_server.enabled')) === true) {
+            $schedule->command('m1pposu:refresh --no-interaction')
+                ->dailyAt('02:30')
+                ->withoutOverlapping(360)
+                ->onOneServer();
+
+            if (get_bool(config('m1pposu.private_server.live.enabled')) === true) {
+                $schedule->command('m1pposu:live:catchup --no-interaction')
+                    ->everyMinute()
+                    ->withoutOverlapping(10)
+                    ->onOneServer();
+
+                $schedule->command('m1pposu:sync:clans --all --no-interaction')
+                    ->everyFiveMinutes()
+                    ->withoutOverlapping(30)
+                    ->onOneServer();
+
+                $schedule->command('m1pposu:sync:userpages --all --no-interaction')
+                    ->everyTenMinutes()
+                    ->withoutOverlapping(30)
+                    ->onOneServer();
+
+                $schedule->command('m1pposu:activity:snapshot --no-interaction')
+                    ->everyMinute()
+                    ->withoutOverlapping(5)
+                    ->onOneServer();
+            }
+
+            $schedule->command('m1pposu:chat:ensure-defaults --no-interaction')
+                ->dailyAt('03:10')
+                ->withoutOverlapping(10)
+                ->onOneServer();
+        }
+
         $schedule->command('archive-forum-topics')
             ->cron('*/30 * * * *')
             ->withoutOverlapping(120)

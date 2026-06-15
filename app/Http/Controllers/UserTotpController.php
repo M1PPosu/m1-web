@@ -51,7 +51,17 @@ class UserTotpController extends Controller
 
     public function destroy(): Response
     {
-        \Auth::user()->userTotpKey?->delete();
+        $currentUser = \Auth::user();
+        $password = get_string(request('password')) ?? '';
+
+        if (!$currentUser->checkPassword($password)) {
+            return response(['form_error' => [
+                'password' => [osu_trans('layout.popup_login.login.error.password')],
+            ]], 422);
+        }
+
+        $currentUser->userTotpKey?->delete();
+        $currentUser->unsetRelation('userTotpKey');
 
         \Session::flash('popup', osu_trans('user_totp.destroy.ok'));
 
@@ -102,9 +112,10 @@ class UserTotpController extends Controller
 
         if (UserTotpKey::isValidKey($totpUri, $key)) {
             try {
-                $currentUser->userTotpKey()->create([
+                $totpKey = $currentUser->userTotpKey()->create([
                     'uri' => $totpUri,
                 ]);
+                $totpKey->assertValidKey($key);
                 $message = osu_trans('user_totp.store.ok');
             } catch (\Throwable $e) {
                 if (is_sql_unique_exception($e)) {

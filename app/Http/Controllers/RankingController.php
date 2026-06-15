@@ -5,6 +5,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\M1pposu\SourceMode;
 use App\Models\Beatmap;
 use App\Models\Country;
 use App\Models\CountryStatistics;
@@ -59,6 +60,7 @@ class RankingController extends Controller
                 'mode' => $params['mode'] ?? default_mode(),
                 'sort' => $params['sort'] ?? null,
                 'type' => $params['type'],
+                'variant' => $params['variant'] ?? null,
             ]),
             'kudosu' => route('rankings.kudosu'),
             'matchmaking' => route('rankings.matchmaking', ['mode' => $params['mode'] ?? default_mode()]),
@@ -74,6 +76,7 @@ class RankingController extends Controller
                 'mode' => $params['mode'] ?? default_mode(),
                 'type' => $params['type'],
                 'sort' => $params['sort'] ?? null,
+                'variant' => $params['variant'] ?? null,
             ]),
             'top_plays' => route('rankings.top-plays', ['mode' => $params['mode'] ?? default_mode()]),
         };
@@ -194,6 +197,13 @@ class RankingController extends Controller
                     ->orderByDesc('performance');
                 break;
             case 'team':
+                $params['variant'] = static::getVariant($rawParams['variant'] ?? null, $mode);
+                if (
+                    get_bool(config('m1pposu.private_server.enabled') ?? false)
+                    && SourceMode::sourceMode($mode, $params['variant']) === null
+                ) {
+                    abort(422, 'variant is not supported by the private-server source');
+                }
                 $sortColumns = [
                     'performance' => 'performance',
                     'score' => 'ranked_score',
@@ -201,6 +211,7 @@ class RankingController extends Controller
                 $sortColumn = $sortColumns[$params['sort']];
                 $stats = TeamStatistics::where('ranked_score', '>', 0)
                     ->where('ruleset_id', $rulesetId)
+                    ->where('variant', $params['variant'] ?? '')
                     ->whereHas('team')
                     ->withCount('members')
                     ->with('team')

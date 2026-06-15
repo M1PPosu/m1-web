@@ -39,7 +39,7 @@ class OsuBcryptHasher implements Hasher
     {
         // When we originally moved to bcrypt (quite a few years ago),
         // we had to migrate everything without waiting for every user to
-        // change their passwords, hence the md5 still being there.
+        // change their , hence the md5 still being there.
         $hash = password_hash(md5($value), PASSWORD_BCRYPT, ['cost' => $this->cost($options)]);
 
         // see static::check()

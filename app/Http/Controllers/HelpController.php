@@ -5,6 +5,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Forum\Forum;
+
 class HelpController extends Controller
 {
     private const PAGES = [
@@ -30,8 +32,12 @@ class HelpController extends Controller
 
     private function show(string $page)
     {
+        $helpForum = Forum::find($GLOBALS['cfg']['osu']['forum']['help_forum_id']);
+
         return ext_view('help.show', [
             'contactEmail' => config('m1pposu.contact_email'),
+            'discordUrl' => config('m1pposu.community.discord_url'),
+            'helpForumUrl' => $helpForum === null ? null : route('forum.forums.show', $helpForum),
             'links' => $this->links($page),
             'page' => $page,
             'sections' => osu_trans("help.{$page}.sections"),

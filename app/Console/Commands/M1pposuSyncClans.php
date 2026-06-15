@@ -161,7 +161,7 @@ class M1pposuSyncClans extends Command
                 $summary['linked_external_mappings']++;
             }
             $summary['members_synced'] += count($memberPlan['user_ids']);
-            $summary['team_statistics_updated'] += count(Beatmap::MODES);
+            $summary['team_statistics_updated'] += count(TeamStatistics::supportedRulesetVariants());
 
             return;
         }
@@ -204,10 +204,11 @@ class M1pposuSyncClans extends Command
                     ->whereNotIn('user_id', $syncedUserIds)
                     ->delete();
 
-                foreach (Beatmap::MODES as $rulesetId) {
+                foreach (TeamStatistics::supportedRulesetVariants() as $mode) {
                     TeamStatistics::createOrFirst([
                         'team_id' => $team->getKey(),
-                        'ruleset_id' => $rulesetId,
+                        'ruleset_id' => $mode['rulesetId'],
+                        'variant' => $mode['variant'],
                     ])->recalculate();
                     $summary['team_statistics_updated']++;
                 }

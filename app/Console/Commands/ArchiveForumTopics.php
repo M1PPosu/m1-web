@@ -66,6 +66,21 @@ class ArchiveForumTopics extends Command
 
     public function handle()
     {
+        $requiredTargetForumIds = array_unique([
+            $GLOBALS['cfg']['osu']['forum']['feature_completed_forum_id'],
+            $GLOBALS['cfg']['osu']['forum']['help_archived_forum_id'],
+        ]);
+        $missingTargetForumIds = array_diff(
+            $requiredTargetForumIds,
+            Forum::whereKey($requiredTargetForumIds)->pluck('forum_id')->all(),
+        );
+
+        if ($missingTargetForumIds !== []) {
+            $this->warn('Skipping forum topic archival; required target forums are missing: '.implode(', ', $missingTargetForumIds));
+
+            return self::SUCCESS;
+        }
+
         $this->info('Archiving old help forum topics');
         static::archiveOldHelpTopics();
 
@@ -76,5 +91,7 @@ class ArchiveForumTopics extends Command
         static::archiveCompletedFeatureTopics();
 
         $this->info('Done.');
+
+        return self::SUCCESS;
     }
 }

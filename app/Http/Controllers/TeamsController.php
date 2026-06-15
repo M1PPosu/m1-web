@@ -9,6 +9,8 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\InvariantException;
 use App\Exceptions\ModelNotSavedException;
+use App\Libraries\M1pposu\SourceMode;
+use App\Libraries\M1pposu\ClanCreator;
 use App\Models\Beatmap;
 use App\Models\Team;
 use App\Models\User;
@@ -96,7 +98,11 @@ class TeamsController extends Controller
     {
         $team = Team::findOrFail($id);
         $ruleset ??= Beatmap::modeStr($team->default_ruleset_id);
-        $statisticsRelationName = User::statisticsRelationName($ruleset);
+        $variant = get_string(\Request::input('variant'));
+        if (SourceMode::sourceMode($ruleset, $variant) === null) {
+            throw new InvariantException(osu_trans('beatmaps.invalid_ruleset'));
+        }
+        $statisticsRelationName = User::statisticsRelationName($ruleset, $variant);
         if ($statisticsRelationName === null) {
             throw new InvariantException(osu_trans('beatmaps.invalid_ruleset'));
         }
@@ -116,7 +122,7 @@ class TeamsController extends Controller
             ->sortByDesc($sort === 'score' ? 'ranked_score' : 'rank_score')
             ->values();
 
-        return ext_view('teams.leaderboard', compact('leaderboard', 'ruleset', 'sort', 'team'));
+        return ext_view('teams.leaderboard', compact('leaderboard', 'ruleset', 'sort', 'team', 'variant'));
     }
 
     public function part(string $id): Response
@@ -203,7 +209,7 @@ class TeamsController extends Controller
         }
     }
 
-    public function store(): Response
+    public function store(ClanCreator $clanCreator): Response
     {
         priv_check('TeamStore')->ensureCan();
 
@@ -213,7 +219,11 @@ class TeamsController extends Controller
         ]));
         $team->leader()->associate(\Auth::user());
         try {
-            $team->saveOrExplode();
+            if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+                $team = $clanCreator->create($team, \Auth::user());
+            } else {
+                $team->saveOrExplode();
+            }
         } catch (ModelNotSavedException) {
             return ext_view('teams.create', compact('team'), status: 422);
         }

@@ -8,6 +8,7 @@ return [
         'download' => 'Download launcher',
         'download_page' => 'Download page',
         'online' => '<strong>:players</strong> currently online in <strong>:games</strong> games',
+        'online_players' => '<strong>:players</strong> currently online',
         'presence_unavailable' => 'live presence unavailable',
         'peak' => 'Peak, :count online users',
         'players' => '<strong>:count</strong> registered players',
@@ -152,8 +153,8 @@ return [
             'resets' => 'resets :ends',
         ],
         'buttons' => [
+            'community' => 'Join the community',
             'download' => 'Download Custom Launcher',
-            'support' => 'Support M1PPosu',
             'store' => 'M1PPosu Store',
         ],
         'livestream' => [

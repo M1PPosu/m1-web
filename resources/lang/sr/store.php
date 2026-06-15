@@ -206,7 +206,4 @@ return [
         ],
     ],
 
-    'xsolla' => [
-        'distributor' => '',
-    ],
 ];

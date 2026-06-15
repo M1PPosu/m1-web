@@ -18,7 +18,6 @@ class VerifyCsrfToken extends BaseVerifier
         'oauth/authorize',
         'payments/paypal/ipn',
         'payments/shopify/callback',
-        'payments/xsolla/callback',
         'users',
     ];
 

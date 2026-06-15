@@ -81,12 +81,22 @@ export default class Controller {
 
   @computed
   get effectiveVariant() {
-    return this.supportsRelax ? this.currentVariant : null;
+    return this.currentVariant != null && this.supportedVariants.includes(this.currentVariant)
+      ? this.currentVariant
+      : null;
   }
 
   @computed
-  get supportsRelax() {
-    return this.beatmap.mode === 'osu' || this.beatmap.mode === 'taiko' || this.beatmap.mode === 'fruits';
+  get supportedVariants() {
+    switch (this.beatmap.mode) {
+      case 'osu':
+        return ['rx', 'ap'];
+      case 'taiko':
+      case 'fruits':
+        return ['rx'];
+      default:
+        return [];
+    }
   }
 
   constructor(private readonly container: HTMLElement, private readonly getBeatmap: () => BeatmapExtendedJson) {
@@ -105,8 +115,8 @@ export default class Controller {
     }
 
     const variant = new URLSearchParams(window.location.search).get('variant');
-    if (variant === 'rx') {
-      this.currentVariant = 'rx';
+    if (variant != null && this.supportedVariants.includes(variant)) {
+      this.currentVariant = variant;
     }
 
     makeObservable(this);
@@ -154,8 +164,10 @@ export default class Controller {
     }
 
     if (options.variant !== undefined) {
-      this.currentVariant = options.variant === 'rx' && this.supportsRelax ? 'rx' : null;
-    } else if (!this.supportsRelax) {
+      this.currentVariant = options.variant != null && this.supportedVariants.includes(options.variant)
+        ? options.variant
+        : null;
+    } else if (this.supportedVariants.length === 0) {
       this.currentVariant = null;
     }
 

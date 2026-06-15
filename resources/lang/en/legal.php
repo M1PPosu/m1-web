@@ -46,7 +46,7 @@ return [
                         'a statement that the report is accurate and that you are authorised to act for the rights holder.',
                     ],
                     'after' => [
-                        'Do not send passwords, password hashes, API keys, database credentials, private keys, or session cookies with a report.',
+                        'Do not send , , API keys, , private keys, or  with a report.',
                     ],
                 ],
                 [
@@ -90,7 +90,7 @@ return [
                     'title' => 'Account data',
                     'body' => [
                         'The website stores account records needed for sessions, profiles, forums, settings, notifications, and projected gameplay data.',
-                        'When source login is enabled, account data is projected from the configured Shiina/bancho.py-ex source database. Source password hashes are not copied into the osu-web application database.',
+                        'When source login is enabled, account data is projected from the configured Shiina/bancho.py-ex source database. Source  are not copied into the osu-web application database.',
                     ],
                 ],
                 [
@@ -106,7 +106,7 @@ return [
                     'title' => 'Security and logs',
                     'body' => [
                         'The service may keep web server, application, authentication, moderation, and security logs to operate the site and investigate abuse.',
-                        'Logs should not contain passwords, password hashes, database passwords, API keys, or session secrets.',
+                        'Logs should not contain , , database , API keys, or session secrets.',
                     ],
                 ],
                 [
@@ -114,7 +114,7 @@ return [
                     'title' => 'Cookies and sessions',
                     'body' => [
                         'Cookies are used for login sessions, CSRF protection, preferences, and normal Laravel/osu-web functionality.',
-                        'Production deployments should use HTTPS and secure session cookies.',
+                        'Production deployments should use HTTPS and secure .',
                     ],
                 ],
                 [

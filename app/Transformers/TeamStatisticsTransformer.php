@@ -17,6 +17,7 @@ class TeamStatisticsTransformer extends TransformerAbstract
         return [
             'team_id' => $stat->team_id,
             'ruleset_id' => $stat->ruleset_id,
+            'variant' => presence($stat->variant),
             'play_count' => $stat->play_count,
             'ranked_score' => $stat->ranked_score,
             'performance' => $stat->performance,

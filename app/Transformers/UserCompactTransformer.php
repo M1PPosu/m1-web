@@ -480,11 +480,11 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeScoresFirstCount(User $user)
     {
-        if ($this->variant !== null) {
-            return $this->primitive(0);
-        }
-
-        return $this->primitive($user->scoresFirst($this->mode, ScoreSearchParams::showLegacyForUser(\Auth::user()))->count());
+        return $this->primitive($user->scoresFirst(
+            $this->mode,
+            ScoreSearchParams::showLegacyForUser(\Auth::user()),
+            $this->variant,
+        )->count());
     }
 
     public function includeScoresPinnedCount(User $user)

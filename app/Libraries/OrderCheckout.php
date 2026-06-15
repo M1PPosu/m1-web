@@ -39,13 +39,7 @@ class OrderCheckout
         }
 
         if ($this->order->getTotal() > 0) {
-            $allowed = [Order::PROVIDER_PAYPAL];
-
-            if ($this->allowXsollaPayment()) {
-                $allowed[] = Order::PROVIDER_XSOLLA;
-            }
-
-            return $allowed;
+            return [Order::PROVIDER_PAYPAL];
         }
 
         return [Order::PROVIDER_FREE];
@@ -175,10 +169,5 @@ class OrderCheckout
     public static function for(?string $orderNumber): self
     {
         return new static(Order::whereOrderNumber($orderNumber)->firstOrFail());
-    }
-
-    private function allowXsollaPayment(): bool
-    {
-        return !$this->order->requiresShipping();
     }
 }

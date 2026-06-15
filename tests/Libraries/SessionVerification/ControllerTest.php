@@ -123,6 +123,19 @@ class ControllerTest extends TestCase
         $this->assertFalse($record->containsUser($user, 'verify-mismatch:'));
     }
 
+    public function testTotpCodeCannotBeReused(): void
+    {
+        $user = User::factory()->create();
+        $userTotp = UserTotpKey::createOrFirstForUser($user);
+        $key = Factory::loadFromProvisioningUri($userTotp->uri)->now();
+
+        $userTotp->assertValidKey($key);
+
+        $this->expectException(\App\Exceptions\UserVerificationException::class);
+        $this->expectExceptionMessage(osu_trans('user_verification.errors.totp_used_key'));
+        $userTotp->assertValidKey($key);
+    }
+
     public function testVerify(): void
     {
         $user = User::factory()->create();

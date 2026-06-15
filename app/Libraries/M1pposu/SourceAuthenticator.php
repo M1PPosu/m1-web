@@ -10,6 +10,7 @@ namespace App\Libraries\M1pposu;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class SourceAuthenticator
 {
@@ -37,8 +38,12 @@ class SourceAuthenticator
     {
         $config = config('m1pposu.private_server');
 
-        if (get_bool($config['enabled'] ?? false) !== true || !$this->hasRequiredConfig($config['database'] ?? [])) {
+        if (get_bool($config['enabled'] ?? false) !== true) {
             return null;
+        }
+
+        if (!$this->hasRequiredConfig($config['database'] ?? [])) {
+            throw new RuntimeException('Private-server authentication is enabled but its database configuration is incomplete.');
         }
 
         $this->configureConnection($config['database']);
@@ -120,6 +125,7 @@ class SourceAuthenticator
     {
         return present($database['host'] ?? null)
             && present($database['database'] ?? null)
-            && present($database['username'] ?? null);
+            && present($database['username'] ?? null)
+            && present($database['password'] ?? null);
     }
 }

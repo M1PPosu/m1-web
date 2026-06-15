@@ -44,6 +44,31 @@
                 <div class="osu-md osu-md--wiki">
                     <h1 class="osu-md__header osu-md__header--1">{{ $title }}</h1>
 
+                    @if ($page !== 'rules')
+                        <h2 class="osu-md__header osu-md__header--2">
+                            {{ osu_trans('help.support_channels.title') }}
+                        </h2>
+                        <p class="osu-md__paragraph">
+                            {{ osu_trans('help.support_channels.email') }}
+                            <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>
+                        </p>
+
+                        @if ($page === 'contact')
+                            <p class="osu-md__paragraph">
+                                {{ osu_trans('help.support_channels.community') }}
+                                <a href="{{ $discordUrl }}" rel="noopener noreferrer" target="_blank">
+                                    {{ osu_trans('help.support_channels.discord') }}
+                                </a>
+                            </p>
+                        @endif
+
+                        @if ($helpForumUrl !== null)
+                            <p class="osu-md__paragraph">
+                                <a href="{{ $helpForumUrl }}">{{ osu_trans('help.support_channels.forum') }}</a>
+                            </p>
+                        @endif
+                    @endif
+
                     @foreach ($sections as $sectionKey => $section)
                         @php
                             $sectionId = is_string($sectionKey) ? $sectionKey : \Illuminate\Support\Str::slug($section['title']);
@@ -55,7 +80,7 @@
                         <h2 id="{{ $sectionId }}" class="osu-md__header osu-md__header--2">{{ $section['title'] }}</h2>
 
                         @foreach ($body as $paragraph)
-                            <p class="osu-md__paragraph">{{ strtr($paragraph, [':email' => $contactEmail]) }}</p>
+                            <p class="osu-md__paragraph">{{ $paragraph }}</p>
                         @endforeach
 
                         @if (isset($section['items']))
@@ -68,9 +93,9 @@
                                 @foreach ($section['items'] as $item)
                                     <li class="osu-md__list-item">
                                         @if ($ordered)
-                                            <div>{{ strtr($item, [':email' => $contactEmail]) }}</div>
+                                            <div>{{ $item }}</div>
                                         @else
-                                            {{ strtr($item, [':email' => $contactEmail]) }}
+                                            {{ $item }}
                                         @endif
                                     </li>
                                 @endforeach

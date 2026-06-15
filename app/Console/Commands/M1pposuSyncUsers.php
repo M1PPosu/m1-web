@@ -11,7 +11,6 @@ use App\Console\Commands\Concerns\HasM1pposuCommandLock;
 use App\Libraries\M1pposu\SourceMode;
 use App\Libraries\M1pposu\SourcePrivileges;
 use App\Libraries\M1pposu\UserProjector;
-use App\Libraries\UsernameValidation;
 use App\Models\Country;
 use App\Models\M1pposuExternalUser;
 use App\Models\User;
@@ -211,7 +210,7 @@ class M1pposuSyncUsers extends Command
         $user = $this->findDestinationUser($sourceUser, $backend);
 
         if ($user === null) {
-            if (!$this->canCreateUser($sourceUser, $summary, true)) {
+            if (!$this->canCreateUser($sourceUser, $backend, $summary, true)) {
                 $summary['skipped_users']++;
 
                 return;
@@ -357,9 +356,9 @@ class M1pposuSyncUsers extends Command
         return $user;
     }
 
-    private function canCreateUser(object $sourceUser, array &$summary, bool $dryRun): bool
+    private function canCreateUser(object $sourceUser, string $backend, array &$summary, bool $dryRun): bool
     {
-        $usernameFailureReason = $this->sourceUsernameFailureReason($sourceUser);
+        $usernameFailureReason = app(UserProjector::class)->projectionFailureReason($sourceUser, $backend);
         if ($usernameFailureReason !== null) {
             $summary['warnings'][] = "source user {$sourceUser->id}: {$usernameFailureReason}";
 
@@ -811,32 +810,5 @@ class M1pposuSyncUsers extends Command
                 $this->line("- {$warning}");
             }
         }
-    }
-
-    private function sourceUsernameFailureReason(object $sourceUser): ?string
-    {
-        $rawSourceName = (string) ($sourceUser->name ?? '');
-        if ($rawSourceName !== trim($rawSourceName)) {
-            return 'unsupported username: username has leading or trailing spaces';
-        }
-
-        $sourceName = $this->nullableString($rawSourceName);
-        if ($sourceName === null) {
-            return 'missing username';
-        }
-
-        foreach (
-            [
-            UsernameValidation::validateUsername($sourceName),
-            UsernameValidation::validateAvailability($sourceName),
-            UsernameValidation::validateUsersOfUsername($sourceName),
-            ] as $errors
-        ) {
-            if ($errors->isAny()) {
-                return 'unsupported username: '.$errors->toSentence('; ');
-            }
-        }
-
-        return null;
     }
 }

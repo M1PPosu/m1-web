@@ -64,4 +64,30 @@ class UserProjectorTest extends TestCase
         $this->assertSame($user->getKey(), $mapping->user_id);
         $this->assertSame('Source User', $mapping->external_username);
     }
+
+    public function testCreatesUserWithAuthoritativeLegacyUsername(): void
+    {
+        $sourceUser = (object) [
+            'id' => 1002,
+            'name' => 'legacy.user_name with spaces',
+            'email' => 'legacy-user@example.test',
+            'country' => 'xx',
+            'creation_time' => 1_700_000_000,
+            'latest_activity' => 1_700_000_100,
+            'priv' => 1,
+            'silence_end' => null,
+            'donor_end' => null,
+        ];
+
+        $summary = app(UserProjector::class)->sync($sourceUser, new Collection(), 'test-source');
+
+        $this->assertTrue($summary['created_user']);
+        $this->assertSame($sourceUser->name, $summary['user']->username);
+        $this->assertDatabaseHas('m1pposu_external_users', [
+            'backend' => 'test-source',
+            'external_user_id' => '1002',
+            'external_username' => $sourceUser->name,
+            'user_id' => $summary['user']->getKey(),
+        ]);
+    }
 }

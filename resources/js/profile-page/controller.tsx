@@ -74,6 +74,7 @@ interface InitialData {
   scores_notice: string | null;
   user: ProfilePageUserJson;
   user_cover_presets: UserCoverPresetJson[];
+  userpage_edit_enabled: boolean;
 }
 
 interface LazyPages {
@@ -103,6 +104,7 @@ export default class Controller {
   readonly hasSavedState: boolean;
   @observable isUpdatingCover = false;
   readonly scoresNotice: string | null;
+  readonly userpageEditEnabled: boolean;
   @observable selectedHue: number | null;
   @observable readonly state: State;
   readonly userCoverPresets;
@@ -161,6 +163,7 @@ export default class Controller {
     this.currentMode = initialData.current_mode;
     this.currentVariant = initialData.current_variant;
     this.scoresNotice = initialData.scores_notice;
+    this.userpageEditEnabled = initialData.userpage_edit_enabled;
     this.displayCoverUrl = this.state.user.cover.url;
     this.selectedHue = this.state.user.profile_hue;
     this.userCoverPresets = initialData.user_cover_presets;

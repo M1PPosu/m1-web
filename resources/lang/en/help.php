@@ -4,14 +4,22 @@
 // See the LICENCE file in the repository root for full licence text.
 
 return [
+    'support_channels' => [
+        'title' => 'Official support channels',
+        'email' => 'For private account, abuse, or security support, email',
+        'community' => 'For public community questions and announcements, use the',
+        'discord' => 'M1PPosu Discord server',
+        'forum' => 'Open the M1PPosu support forum',
+    ],
+
     'contact' => [
-        'title' => 'contact us',
+        'title' => 'Contact M1PPosu',
         'sections' => [
             'support' => [
-                'title' => 'Support',
+                'title' => 'How to contact staff',
                 'body' => [
-                    'For account help, supporter or store questions, abuse reports, security reports, and general support, email :email.',
-                    'Include enough context for staff to understand the issue. Do not send passwords, password hashes, API keys, database credentials, session cookies, or private keys.',
+                    'Use email for account access, verification, moderation, abuse, privacy, or security matters. These issues should not be posted in public channels.',
+                    '',
                 ],
             ],
             'account-help' => [
@@ -25,7 +33,7 @@ return [
             'reports' => [
                 'title' => 'Reports',
                 'items' => [
-                    'Use the same contact address for abuse, security, and account compromise reports.',
+                    'Use the private support email for abuse, security, and account compromise reports.',
                     'Include links, screenshots, dates, and a short summary when reporting abuse or a site issue.',
                     'Do not expect instant replies. Staff will prioritise account safety, security issues, and severe community problems first.',
                 ],
@@ -34,7 +42,7 @@ return [
     ],
 
     'report_abuse' => [
-        'title' => 'report abuse',
+        'title' => 'Report Abuse',
         'sections' => [
             'what-to-report' => [
                 'title' => 'What to report',
@@ -58,24 +66,24 @@ return [
             'security-reports' => [
                 'title' => 'Security reports',
                 'body' => [
-                    'Report serious security issues privately to :email. Do not publish exploit steps, bypass details, or private account data in public chats, forums, or userpages.',
+                    'Report serious security issues through the private support email above. Do not publish exploit steps, bypass details, or private account data in public chats, forums, or userpages.',
                 ],
             ],
             'what-not-to-send' => [
-                'title' => 'What not to send',
+                'title' => '',
                 'items' => [
-                    'passwords',
-                    'password hashes',
-                    'API keys or OAuth secrets',
-                    'database credentials',
-                    'session cookies',
-                    'private SSH keys or server access tokens',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
                 ],
             ],
             'how-to-send-reports' => [
                 'title' => 'How to send reports',
                 'body' => [
-                    'Email reports to :email. There is no public report form on this site.',
+                    'Send reports to the private support email above. M1PPosu does not currently expose a public report form.',
                 ],
             ],
         ],
@@ -141,7 +149,7 @@ return [
                     'Do not evade filters, bypass slur filters, post sexual or graphic content, or intentionally trigger moderation edge cases.',
                     'Do not harass staff or users over restrictions, silences, reports, or moderation decisions.',
                     'Do not advertise cheats, account selling, phishing, malicious downloads, private data leaks, or unrelated services.',
-                    'Use staff channels or contact email for serious reports instead of public callouts.',
+                    'Use the official support channel for serious reports instead of public callouts.',
                 ],
                 'ordered' => true,
             ],
@@ -173,7 +181,7 @@ return [
                     'Staff decisions should be handled through official M1PPosu channels.',
                     'Do not publicly witch-hunt suspected cheaters; report with evidence instead.',
                     'Reports should include username or user id, score or map links, screenshots, dates, and a short summary.',
-                    'Do not send passwords, password hashes, API keys, database credentials, session cookies, or private keys.',
+                    'Do not send , , API keys, , , or private keys.',
                     'Moderation decisions may consider context, severity, history, and risk to the server.',
                 ],
                 'ordered' => true,

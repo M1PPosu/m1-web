@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class MigrateFreshOrRunCommand extends Command
 {
-    protected $signature = 'migrate:fresh-or-run';
+    protected $signature = 'migrate:fresh-or-run {--force : Force the operation to run when in production}';
 
     protected $description = 'Initialize empty databases or run pending migrations without overwriting an untracked schema';
 
@@ -77,13 +77,19 @@ class MigrateFreshOrRunCommand extends Command
     {
         $this->info('Application databases are empty. Initializing the schema and Elasticsearch indexes.');
 
-        return $this->call('migrate:fresh', ['--no-interaction' => true]);
+        return $this->call('migrate:fresh', [
+            '--force' => $this->option('force'),
+            '--no-interaction' => true,
+        ]);
     }
 
     private function migrate(): int
     {
         $this->info('Running pending migrations...');
 
-        return $this->call('migrate', ['--step' => true]);
+        return $this->call('migrate', [
+            '--force' => $this->option('force'),
+            '--step' => true,
+        ]);
     }
 }
