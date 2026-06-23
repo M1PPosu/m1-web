@@ -165,6 +165,7 @@ final class RuntimeConfiguration
             'addpriv',
             'country_change',
             'clan_change',
+            'ex:chat',
             'ex:map_status_change',
             'ex:submit',
             'givedonator',

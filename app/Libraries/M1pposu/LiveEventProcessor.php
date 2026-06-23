@@ -22,8 +22,10 @@ final class LiveEventProcessor
         'unrestrict',
     ];
 
-    public function __construct(private readonly LiveSynchronizer $synchronizer)
-    {
+    public function __construct(
+        private readonly LiveSynchronizer $synchronizer,
+        private readonly LiveChatSynchronizer $chatSynchronizer,
+    ) {
     }
 
     public function handle(string $channel, string $payload): array
@@ -41,6 +43,7 @@ final class LiveEventProcessor
         return match ($channel) {
             'ex:submit' => $this->synchronizer->syncScoreIds([$this->requiredId($data, 'id', $channel)]),
             'rank' => $this->synchronizer->syncMapIds([$this->requiredId($data, 'beatmap_id', $channel)]),
+            'ex:chat' => $this->chatSynchronizer->sync($data),
             'ex:map_status_change' => $this->synchronizer->syncMapStatusChange($this->requiredIds($data, 'map_ids', $channel), $this->eventType($data, $channel)),
             'wipe' => $this->synchronizer->syncWipe(
                 $this->requiredId($data, 'id', $channel),

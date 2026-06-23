@@ -7,6 +7,7 @@ $liveChannels = array_values(array_filter(array_map(
     'trim',
     explode(',', (string) env('M1PP_PRIVATE_SERVER_LIVE_REDIS_CHANNELS', '')),
 )));
+$liveChannels = array_values(array_unique([...$liveChannels, 'ex:chat']));
 
 return [
     'site_title' => presence(env('M1PP_SITE_TITLE')) ?? 'M1PPosu - [Beta]',

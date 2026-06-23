@@ -29,6 +29,13 @@ class UserCountByRuleset
         $counts = ['active' => [], 'all' => []];
         foreach (Beatmap::MODES as $rulesetName => $rulesetId) {
             $counts['active'][$rulesetName] = (int) CountryStatistics::where('mode', $rulesetId)->sum('user_count');
+            if ($counts['active'][$rulesetName] === 0) {
+                $counts['active'][$rulesetName] = UserStatistics\Model
+                    ::getClass($rulesetName)
+                    ::where('rank_score', '>', 0)
+                    ->whereHas('user', fn ($query) => $query->default())
+                    ->count();
+            }
             $counts['all'][$rulesetName] = UserStatistics\Model
                 ::getClass($rulesetName)
                 ::select('user_id')

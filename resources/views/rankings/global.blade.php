@@ -105,7 +105,7 @@
                 $firstItem = $scores->firstItem();
             @endphp
             @foreach ($scores as $index => $score)
-                <tr class="{{ class_with_modifiers('ranking-page-table__row', ['inactive' => !$score->user->isActive()]) }}">
+                <tr class="ranking-page-table__row">
                     <td class="ranking-page-table__column">
                         #{{ i18n_number_format($firstItem + $index) }}
                     </td>
@@ -113,7 +113,7 @@
                         @php
                             $rankChange = $score->rankHistory?->rankChangeSince30Days();
                             $modifier = 'rank-change-'.match (true) {
-                                $rankChange === null => 'pending',
+                                $rankChange === null => 'none',
                                 $rankChange > 0 => 'down',
                                 $rankChange < 0 => 'up',
                                 default => 'none',
@@ -121,9 +121,6 @@
                         @endphp
                         <td
                             class="{{ class_with_modifiers('ranking-page-table__column', ['rank-change', $modifier]) }}"
-                            @if ($rankChange === null)
-                                title="{{ osu_trans('rankings.performance.insufficient_history') }}"
-                            @endif
                         >
                             @if ($rankChange !== null && $rankChange !== 0)
                                 {{ i18n_number_format(abs($rankChange)) }}

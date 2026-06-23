@@ -76,7 +76,7 @@
                 'title' => osu_trans('users.restricted_banner.title'),
                 'message' => osu_trans('users.restricted_banner.message', [
                     'link' => link_to(
-                        osu_url('user.restriction'),
+                        'https://m1pposu.dev/help/contact',
                         osu_trans('users.restricted_banner.message_link')
                     ),
                 ]),

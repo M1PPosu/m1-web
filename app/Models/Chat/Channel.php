@@ -413,8 +413,15 @@ class Channel extends Model
         });
     }
 
-    public function receiveMessage(User $sender, ?string $content, bool $isAction = false, ?string $uuid = null)
-    {
+    public function receiveMessage(
+        User $sender,
+        ?string $content,
+        bool $isAction = false,
+        ?string $uuid = null,
+        ?int $maxLength = null,
+        bool $applyRateLimit = true,
+        ?\DateTimeInterface $timestamp = null,
+    ) {
         if (!$this->isAnnouncement()) {
             $content = str_replace(["\r", "\n"], ' ', trim($content));
         }
@@ -424,36 +431,39 @@ class Channel extends Model
         }
 
         $filteredContent = $this->isAnnouncement() ? $content : app('chat-filters')->filter($content);
-        $maxLength = $this->messageLengthLimit();
+        $maxLength ??= $this->messageLengthLimit();
         if (mb_strlen($filteredContent, 'UTF-8') > $maxLength) {
             throw new API\ChatMessageTooLongException(osu_trans('api.error.chat.too_long'));
         }
 
-        if ($this->isPM()) {
-            $limit = $GLOBALS['cfg']['osu']['chat']['rate_limits']['private']['limit'];
-            $window = $GLOBALS['cfg']['osu']['chat']['rate_limits']['private']['window'];
-            $keySuffix = 'PM';
-        } else {
-            $limit = $GLOBALS['cfg']['osu']['chat']['rate_limits']['public']['limit'];
-            $window = $GLOBALS['cfg']['osu']['chat']['rate_limits']['public']['window'];
-            $keySuffix = 'PUBLIC';
-        }
+        $now = $timestamp === null ? now() : Carbon::instance(\DateTime::createFromInterface($timestamp));
 
-        $key = "message_throttle:{$sender->user_id}:{$keySuffix}";
-        $now = now();
+        if ($applyRateLimit) {
+            if ($this->isPM()) {
+                $limit = $GLOBALS['cfg']['osu']['chat']['rate_limits']['private']['limit'];
+                $window = $GLOBALS['cfg']['osu']['chat']['rate_limits']['private']['window'];
+                $keySuffix = 'PM';
+            } else {
+                $limit = $GLOBALS['cfg']['osu']['chat']['rate_limits']['public']['limit'];
+                $window = $GLOBALS['cfg']['osu']['chat']['rate_limits']['public']['window'];
+                $keySuffix = 'PUBLIC';
+            }
 
-        // This works by keeping a sorted set of when the last messages were sent by the user (per message type).
-        // The timestamp of the message is used as the score, which allows for zremrangebyscore to cull old messages
-        // in a rolling window fashion.
-        [,$sent] = LaravelRedis::transaction()
-            ->zremrangebyscore($key, 0, $now->timestamp - $window)
-            ->zrange($key, 0, -1, 'WITHSCORES')
-            ->zadd($key, $now->timestamp, (string) Str::uuid())
-            ->expire($key, $window)
-            ->exec();
+            $key = "message_throttle:{$sender->user_id}:{$keySuffix}";
 
-        if (count($sent) >= $limit) {
-            throw new API\ExcessiveChatMessagesException(osu_trans('api.error.chat.limit_exceeded'));
+            // This works by keeping a sorted set of when the last messages were sent by the user (per message type).
+            // The timestamp of the message is used as the score, which allows for zremrangebyscore to cull old messages
+            // in a rolling window fashion.
+            [,$sent] = LaravelRedis::transaction()
+                ->zremrangebyscore($key, 0, $now->timestamp - $window)
+                ->zrange($key, 0, -1, 'WITHSCORES')
+                ->zadd($key, $now->timestamp, (string) Str::uuid())
+                ->expire($key, $window)
+                ->exec();
+
+            if (count($sent) >= $limit) {
+                throw new API\ExcessiveChatMessagesException(osu_trans('api.error.chat.limit_exceeded'));
+            }
         }
 
         $message = new Message([

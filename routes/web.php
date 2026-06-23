@@ -344,6 +344,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('users/check-username-availability', 'UsersController@checkUsernameAvailability')->name('users.check-username-availability');
     Route::get('users/lookup', 'Users\LookupController@index')->name('users.lookup');
     Route::get('users/disabled', 'UsersController@disabled')->name('users.disabled');
+    Route::get('users/external/{externalUserId}', 'Users\ExternalUsersController@show')
+        ->where('externalUserId', '[0-9]+')
+        ->name('users.external.show');
     Route::get('register', 'UsersController@create')->name('register');
     Route::get('users/create', 'UsersController@create')->name('users.create');
     Route::post('users/store-web', 'UsersController@storeWeb')->name('users.store-web');

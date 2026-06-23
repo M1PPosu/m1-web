@@ -69,7 +69,7 @@ export default function Rank({ highest, stats, type }: Props) {
     tooltip.push(`<div>${text}</div>`);
   }
 
-  const tier = type === 'global' ? globalTier(stats) : null;
+  const tier = globalTier(stats);
   const tierVar = tier == null ? '' : `var(--level-tier-${tier})`;
 
   return (
