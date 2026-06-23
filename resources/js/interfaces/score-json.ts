@@ -44,6 +44,13 @@ interface PpWeight {
   pp: number;
 }
 
+interface ScoreSourceJson {
+  backend: string;
+  display_name: string;
+  external_id: string;
+  source_mode: number | null;
+}
+
 interface ScoreJsonAttributesLegacyMatch {
   type: 'legacy_match_score';
 }
@@ -81,6 +88,7 @@ type ScoreJsonAttributes = {
   pp: number | null;
   rank: Rank;
   ruleset_id: RulesetId;
+  source?: ScoreSourceJson | null;
   started_at: string | null;
   statistics: Partial<Record<ScoreStatisticsAttribute, number>>;
   total_score: number;

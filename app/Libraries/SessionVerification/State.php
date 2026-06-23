@@ -65,7 +65,7 @@ class State
 
         $requestCountry = app('countries')->byCode(request_country() ?? '')?->name;
 
-        \Mail::to($this->user)->queue(new UserVerificationMail([
+        \Mail::mailer('brevo')->to($this->user)->queue(new UserVerificationMail([
             'keys' => $keys,
             'requestCountry' => $requestCountry,
             'user' => $this->user,

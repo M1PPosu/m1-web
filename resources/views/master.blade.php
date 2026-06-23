@@ -153,5 +153,6 @@
         </script>
 
         @yield("script")
-    </body>
+        <script src="/js/m1pposu-media-url-fix.js"></script>
+</body>
 </html>

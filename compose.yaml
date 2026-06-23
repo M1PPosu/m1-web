@@ -33,8 +33,9 @@ x-app: &app
   environment:
     <<: *runtime-environment
   init: true
+  # ZMIANA: Cała aplikacja domyślnie biega w sieci osuweb_external oraz bancho
   networks:
-    - default
+    - osuweb_external
     - bancho
   restart: unless-stopped
   volumes: *app-volumes
@@ -60,8 +61,9 @@ services:
   assets:
     <<: *app
     command: ['assets']
+    # ZMIANA: Zamiast default dajemy osuweb_external
     networks:
-      - default
+      - osuweb_external
     volumes:
       - uploads:/app/public/uploads:ro
       - uploads-avatar:/app/public/uploads-avatar:ro
@@ -108,6 +110,8 @@ services:
 
   beatmap-difficulty-lookup-cache:
     image: pppy/osu-beatmap-difficulty-lookup-cache@sha256:2c306f046ff31a3658e3474634f3276f1a7f6b20eb2bc7e99a49b8dab7b74e8c
+    networks:
+      - osuweb_external
     restart: unless-stopped
 
   notification-server:
@@ -122,6 +126,8 @@ services:
     environment:
       <<: *runtime-environment
       PASSPORT_PUBLIC_KEY: "${PASSPORT_PUBLIC_KEY:-}"
+    networks:
+      - osuweb_external
     restart: unless-stopped
     volumes:
       - ./storage/oauth-public.key:/app/oauth-public.key:ro
@@ -141,6 +147,9 @@ services:
     restart: unless-stopped
     secrets:
       - mysql_root_password
+    # ZMIANA: db korzysta teraz z głównej sieci zewnętrznej
+    networks:
+      - osuweb_external
     volumes:
       - database:/var/lib/mysql
       - ./docker/deployment/db-init.sh:/docker-entrypoint-initdb.d/db-init.sh:ro
@@ -156,7 +165,7 @@ services:
       start_period: 20s
     restart: unless-stopped
     networks:
-      default:
+      osuweb_external:
         aliases:
           - m1-web-redis
     volumes:
@@ -176,6 +185,8 @@ services:
       retries: 12
       start_period: 60s
     restart: unless-stopped
+    networks:
+      - osuweb_external
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
 
@@ -195,6 +206,8 @@ services:
       retries: 6
     ports:
       - "${NGINX_BIND_ADDRESS:-127.0.0.1}:${NGINX_PORT:-8088}:80"
+    networks:
+      - osuweb_external
     restart: unless-stopped
     volumes:
       - ./docker/deployment/nginx-default.conf:/etc/nginx/conf.d/default.conf:ro
@@ -212,12 +225,17 @@ services:
     environment:
       <<: *runtime-environment
       SCHEMA: "${SCHEMA:-1}"
+    networks:
+      - osuweb_external
     restart: unless-stopped
 
 networks:
   bancho:
     external: true
     name: bancho_network
+  osuweb_external:
+    external: true
+    name: osuweb_external
 
 volumes:
   app-storage:

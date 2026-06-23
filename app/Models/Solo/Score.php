@@ -19,6 +19,7 @@ use App\Libraries\Search\ScoreSearchParams;
 use App\Models\Beatmap;
 use App\Models\Build;
 use App\Models\Count;
+use App\Models\M1pposuExternalScore;
 use App\Models\Model;
 use App\Models\Multiplayer\ScoreLink as MultiplayerScoreLink;
 use App\Models\Score as LegacyScore;
@@ -165,6 +166,11 @@ class Score extends Model implements Traits\ReportableInterface
         return $this->morphTo(__FUNCTION__, 'legacy_score_type', 'legacy_best_id');
     }
 
+    public function m1pposuExternalScore()
+    {
+        return $this->hasOne(M1pposuExternalScore::class, 'score_id', 'id');
+    }
+
     public function replayStats()
     {
         return $this->hasOne(ScoreReplayStats::class, 'score_id');
@@ -292,6 +298,7 @@ class Score extends Model implements Traits\ReportableInterface
             'build',
             'legacyReplayViewCount',
             'legacyScore',
+            'm1pposuExternalScore',
             'performance',
             'processHistory',
             'reportedIn',

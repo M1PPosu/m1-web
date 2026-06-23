@@ -1,5 +1,6 @@
 #!/bin/sh
 
-set -eu
+#set -eu
 
-exec docker compose up -d --build
+docker network create osuweb_external
+docker compose up --build

@@ -1097,6 +1097,24 @@ function route_redirect($path, $target, string $method = 'get')
 
 function timeago($date)
 {
+    if ($date === null || $date instanceof __PHP_Incomplete_Class) {
+        return '';
+    }
+
+    if (is_string($date)) {
+        $date = trim($date);
+
+        if ($date === '') {
+            return '';
+        }
+
+        $date = new DateTimeImmutable($date);
+    }
+
+    if (!$date instanceof DateTimeInterface) {
+        return '';
+    }
+
     $formatted = json_time($date);
 
     return "<time class='js-timeago' datetime='{$formatted}'>{$formatted}</time>";

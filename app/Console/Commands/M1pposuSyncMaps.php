@@ -147,11 +147,12 @@ class M1pposuSyncMaps extends Command
         }
 
         $setData = $this->sourceSetData($supportedMaps->pluck('set_id')->unique()->all());
+        $creatorUserIds = $this->creatorUserIds($supportedMaps, $setData);
 
         try {
-            $beatmapsetRows = $this->beatmapsetRows($supportedMaps, $setData);
+            $beatmapsetRows = $this->beatmapsetRows($supportedMaps, $setData, $creatorUserIds);
             $beatmapRows = $supportedMaps
-                ->map(fn ($sourceMap) => ['beatmap_id' => (int) $sourceMap->id, ...$this->beatmapAttributes($sourceMap)])
+                ->map(fn ($sourceMap) => ['beatmap_id' => (int) $sourceMap->id, ...$this->beatmapAttributes($sourceMap, $creatorUserIds)])
                 ->values()
                 ->all();
 
@@ -170,7 +171,7 @@ class M1pposuSyncMaps extends Command
         }
     }
 
-    private function beatmapsetRows(Collection $supportedMaps, array $setData): array
+    private function beatmapsetRows(Collection $supportedMaps, array $setData, array $creatorUserIds): array
     {
         $rows = [];
 
@@ -181,7 +182,7 @@ class M1pposuSyncMaps extends Command
                 ->first();
 
             if ($sourceMap !== null) {
-                $rows[] = ['beatmapset_id' => (int) $setId, ...$this->beatmapsetAttributes($sourceMap, $setMaps)];
+                $rows[] = ['beatmapset_id' => (int) $setId, ...$this->beatmapsetAttributes($sourceMap, $setMaps, $creatorUserIds)];
             }
         }
 
@@ -225,6 +226,10 @@ class M1pposuSyncMaps extends Command
         foreach ($rows as $row) {
             $existingRow = $existing[$row[$key]] ?? null;
 
+            if ($existingRow !== null) {
+                $row = $this->preserveBeatmapsetRankedDate($table, $existingRow, $row);
+            }
+
             if ($existingRow === null) {
                 $created++;
                 $changedRows[] = $row;
@@ -243,7 +248,7 @@ class M1pposuSyncMaps extends Command
         }
     }
 
-    private function beatmapsetAttributes(object $sourceMap, Collection $setMaps): array
+    private function beatmapsetAttributes(object $sourceMap, Collection $setMaps, array $creatorUserIds): array
     {
         $approved = $setMaps
             ->map(fn ($map) => self::STATUS_MAP[(int) $map->status] ?? null)
@@ -254,8 +259,10 @@ class M1pposuSyncMaps extends Command
             ->map(fn ($map) => "{$this->truncate($map->version, 80)}@{$map->mode}")
             ->implode(',');
 
+        $approvedDate = $approved > 0 ? $this->sourceTimestamp($sourceMap->last_update) : null;
+
         return [
-            'user_id' => 0,
+            'user_id' => $this->creatorUserId($sourceMap, $creatorUserIds) ?? 0,
             'thread_id' => 0,
             'artist' => $this->truncate($sourceMap->artist, 80),
             'artist_unicode' => $this->truncate($sourceMap->artist, 80),
@@ -270,8 +277,8 @@ class M1pposuSyncMaps extends Command
             'bpm' => (float) $sourceMap->bpm,
             'versions_available' => min(255, $setMaps->count()),
             'approved' => $approved,
-            'approved_date' => null,
-            'submit_date' => null,
+            'approved_date' => $approvedDate,
+            'submit_date' => $this->sourceTimestamp($sourceMap->last_update),
             'last_update' => $this->sourceTimestamp($sourceMap->last_update),
             'filename' => $this->truncate("{$sourceMap->set_id} {$sourceMap->artist} - {$sourceMap->title}.osz", 120),
             'active' => true,
@@ -322,11 +329,11 @@ class M1pposuSyncMaps extends Command
         );
     }
 
-    private function beatmapAttributes(object $sourceMap): array
+    private function beatmapAttributes(object $sourceMap, array $creatorUserIds): array
     {
         return [
             'beatmapset_id' => (int) $sourceMap->set_id,
-            'user_id' => 0,
+            'user_id' => $this->creatorUserId($sourceMap, $creatorUserIds) ?? 0,
             'filename' => $this->truncate($sourceMap->filename, 150),
             'checksum' => strtolower((string) $sourceMap->md5),
             'version' => $this->truncate($sourceMap->version, 80),
@@ -353,6 +360,43 @@ class M1pposuSyncMaps extends Command
             'deleted_at' => null,
             'bpm' => (float) $sourceMap->bpm,
         ];
+    }
+
+    private function creatorUserIds(Collection $supportedMaps, array $setData): array
+    {
+        $sourceMaps = $supportedMaps->concat(
+            collect($setData)->flatMap(fn (Collection $setMaps) => $setMaps)
+        );
+
+        $creatorNames = $sourceMaps
+            ->map(fn ($sourceMap) => $this->creatorName($sourceMap))
+            ->filter(fn (?string $creator) => $creator !== null)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($creatorNames === []) {
+            return [];
+        }
+
+        return DB::table('m1pposu_external_users')
+            ->where('backend', $this->backend())
+            ->whereIn('external_username', $creatorNames)
+            ->pluck('user_id', 'external_username')
+            ->mapWithKeys(fn ($userId, $externalUsername) => [$this->creatorKey($externalUsername) => (int) $userId])
+            ->all();
+    }
+
+    private function creatorUserId(object $sourceMap, array $creatorUserIds): ?int
+    {
+        $creator = $this->creatorName($sourceMap);
+
+        return $creator === null ? null : ($creatorUserIds[$this->creatorKey($creator)] ?? null);
+    }
+
+    private function creatorName(object $sourceMap): ?string
+    {
+        return presence(trim((string) $sourceMap->creator));
     }
 
     private function forEachSourceMapBatch(?string $beatmapId, ?int $limit, bool $all, int $chunkSize, callable $callback): void
@@ -536,6 +580,35 @@ class M1pposuSyncMaps extends Command
         return $value;
     }
 
+    private function preserveBeatmapsetRankedDate(string $table, object $existing, array $row): array
+    {
+        if ($table !== 'osu_beatmapsets') {
+            return $row;
+        }
+
+        if ((int) ($existing->approved ?? 0) <= 0 || (int) ($row['approved'] ?? 0) <= 0) {
+            return $row;
+        }
+
+        $existingDate = $existing->approved_date ?? null;
+        if ($existingDate === null || $existingDate === '') {
+            return $row;
+        }
+
+        $incomingDate = $row['approved_date'] ?? null;
+        if ($incomingDate === null || $incomingDate === '') {
+            $row['approved_date'] = (string) $existingDate;
+
+            return $row;
+        }
+
+        if (Carbon::parse((string) $existingDate)->greaterThan(Carbon::parse((string) $incomingDate))) {
+            $row['approved_date'] = Carbon::parse((string) $existingDate)->toDateTimeString();
+        }
+
+        return $row;
+    }
+
     private function hasChanged(object $existing, array $attributes): bool
     {
         foreach ($attributes as $key => $value) {
@@ -582,6 +655,16 @@ class M1pposuSyncMaps extends Command
     private function truncate($value, int $length): string
     {
         return mb_substr(trim((string) $value), 0, $length);
+    }
+
+    private function backend(): string
+    {
+        return (string) (config('m1pposu.private_server.backend') ?: 'bancho-py-ex');
+    }
+
+    private function creatorKey(string $creator): string
+    {
+        return mb_strtolower(trim($creator));
     }
 
     private function nullableString($value): ?string

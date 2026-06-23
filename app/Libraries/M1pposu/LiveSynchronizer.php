@@ -173,6 +173,17 @@ class LiveSynchronizer
         });
     }
 
+    public function syncMapStatusChange(array $mapIds, ?string $type): array
+    {
+        $summary = $this->syncMapIds($mapIds);
+
+        if (in_array($type, ['rank', 'love'], true)) {
+            $summary['beatmapsets_ranked_at_touched'] = $this->touchRankedBeatmapsets($mapIds);
+        }
+
+        return $summary;
+    }
+
     public function syncMapIds(array $mapIds): array
     {
         return $this->withProjectionLock(function () use ($mapIds) {
@@ -287,6 +298,35 @@ class LiveSynchronizer
         foreach ($this->positiveIds($userIds) as $userId) {
             $this->runCommand('m1pposu:sync:users', ['--external-id' => (string) $userId]);
         }
+    }
+
+    private function touchRankedBeatmapsets(array $mapIds): int
+    {
+        $mapIds = $this->positiveIds($mapIds);
+        if ($mapIds === []) {
+            return 0;
+        }
+
+        $this->configureSource();
+
+        $beatmapsetIds = DB::connection(self::CONNECTION)
+            ->table('maps')
+            ->whereIn('id', $mapIds)
+            ->pluck('set_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($beatmapsetIds === []) {
+            return 0;
+        }
+
+        return DB::table('osu_beatmapsets')
+            ->whereIn('beatmapset_id', $beatmapsetIds)
+            ->where('approved', '>', 0)
+            ->update(['approved_date' => now()->toDateTimeString()]);
     }
 
     private function syncMapsUnlocked(array $mapIds): void

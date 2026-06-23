@@ -87,6 +87,35 @@
 .fn-forum(category-osu, @pink, @pink-text, @pink);
 .fn-forum(category-other, @green, @green-text, @green);
 
+.t-forum-category-general {
+  --forum-bg: @pink;
+  --forum-text: @pink-text;
+  --forum-text-hover: @pink;
+  --forum-cover: url("~@images/headers/forum-topic-covers/forum-cover-category-osu.jpg");
+}
+
+.t-forum-category-support {
+  --forum-bg: @purple;
+  --forum-text: @purple-text;
+  --forum-text-hover: @purple;
+  --forum-cover: url("~@images/headers/forum-topic-covers/forum-cover-category-beatmaps.jpg");
+}
+
+.t-forum-category-development {
+  --forum-bg: @green;
+  --forum-text: @green-text;
+  --forum-text-hover: @green;
+  --forum-cover: url("~@images/headers/forum-topic-covers/forum-cover-category-other.jpg");
+}
+
+.t-forum-category-off-topic {
+  --forum-bg: @yellow;
+  --forum-text: @yellow-text;
+  --forum-text-hover: @yellow-dark;
+  --forum-cover: url("~@images/headers/forum-topic-covers/forum-cover-category-language-specific.jpg");
+}
+
+
 .fn-forum(@category, @bg, @text, @text-hover) {
   .t-forum-@{category} {
     --forum-bg: @bg;

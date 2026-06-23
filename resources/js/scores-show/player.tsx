@@ -14,6 +14,10 @@ interface Props {
   score: ScoreJsonForShow;
 }
 
+function clientLabel(score: ScoreJsonForShow) {
+  return score.source?.display_name ?? (score.legacy_score_id == null ? 'Lazer' : 'Stable');
+}
+
 export default function Player(props: Props) {
   let title: string;
   let content: React.ReactNode;
@@ -67,7 +71,7 @@ export default function Player(props: Props) {
           {trans('scores.show.player.played_on')}
         </span>
         <strong>
-          {props.score.legacy_score_id == null ? 'Lazer' : 'Stable'}
+          {clientLabel(props.score)}
         </strong>
       </div>
 

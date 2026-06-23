@@ -11,6 +11,7 @@ use App\Models\Beatmap;
 use App\Models\ScorePin;
 use App\Models\Solo\Score;
 use App\Models\User;
+use DB;
 use Tests\TestCase;
 
 class ScorePinsControllerTest extends TestCase
@@ -162,6 +163,38 @@ class ScorePinsControllerTest extends TestCase
         $this
             ->put(route('score-pins.store', $score))
             ->assertSuccessful();
+    }
+
+    public function testPinnedScoresShowForVariantProfile()
+    {
+        config_set('m1pposu.private_server.enabled', true);
+        config_set('m1pposu.private_server.backend', 'bancho-py-ex');
+
+        $user = User::factory()->create();
+        $score = static::createScore($user, Beatmap::MODES['osu']);
+        ScorePin::factory()->withScore($score)->create();
+
+        DB::table('m1pposu_external_scores')->insert([
+            'score_id' => $score->getKey(),
+            'backend' => 'bancho-py-ex',
+            'external_score_id' => 'source-score-id',
+            'external_user_id' => 'source-user-id',
+            'external_beatmap_md5' => strtolower($score->beatmap->checksum),
+            'source_mode' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this
+            ->get(route('users.extra-page', [
+                'user' => $user,
+                'page' => 'top_ranks',
+                'mode' => 'osu',
+                'variant' => 'rx',
+            ]))
+            ->assertSuccessful()
+            ->assertJsonPath('pinned.count', 1)
+            ->assertJsonPath('pinned.items.0.id', $score->getKey());
     }
 
     public function testStoreAsGuest()

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Libraries\M1pposu\ProjectedScoreVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,6 +25,18 @@ class ScorePin extends Model
     public function scopeForRuleset($query, string $ruleset): Builder
     {
         return $query->where('ruleset_id', Beatmap::MODES[$ruleset]);
+    }
+
+    public function scopeForVariant($query, string $ruleset, ?string $variant): Builder
+    {
+        if (!get_bool(config('m1pposu.private_server.enabled') ?? false)) {
+            return $variant === null ? $query : $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas(
+            'score',
+            fn (Builder $scoreQuery) => ProjectedScoreVariant::apply($scoreQuery, $ruleset, $variant),
+        );
     }
 
     public function scopeWithVisibleScore($query): Builder

@@ -209,6 +209,7 @@ class ScoresController extends Controller
                 'legacy_score_id' => static::parseIdOrFail($legacyId),
             ]);
         }
+        $scoreQuery->with('m1pposuExternalScore');
         if (\Auth::user()?->isAdmin() !== true) {
             $scoreQuery->visibleUsers();
         }

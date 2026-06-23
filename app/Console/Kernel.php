@@ -48,6 +48,11 @@ class Kernel extends ConsoleKernel
                     ->withoutOverlapping(30)
                     ->onOneServer();
 
+                $schedule->command('m1pposu:sync:maps --all --no-interaction')
+                    ->everyFiveMinutes()
+                    ->withoutOverlapping(30)
+                    ->onOneServer();
+
                 $schedule->command('m1pposu:activity:snapshot --no-interaction')
                     ->everyMinute()
                     ->withoutOverlapping(5)

@@ -41,7 +41,7 @@ final class LiveEventProcessor
         return match ($channel) {
             'ex:submit' => $this->synchronizer->syncScoreIds([$this->requiredId($data, 'id', $channel)]),
             'rank' => $this->synchronizer->syncMapIds([$this->requiredId($data, 'beatmap_id', $channel)]),
-            'ex:map_status_change' => $this->synchronizer->syncMapIds($this->requiredIds($data, 'map_ids', $channel)),
+            'ex:map_status_change' => $this->synchronizer->syncMapStatusChange($this->requiredIds($data, 'map_ids', $channel), $this->eventType($data, $channel)),
             'wipe' => $this->synchronizer->syncWipe(
                 $this->requiredId($data, 'id', $channel),
                 $this->requiredNonNegativeInt($data, 'mode', $channel),
@@ -55,6 +55,21 @@ final class LiveEventProcessor
                 ? $this->synchronizer->syncUserIds([$this->requiredId($data, 'id', $channel)])
                 : throw new RuntimeException("Unsupported private-server live channel: {$channel}."),
         };
+    }
+
+    private function eventType(array $data, string $channel): ?string
+    {
+        $value = $data['type'] ?? null;
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_string($value) || !in_array($value, ['rank', 'love', 'unrank'], true)) {
+            throw new RuntimeException("Invalid map status event type on {$channel}.");
+        }
+
+        return $value;
     }
 
     private function requiredId(array $data, string $key, string $channel): int

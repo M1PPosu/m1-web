@@ -33,7 +33,6 @@ use App\Transformers\UserMonthlyPlaycountTransformer;
 use App\Transformers\UserReplaysWatchedCountTransformer;
 use App\Transformers\UserTransformer;
 use Auth;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Request;
 use romanzipp\Turnstile\Validator as TurnstileValidator;
@@ -206,7 +205,11 @@ class UsersController extends Controller
                     ),
                     'pinned' => $this->getExtraSection(
                         'scoresPinned',
-                        $this->user->scorePins()->forRuleset($this->mode)->withVisibleScore()->count()
+                        $this->user->scorePins()
+                            ->forRuleset($this->mode)
+                            ->forVariant($this->mode, $this->variant)
+                            ->withVisibleScore()
+                            ->count()
                     ),
                 ];
 
@@ -911,17 +914,14 @@ class UsersController extends Controller
             case 'scoresPinned':
                 $transformer = new ScoreTransformer();
                 $includes = ScoreTransformer::USER_PROFILE_INCLUDES;
-                if ($this->variant !== null) {
-                    $collection = new EloquentCollection();
-                } else {
-                    $query = $this->user
-                        ->scorePins()
-                        ->forRuleset($this->mode)
-                        ->withVisibleScore()
-                        ->with(array_map(fn ($include) => "score.{$include}", ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD))
-                        ->reorderBy('display_order', 'asc');
-                    $collectionFn = fn ($pins) => $pins->map->score;
-                }
+                $query = $this->user
+                    ->scorePins()
+                    ->forRuleset($this->mode)
+                    ->forVariant($this->mode, $this->variant)
+                    ->withVisibleScore()
+                    ->with(array_map(fn ($include) => "score.{$include}", ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD))
+                    ->reorderBy('display_order', 'asc');
+                $collectionFn = fn ($pins) => $pins->map->score;
                 $userRelationColumn = 'user';
                 break;
             case 'scoresRecent':

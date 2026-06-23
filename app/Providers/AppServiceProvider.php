@@ -6,6 +6,7 @@
 namespace App\Providers;
 
 use App\Hashing\OsuBcryptHasher;
+use App\Libraries\Mail\BrevoTransport;
 use App\Libraries\M1pposu\RuntimeConfiguration;
 use App\Libraries\MorphMap;
 use App\Libraries\OsuCookieJar;
@@ -97,6 +98,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->afterResolving('mail.manager', function ($manager) {
+            $manager->extend('brevo', fn (array $config) => new BrevoTransport(
+                config('services.brevo.api_key'),
+                config('services.brevo.endpoint')
+            ));
+        });
+
         foreach (array_merge(static::SINGLETONS, static::LOCAL_CACHE_SINGLETONS) as $name => $class) {
             $this->app->singleton($name, fn () => new $class());
         }

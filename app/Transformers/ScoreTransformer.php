@@ -11,6 +11,7 @@ use App\Libraries\Search\ScoreSearchParams;
 use App\Models\Beatmap;
 use App\Models\DeletedUser;
 use App\Models\LegacyMatch;
+use App\Models\M1pposuExternalScore;
 use App\Models\Multiplayer\PlaylistItemUserHighScore;
 use App\Models\Multiplayer\ScoreLink as MultiplayerScoreLink;
 use App\Models\Solo\Score as SoloScore;
@@ -83,6 +84,7 @@ class ScoreTransformer extends TransformerAbstract
             $extraAttributes['preserve'] = $score->preserve;
             $extraAttributes['processed'] = $score->isProcessed();
             $extraAttributes['ranked'] = $score->ranked;
+            $extraAttributes['source'] = $this->source($score);
         }
 
         $hasReplay = $score->has_replay;
@@ -114,6 +116,31 @@ class ScoreTransformer extends TransformerAbstract
             // TODO: remove this redundant field sometime after 2024-02
             'replay' => $hasReplay,
         ];
+    }
+
+    private function source(SoloScore $score): ?array
+    {
+        if (!$score->relationLoaded('m1pposuExternalScore')) {
+            return null;
+        }
+
+        $source = $score->m1pposuExternalScore;
+
+        return $source === null ? null : [
+            'backend' => $source->backend,
+            'display_name' => $this->sourceDisplayName($source),
+            'external_id' => $source->external_score_id,
+            'source_mode' => $source->source_mode,
+        ];
+    }
+
+    private function sourceDisplayName(M1pposuExternalScore $source): string
+    {
+        return match ($source->backend) {
+            // M1PPosu currently validates this as the only supported private-server backend.
+            'bancho-py-ex' => 'Stable',
+            default => $source->backend,
+        };
     }
 
     public function transformLegacy(LegacyMatch\Score|SoloScore $score)

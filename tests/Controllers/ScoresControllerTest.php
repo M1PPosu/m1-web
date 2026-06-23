@@ -12,6 +12,7 @@ use App\Models\Solo\Score;
 use App\Models\User;
 use App\Models\UserStatistics;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
 use Storage;
 use Tests\TestCase;
 
@@ -167,6 +168,27 @@ class ScoresControllerTest extends TestCase
             ->actingAs($this->user)
             ->get(route('scores.download', $this->score))
             ->assertRedirect(route('scores.show', $this->score));
+    }
+
+    public function testShowIncludesExternalScoreSource(): void
+    {
+        DB::table('m1pposu_external_scores')->insert([
+            'score_id' => $this->score->getKey(),
+            'backend' => 'bancho-py-ex',
+            'external_score_id' => '12345',
+            'external_user_id' => '67890',
+            'external_beatmap_md5' => str_repeat('a', 32),
+            'source_mode' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this
+            ->getJson(route('scores.show', $this->score))
+            ->assertJsonPath('source.backend', 'bancho-py-ex')
+            ->assertJsonPath('source.display_name', 'Stable')
+            ->assertJsonPath('source.external_id', '12345')
+            ->assertJsonPath('source.source_mode', 0);
     }
 
     protected function setUp(): void

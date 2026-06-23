@@ -152,7 +152,7 @@ class PasswordResetData
             $this->attrs['canResendMailAfter'] = $now + static::RESEND_MAIL_INTERVAL;
         }
 
-        \Mail::to($this->user)->send(new PasswordReset([
+        \Mail::mailer('brevo')->to($this->user)->send(new PasswordReset([
             'user' => $this->user,
             'key' => $this->attrs['key'],
         ]));
