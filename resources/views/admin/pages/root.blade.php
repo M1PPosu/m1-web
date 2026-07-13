@@ -15,6 +15,11 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('admin.imported-accounts.index') }}">
+                    {{ osu_trans('admin.imported_accounts.index.title') }}
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('admin.contests.index') }}">Contests</a>
             </li>
         </ul>

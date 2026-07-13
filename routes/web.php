@@ -27,6 +27,24 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::resource('logs', 'LogsController', ['only' => ['index']]);
 
+        Route::get('imported-accounts', 'ImportedAccountsController@index')
+            ->name('imported-accounts.index');
+        Route::post('imported-accounts/{importedAccount}/remove', 'ImportedAccountsController@remove')
+            ->name('imported-accounts.remove');
+        Route::post('imported-accounts/{importedAccount}/restore', 'ImportedAccountsController@restore')
+            ->name('imported-accounts.restore');
+        Route::get('imported-accounts/{importedAccount}', 'ImportedAccountsController@show')
+            ->name('imported-accounts.show');
+
+        Route::post('official-import-requests/{officialImportRequest}/approve', 'OfficialAccountImportRequestsController@approve')
+            ->name('official-import-requests.approve');
+        Route::post('official-import-requests/{officialImportRequest}/deny', 'OfficialAccountImportRequestsController@deny')
+            ->name('official-import-requests.deny');
+        Route::get('official-import-requests', 'OfficialAccountImportRequestsController@index')
+            ->name('official-import-requests.index');
+        Route::get('official-import-requests/{officialImportRequest}', 'OfficialAccountImportRequestsController@show')
+            ->name('official-import-requests.show');
+
         Route::get('/', 'PagesController@root')->name('root');
 
         Route::group(['as' => 'forum.', 'prefix' => 'forum', 'namespace' => 'Forum'], function () {
@@ -252,6 +270,13 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('github-users/callback', 'Account\GithubUsersController@callback')->name('github-users.callback');
             Route::resource('github-users', 'Account\GithubUsersController', ['only' => ['create']]);
             Route::delete('github-users', 'Account\GithubUsersController@destroy')->name('github-users.destroy');
+
+            Route::get('official-osu/callback', 'Account\OfficialOsuConnectionsController@callback')->name('official-osu.callback');
+            Route::post('official-osu/import', 'Account\OfficialOsuConnectionsController@import')->name('official-osu.import');
+            Route::post('official-osu/reimport', 'Account\OfficialOsuConnectionsController@reimport')->name('official-osu.reimport');
+            Route::resource('official-osu', 'Account\OfficialOsuConnectionsController', ['only' => ['create']]);
+            Route::delete('official-osu/reset', 'Account\OfficialOsuConnectionsController@reset')->name('official-osu.reset');
+            Route::delete('official-osu', 'Account\OfficialOsuConnectionsController@destroy')->name('official-osu.destroy');
         });
 
         Route::get('quick-search', 'HomeController@quickSearch')->name('quick-search');

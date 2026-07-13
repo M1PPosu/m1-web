@@ -76,6 +76,83 @@ return [
         ],
     ],
 
+    'official_osu' => [
+        'connected' => 'Your official osu! account has been connected.',
+        'connected_heading' => 'Official osu! account connected',
+        'import' => 'Import Official Data',
+        'import_applied' => 'Official osu! data imported. Continue your profile on M1PPosu with native pp, ranks, and leaderboards earned here.',
+        'import_prompt' => 'Import supported official osu! profile/history data into your M1PPosu profile. Imported official scores do not grant M1PPosu pp or leaderboard placement.',
+        'import_started' => 'Official osu! data imported.',
+        'info' => 'Connect your official osu! account to verify ownership and import supported profile/history data into your M1PPosu profile.',
+        'link' => 'Connect official osu! account',
+        'official_user_id' => 'official user id',
+        'restricted' => 'This official osu! account is flagged for staff review after import.',
+        'review_denied' => 'Your official osu! account import request was reviewed and denied.',
+        'review_failed' => 'Your official osu! account import request was reviewed, but could not be applied. Please contact support if this continues.',
+        'review_requested' => 'Your official osu! account appears to be restricted, so your import request has been sent to our Trust & Safety team for manual review. You will receive a decision by email once the review is complete. Most requests are handled quickly, but reviews may take up to 24 hours.',
+        'reimport_started' => 'Official osu! data refreshed and reimported.',
+        'title' => 'Connected Accounts',
+        'unlink' => 'Disconnect official osu! account',
+        'unavailable' => 'Official osu! account linking is not configured for this server.',
+
+        'confirm' => [
+            'checkbox' => 'I understand and want to import my official osu! data.',
+              'locked' => 'After importing, removal requires a separate confirmation and blocks normal manual reimport.',
+            'native_intact' => 'Your existing M1PPosu scores stay intact.',
+            'no_pp' => 'Imported official scores do not grant M1PPosu pp or leaderboard placement.',
+            'profile' => 'This imports supported official osu! profile/history data into your M1PPosu profile.',
+            'title' => 'Before importing',
+        ],
+
+        'admin' => [
+            'reimport' => 'Reimport official data',
+            'reset' => 'Reset official import link',
+        ],
+
+        'preview' => [
+            'native_unchanged' => 'M1PPosu pp, ranks, leaderboards, teams, and supporter perks remain M1PPosu-earned only.',
+            'profile' => 'Continue your profile on M1PPosu with supported official osu! identity and history.',
+            'reconnect_required' => 'Reconnect this official osu! account before refreshing or importing more supported data.',
+            'username_conflict' => 'Official username differs from your M1PPosu username and cannot be applied automatically.',
+        ],
+
+        'remove' => [
+            'button' => 'Remove official import',
+            'checkbox' => 'I understand and want to remove my official osu! import.',
+            'native_intact' => 'Your native M1PPosu account and scores remain.',
+            'profile' => 'Imported official data will be removed from your public profile.',
+            'reimport_blocked' => 'You will not be able to manually import official data again afterward.',
+            'removed_by_staff' => 'This official osu! import was removed by staff.',
+            'self_removed' => 'You removed this official osu! import. Staff can help if this was a mistake.',
+            'staff_help' => 'Staff may need to assist if this was a mistake.',
+            'title' => 'Remove official import',
+        ],
+
+        'state' => [
+            'denied' => 'denied',
+            'failed' => 'failed',
+              'imported' => 'imported',
+              'not_connected' => 'No official osu! account connected',
+              'pending' => 'pending review',
+              'ready' => 'ready to import',
+              'removed_by_staff' => 'removed by staff',
+              'review_required' => 'review required',
+              'self_removed' => 'self removed',
+          ],
+
+        'error' => [
+              'confirm_required' => 'Please confirm that official data is imported as non-competitive history before importing.',
+              'import_already_applied' => 'Official osu! data has already been imported for this account.',
+              'import_self_removed' => 'This official osu! import was removed and cannot be manually imported again. Please contact staff if this was a mistake.',
+              'local_already_linked' => 'Your M1PPosu account is already connected to a different official osu! account.',
+              'official_already_linked' => 'This official osu! account is already connected to a different M1PPosu account.',
+              'remove_confirm_required' => 'Please confirm that you understand what removing the official osu! import does.',
+              'reconnect_required' => 'Please reconnect your official osu! account before importing.',
+              'unlink_locked' => 'This official osu! connection cannot be removed after importing or while staff review is pending.',
+          ],
+          'remove_removed' => 'Official osu! import removed from your public profile.',
+      ],
+
     'notifications' => [
         'beatmapset_discussion_qualified_problem' => 'receive notifications for new problems on qualified beatmaps of the following modes',
         'beatmapset_disqualify' => 'receive notifications for when beatmaps of the following modes are disqualified',

@@ -14,6 +14,7 @@ class AuthorizedClientsController extends Controller
     {
         parent::__construct();
 
+        $this->middleware('m1pposu-feature:oauth_settings');
         $this->middleware('auth');
         $this->middleware('verify-user');
     }

@@ -54,6 +54,12 @@ export default class PlayDetail extends React.PureComponent<Props, State> {
 
     const scoreWeight = this.props.showPpWeight ? score.weight : null;
     const scoreRank = rank(score);
+    const scoreUrl = score.source?.backend === 'official_osu' && beatmap.url?.startsWith('http')
+      ? beatmap.url
+      : beatmapUrl(beatmap, rulesetNames[score.ruleset_id]);
+    const totalScore = score.type === 'm1pposu_official_import' && score.total_score > 0
+      ? formatNumber(score.total_score)
+      : null;
 
     return (
       <div className={blockClass} {...additionalAttributes}>
@@ -66,7 +72,7 @@ export default class PlayDetail extends React.PureComponent<Props, State> {
           <div className={`${bn}__detail`}>
             <a
               className={`${bn}__title u-ellipsis-overflow`}
-              href={beatmapUrl(beatmap, rulesetNames[score.ruleset_id])}
+              href={scoreUrl}
             >
               {getTitle(beatmapset)}
               {' '}
@@ -95,6 +101,9 @@ export default class PlayDetail extends React.PureComponent<Props, State> {
                 <span className={`${bn}__accuracy`}>
                   {formatNumber(accuracy(score), 2, { style: 'percent' })}
                 </span>
+                {totalScore != null && (
+                  <span className={`${bn}__total-score`}>{totalScore}</span>
+                )}
                 {scoreWeight != null && (
                   <span className={`${bn}__weighted-pp`}>
                     {score.pp != null && `${formatNumber(Math.round(scoreWeight.pp))}pp`}

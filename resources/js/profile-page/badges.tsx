@@ -30,6 +30,7 @@ export default class Badges extends React.PureComponent<Props> {
             <Img2x
               className='profile-badges__badge'
               data-html-title={htmlTitle}
+              src2x={badge['image@2x_url']}
               src={badge.image_url}
               title={badge.description}
             />

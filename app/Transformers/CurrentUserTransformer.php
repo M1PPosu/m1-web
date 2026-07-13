@@ -5,6 +5,9 @@
 
 namespace App\Transformers;
 
+use App\Libraries\M1pposu\OfficialProfileImport;
+use App\Models\User;
+
 class CurrentUserTransformer extends UserTransformer
 {
     public function __construct()
@@ -20,5 +23,17 @@ class CurrentUserTransformer extends UserTransformer
             'unread_pm_count',
             'user_preferences',
         ];
+    }
+
+    public function transform(User $user)
+    {
+        $ret = parent::transform($user);
+        $officialImport = app(OfficialProfileImport::class)->forUser($user, $user->playmode);
+
+        if (present($officialImport['profile']['avatar_url'] ?? null)) {
+            $ret['avatar_url'] = $officialImport['profile']['avatar_url'];
+        }
+
+        return $ret;
     }
 }

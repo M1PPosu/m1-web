@@ -22,6 +22,8 @@
             data-skip-ajax-error-popup="1"
             method="POST"
         >
+            @csrf
+
             <label class="simple-form__row js-form-error--field">
                 <div class="simple-form__label">
                     {{ osu_trans('users.create.form.username') }}

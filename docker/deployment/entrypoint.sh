@@ -12,14 +12,14 @@ if [ "$#" -gt 0 ]; then
 fi
 
 _octane() {
-  /app/artisan config:cache
-  /app/artisan route:cache
+  php /app/artisan config:cache
+  php /app/artisan route:cache
 
-  exec /app/artisan octane:start --host=0.0.0.0 "$@"
+  exec php /app/artisan octane:start --host=0.0.0.0 "$@"
 }
 
 case "$command" in
-    artisan) exec /app/artisan "$@";;
+    artisan) exec php /app/artisan "$@";;
     assets) exec nginx -c /app/docker/deployment/nginx-assets.conf "$@";;
     octane) _octane "$@";;
     *) exec "$command" "$@";;

@@ -70,10 +70,14 @@ const BeatmapDots = observer(({ compact, beatmaps, mode }: { beatmaps: BeatmapJs
 ));
 
 const MapperLink = observer(({ beatmapset }: { beatmapset: BeatmapsetJson }) => (
-  <UserLink
-    className='beatmapset-panel__mapper-link u-hover'
-    user={{ id: beatmapset.user_id, username: beatmapset.creator }}
-  />
+  beatmapset.is_external ? (
+    <span className='beatmapset-panel__mapper-link'>{beatmapset.creator}</span>
+  ) : (
+    <UserLink
+      className='beatmapset-panel__mapper-link u-hover'
+      user={{ id: beatmapset.user_id, username: beatmapset.creator }}
+    />
+  )
 ));
 
 const PlayIcon = ({ icon, titleVariant }: { icon: string; titleVariant: string }) => (
@@ -132,6 +136,10 @@ export default class BeatmapsetPanel extends React.Component<Props> {
 
   @computed
   private get downloadLink() {
+    if (this.props.beatmapset.is_external) {
+      return { title: trans('beatmapsets.availability.disabled') };
+    }
+
     if (core.currentUser == null) {
       return { title: trans('beatmapsets.show.details.logged-out') };
     }
@@ -245,7 +253,9 @@ export default class BeatmapsetPanel extends React.Component<Props> {
 
   @computed
   private get url() {
-    return route('beatmapsets.show', { beatmapset: this.props.beatmapset.id });
+    return this.props.beatmapset.url?.startsWith('http')
+      ? this.props.beatmapset.url
+      : route('beatmapsets.show', { beatmapset: this.props.beatmapset.id });
   }
 
   constructor(props: Props) {
@@ -437,11 +447,13 @@ export default class BeatmapsetPanel extends React.Component<Props> {
           </div>
         </div>
 
-        <div className='beatmapset-panel__info-row beatmapset-panel__info-row--source'>
-          <div className='u-ellipsis-overflow'>
-            {this.props.beatmapset.source}
+        {this.props.beatmapset.source !== '' && (
+          <div className='beatmapset-panel__info-row beatmapset-panel__info-row--source'>
+            <div className='u-ellipsis-overflow'>
+              {this.props.beatmapset.source}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className='beatmapset-panel__info-row beatmapset-panel__info-row--mapper'>
           <div className='u-ellipsis-overflow'>
@@ -532,6 +544,10 @@ export default class BeatmapsetPanel extends React.Component<Props> {
   }
 
   private renderMenuArea() {
+    if (this.props.beatmapset.is_external) {
+      return <div className='beatmapset-panel__menu-container' />;
+    }
+
     return (
       <div className='beatmapset-panel__menu-container'>
         <div className='beatmapset-panel__menu'>
@@ -600,6 +616,8 @@ export default class BeatmapsetPanel extends React.Component<Props> {
   }
 
   private readonly toggleFavourite = () => {
+    if (this.props.beatmapset.is_external) return;
+
     toggleFavourite(this.props.beatmapset);
   };
 }

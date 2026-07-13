@@ -6,6 +6,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ModelNotSavedException;
+use App\Libraries\M1pposu\OfficialOsuClient;
 use App\Libraries\M1pposu\SourceMode;
 use App\Libraries\Session\Store as SessionStore;
 use App\Libraries\SessionVerification;
@@ -16,7 +17,8 @@ use App\Mail\UserEmailUpdated;
 use App\Mail\UserPasswordUpdated;
 use App\Models\Beatmap;
 use App\Models\GithubUser;
-use App\Models\OAuth\Client;
+use App\Models\M1pposuAccountImportRequest;
+use App\Models\User;
 use App\Models\UserAccountHistory;
 use App\Models\UserNotificationOption;
 use App\Transformers\CurrentUserTransformer;
@@ -111,8 +113,13 @@ class AccountController extends Controller
         $sessions = SessionStore::sessions($user->getKey());
         $currentSessionId = \Session::getId();
 
-        $authorizedClients = json_collection(Client::forUser($user), 'OAuth\Client', 'user');
-        $ownClients = json_collection($user->oauthClients()->where('revoked', false)->get(), 'OAuth\Client', ['redirect', 'secret']);
+        $showOAuthSettings = get_bool(config('m1pposu.features.oauth_settings') ?? false);
+        $authorizedClients = $showOAuthSettings
+            ? json_collection(\App\Models\OAuth\Client::forUser($user), 'OAuth\Client', 'user')
+            : [];
+        $ownClients = $showOAuthSettings
+            ? json_collection($user->oauthClients()->where('revoked', false)->get(), 'OAuth\Client', ['redirect', 'secret'])
+            : [];
 
         $legacyApiKey = $user->apiKeys()->available()->first();
         $legacyApiKeyJson = $legacyApiKey === null ? null : json_item($legacyApiKey, new LegacyApiKeyTransformer());
@@ -126,6 +133,43 @@ class AccountController extends Controller
             ? json_item($user->githubUser, 'GithubUser')
             : null;
 
+        $officialOsuCanAuthenticate = OfficialOsuClient::canAuthenticate();
+        $connection = $user->m1pposuOfficialConnection()
+            ->with(['importRequests' => fn ($query) => $query->latest()])
+            ->first();
+
+        $importRequests = $connection?->importRequests;
+        $latestRequest = $importRequests?->first();
+        $latestImportedRequest = $importRequests?->whereIn('status', M1pposuAccountImportRequest::IMPORTED_STATUSES)->first();
+        $latestReviewStatus = $latestImportedRequest?->status ?? $latestRequest?->status;
+        $hasAppliedImport = $latestImportedRequest?->status === M1pposuAccountImportRequest::STATUS_APPLIED;
+        $hasRemovedImport = $latestReviewStatus !== null && in_array($latestReviewStatus, M1pposuAccountImportRequest::REMOVED_STATUSES, true);
+        $hasPendingReview = $latestReviewStatus === M1pposuAccountImportRequest::STATUS_PENDING;
+        $hasSelfRemovedImport = $importRequests?->contains('status', M1pposuAccountImportRequest::STATUS_SELF_REMOVED) ?? false;
+        $officialOsuConnection = $connection === null ? null : [
+            'avatar_url' => $connection->avatar_url,
+            'can_disconnect' => !$hasPendingReview && !$hasRemovedImport,
+            'can_import' => $officialOsuCanAuthenticate
+                && !$hasAppliedImport
+                && !$hasPendingReview
+                && !$hasSelfRemovedImport
+                && !$hasRemovedImport,
+            'connected_at' => json_time($connection->connected_at),
+            'is_imported' => $hasAppliedImport,
+            'is_removed' => $hasRemovedImport,
+            'official_url' => $connection->officialUrl(),
+            'official_user_id' => $connection->official_user_id,
+            'pending_review' => $hasPendingReview,
+            'restricted' => $connection->restricted_at_connection,
+            'review_status' => $latestReviewStatus,
+            'token_unavailable' => $connection->refresh_token === null && (
+                ($connection->token_metadata['reconnect_needed'] ?? false)
+                || ($connection->token_metadata['unavailable_at'] ?? null) !== null
+            ),
+            'username_conflict' => User::cleanUsername($connection->username) !== $user->username_clean,
+            'username' => $connection->username,
+        ];
+
         return ext_view('accounts.edit', compact(
             'authorizedClients',
             'blocks',
@@ -134,7 +178,10 @@ class AccountController extends Controller
             'legacyApiKeyJson',
             'legacyIrcKeyJson',
             'notificationOptions',
+            'officialOsuCanAuthenticate',
+            'officialOsuConnection',
             'ownClients',
+            'showOAuthSettings',
             'sessions'
         ));
     }

@@ -28,6 +28,7 @@ type ProfilePageIncludes =
   ProfileHeaderIncludes
   | 'account_history'
   | 'daily_challenge_user_stats'
+  | 'official_import'
   | 'page'
   | 'rank_highest'
   | 'rank_history'

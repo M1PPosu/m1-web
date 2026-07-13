@@ -28,6 +28,7 @@ interface BeatmapJsonDefaultAttributes {
   mode: Ruleset;
   status: string;
   total_length: number;
+  url?: string;
   user_id: number;
   version: string;
 }

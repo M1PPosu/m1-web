@@ -69,6 +69,10 @@ interface ScoreJsonAttributesMultiplayer extends ScoreJsonAttributesSolo {
   solo_score_id: number;
 }
 
+interface ScoreJsonAttributesOfficialImport {
+  type: 'm1pposu_official_import';
+}
+
 type ScoreJsonAttributes = {
   accuracy: number;
   beatmap_id: number;
@@ -94,7 +98,12 @@ type ScoreJsonAttributes = {
   total_score: number;
   total_score_without_mods?: number;
   user_id: number;
-} & (ScoreJsonAttributesLegacyMatch | ScoreJsonAttributesSolo | ScoreJsonAttributesMultiplayer);
+} & (
+  ScoreJsonAttributesLegacyMatch
+  | ScoreJsonAttributesSolo
+  | ScoreJsonAttributesMultiplayer
+  | ScoreJsonAttributesOfficialImport
+);
 
 export interface ScoreJsonDefaultIncludes {
   current_user_attributes: {
