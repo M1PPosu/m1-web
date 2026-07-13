@@ -14,6 +14,7 @@ use WeakMap;
 
 class Ip2Asn
 {
+    private bool $available = true;
     private WeakMap $count;
     private WeakMap $dbFh;
     private WeakMap $index;
@@ -25,8 +26,17 @@ class Ip2Asn
         $this->index = new WeakMap();
 
         foreach (Ip::cases() as $version) {
-            $this->dbFh[$version] = fopen(Ip2AsnUpdater::getDbPath($version), 'r');
-            $index = file_get_contents(Ip2AsnUpdater::getIndexPath($version));
+            $dbPath = Ip2AsnUpdater::getDbPath($version);
+            $indexPath = Ip2AsnUpdater::getIndexPath($version);
+
+            if (!is_file($dbPath) || !is_file($indexPath)) {
+                $this->available = false;
+
+                return;
+            }
+
+            $this->dbFh[$version] = fopen($dbPath, 'r');
+            $index = file_get_contents($indexPath);
             if ($this->dbFh[$version] === false || $index === false) {
                 throw new Exception("failed opening ip2asn {$version} database or index");
             }
@@ -39,6 +49,10 @@ class Ip2Asn
 
     public function lookup(string $ip): string
     {
+        if (!$this->available) {
+            return '0';
+        }
+
         switch (true) {
             case filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false:
                 return $this->lookupByVersion(Ip::V4, $ip);
@@ -47,6 +61,11 @@ class Ip2Asn
         }
 
         return '0';
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->available;
     }
 
     private function lookupByVersion(Ip $version, string $ip): string

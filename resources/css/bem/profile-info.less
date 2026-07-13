@@ -212,6 +212,32 @@
     }
   }
 
+  &__name-text {
+    box-sizing: border-box;
+    display: inline-block;
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+    padding-right: 0.6em;
+    position: relative;
+
+    & > .u-ellipsis-pre-overflow {
+      display: block;
+      min-width: 0;
+    }
+  }
+
+  &__official-imported {
+    color: #66dc78;
+    font-size: 0.45em;
+    line-height: 1;
+    pointer-events: auto;
+    position: absolute;
+    right: 0;
+    text-shadow: 0 1px 3px hsla(var(--hsl-b6), 0.9);
+    top: -0.25em;
+  }
+
   &__previous-usernames {
     transform: translateY(-0.3em);
     display: inline-block;

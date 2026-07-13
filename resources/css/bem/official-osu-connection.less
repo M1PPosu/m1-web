@@ -1,0 +1,162 @@
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
+// See the LICENCE file in the repository root for full licence text.
+
+.official-osu-connection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+  min-width: 0;
+  width: 100%;
+
+  &__account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  &__avatar {
+    flex: none;
+    height: 70px;
+    object-fit: cover;
+    padding-bottom: 0;
+    width: 70px;
+  }
+
+  &__account-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__actions {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  &__confirm-box {
+    background-color: hsl(var(--hsl-b4));
+    border-radius: 4px;
+    padding: 10px;
+    width: 100%;
+
+    &--danger {
+      border-left: 3px solid hsl(var(--hsl-red-2));
+    }
+  }
+
+  &__confirm-title {
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  &__confirm {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.35;
+    margin: 0;
+    max-width: 100%;
+    min-width: 0;
+    text-transform: none;
+
+    input {
+      flex: none;
+      margin-top: 2px;
+    }
+  }
+
+  &__header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    min-width: 0;
+  }
+
+  &__heading {
+    color: #fff;
+    font-size: @font-size--title-small-3;
+    font-weight: 700;
+    min-width: 0;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  &__meta {
+    color: @osu-colour-f1;
+    font-size: @font-size--small;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__preview {
+    color: @osu-colour-f1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    line-height: 1.35;
+    min-width: 0;
+  }
+
+  &__status {
+    background-color: hsl(var(--hsl-b3));
+    border-radius: 10000px;
+    color: #fff;
+    flex: none;
+    font-size: @font-size--small;
+    font-weight: 700;
+    line-height: 1;
+    padding: 5px 8px;
+
+    &--denied,
+    &--failed {
+      background-color: hsl(var(--hsl-red-3));
+    }
+
+    &--imported {
+      background-color: hsl(var(--hsl-green-3));
+    }
+
+    &--pending,
+    &--review_required {
+      background-color: hsl(var(--hsl-orange-3));
+      color: #000;
+    }
+
+    &--removed_by_staff,
+    &--self_removed {
+      background-color: hsl(var(--hsl-red-3));
+    }
+  }
+
+  &__username {
+    color: #fff;
+    display: block;
+    font-size: @font-size--title-small-3;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.account-edit-entry--official-osu {
+  display: block;
+  min-width: 0;
+  padding-left: 0;
+  width: 100%;
+}

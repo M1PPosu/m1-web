@@ -2,7 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 export default interface UserBadgeJson {
-  awarded_at: string;
+  awarded_at: string | null;
   description: string;
   'image@2x_url': string;
   image_url: string;

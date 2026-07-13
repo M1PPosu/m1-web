@@ -77,6 +77,7 @@ use Request;
  * @property bool $hide_presence
  * @property bool $lock_email_changes
  * @property-read Collection<UserMonthlyPlaycount> $monthlyPlaycounts
+ * @property-read M1pposuOfficialConnection|null $m1pposuOfficialConnection
  * @property-read Collection<UserNotificationOption> $notificationOptions
  * @property-read Collection<Client> $oauthClients
  * @property-read Collection<Store\Order> $orders
@@ -1219,6 +1220,11 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
     public function githubUser(): HasOne
     {
         return $this->hasOne(GithubUser::class);
+    }
+
+    public function m1pposuOfficialConnection(): HasOne
+    {
+        return $this->hasOne(M1pposuOfficialConnection::class, 'user_id');
     }
 
     public function legacyIrcKey(): HasOne

@@ -45,6 +45,11 @@ export default class Cover extends React.Component<Props> {
   }
 
   render() {
+    const nativeCountry = this.props.user.country?.code === 'XX' ? null : this.props.user.country;
+    const officialCountry = nativeCountry == null
+      ? this.props.user.official_import?.profile.country
+      : null;
+
     return (
       <div className={classWithModifiers('profile-info', this.props.modifiers, { cover: this.showCover })}>
         {this.showCover &&
@@ -72,7 +77,10 @@ export default class Cover extends React.Component<Props> {
 
           <div className='profile-info__info'>
             <h1 className='profile-info__name'>
-              <span className='u-ellipsis-pre-overflow'>{this.props.user.username}</span>
+              <span className='profile-info__name-text'>
+                <span className='u-ellipsis-pre-overflow'>{this.props.user.username}</span>
+                {this.renderOfficialImportedMarker()}
+              </span>
 
               <div className='profile-info__previous-usernames'>{this.renderPreviousUsernames()}</div>
 
@@ -84,13 +92,22 @@ export default class Cover extends React.Component<Props> {
             {this.renderTitle()}
 
             <div className='profile-info__flags'>
-              {this.props.user.country?.code != null &&
+              {nativeCountry != null &&
                 <a
                   className='profile-info__flag'
-                  href={route('rankings', { country: this.props.user.country.code, mode: this.props.currentMode, type: 'performance' })}
+                  href={route('rankings', { country: nativeCountry.code, mode: this.props.currentMode, type: 'performance' })}
                 >
-                  <FlagCountry country={this.props.user.country} />
-                  <span className='profile-info__flag-text'>{this.props.user.country.name}</span>
+                  <FlagCountry country={nativeCountry} />
+                  <span className='profile-info__flag-text'>{nativeCountry.name}</span>
+                </a>
+              }
+              {officialCountry != null &&
+                <a
+                  className='profile-info__flag'
+                  href={route('rankings', { country: officialCountry.code, mode: this.props.currentMode, type: 'performance' })}
+                >
+                  <FlagCountry country={officialCountry} />
+                  <span className='profile-info__flag-text'>{officialCountry.name}</span>
                 </a>
               }
               {this.props.user.team != null &&
@@ -130,7 +147,9 @@ export default class Cover extends React.Component<Props> {
   };
 
   private renderAvatar() {
-    return <UserAvatar modifiers='full' user={this.props.user} />;
+    return <UserAvatar modifiers='full' user={{
+      avatar_url: this.props.user.official_import?.profile.avatar_url ?? this.props.user.avatar_url,
+    }} />;
   }
 
   private renderIcons() {
@@ -143,6 +162,20 @@ export default class Cover extends React.Component<Props> {
         }
         <UserGroupBadges groups={this.props.user.groups} modifiers='profile-page' wrapper='profile-info__icon' />
       </>
+    );
+  }
+
+  private renderOfficialImportedMarker() {
+    if (this.props.user.official_import == null) return null;
+
+    return (
+      <span
+        className='profile-info__official-imported'
+        data-tooltip-position='top center'
+        title='Players who imported their official osu! accounts'
+      >
+        <span className='fas fa-star' />
+      </span>
     );
   }
 

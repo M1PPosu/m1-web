@@ -82,6 +82,14 @@ return [
 
     'contact_email' => presence(env('M1PP_CONTACT_EMAIL')) ?? 'contact@m1pposu.dev',
 
+    'official_osu' => [
+        'discord_webhook_url' => presence(env('M1PP_OFFICIAL_IMPORT_DISCORD_WEBHOOK_URL')),
+        'oauth' => [
+            'client_id' => presence(env('M1PP_OFFICIAL_OSU_CLIENT_ID')),
+            'client_secret' => presence(env('M1PP_OFFICIAL_OSU_CLIENT_SECRET')),
+        ],
+    ],
+
     'community' => [
         'discord_url' => presence(env('M1PP_DISCORD_URL')) ?? 'https://discord.gg/2ujhGaZ6Z9',
     ],
@@ -92,7 +100,7 @@ return [
         'lazer_toggle' => env('M1PP_FEATURE_LAZER_TOGGLE', false),
         'legacy_api_settings' => env('M1PP_FEATURE_LEGACY_API_SETTINGS', false),
         'livestreams' => env('M1PP_FEATURE_LIVESTREAMS', false),
-        'oauth_settings' => env('M1PP_FEATURE_OAUTH_SETTINGS', false),
+        'oauth_settings' => false,
         'playlists' => env('M1PP_FEATURE_PLAYLISTS', false),
         'presence' => env('M1PP_FEATURE_PRESENCE', !env('M1PP_PRIVATE_SERVER_ENABLED', false)),
         'ranked_play' => env('M1PP_FEATURE_RANKED_PLAY', false),

@@ -115,6 +115,7 @@ interface BeatmapsetJsonDefaultAttributes {
   favourite_count: number;
   hype: HypeData | null;
   id: number;
+  is_external?: boolean;
   nsfw: boolean;
   offset: number;
   play_count: number;
@@ -125,6 +126,7 @@ interface BeatmapsetJsonDefaultAttributes {
   title: string;
   title_unicode: string;
   track_id: number | null;
+  url?: string;
   user_id: number;
   video: boolean;
 }

@@ -17,7 +17,21 @@ case "$MYSQL_APP_PASSWORD$MYSQL_APP_HOST" in
         ;;
 esac
 
-docker_process_sql --database=mysql <<-EOSQL
+if command -v docker_process_sql > /dev/null 2>&1; then
+    sql() {
+        docker_process_sql --database=mysql
+    }
+elif [ -n "${MYSQL_ROOT_PASSWORD:-}" ]; then
+    sql() {
+        mysql --protocol=socket -uroot -p"${MYSQL_ROOT_PASSWORD}" mysql
+    }
+else
+    sql() {
+        mysql --protocol=socket -uroot mysql
+    }
+fi
+
+sql <<-EOSQL
     CREATE DATABASE IF NOT EXISTS osu;
     CREATE DATABASE IF NOT EXISTS osu_mp;
     CREATE DATABASE IF NOT EXISTS osu_charts;

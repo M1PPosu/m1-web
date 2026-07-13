@@ -6,6 +6,7 @@
 namespace App\Transformers;
 
 use App\Libraries\M1pposu\ProjectedScoreVariant;
+use App\Libraries\M1pposu\OfficialProfileImport;
 use App\Libraries\MorphMap;
 use App\Libraries\Search\ScoreSearchParams;
 use App\Libraries\SessionVerification;
@@ -20,6 +21,12 @@ use League\Fractal\Resource\ResourceInterface;
 
 class UserCompactTransformer extends TransformerAbstract
 {
+    private const OFFICIAL_IMPORT_ACCOUNT_HISTORY_PREFIXES = [
+        'Official osu! account history archived',
+        'Official osu! data imported',
+        'Official osu! import link',
+    ];
+
     const CARD_INCLUDES = [
         'country',
         'cover',
@@ -89,6 +96,7 @@ class UserCompactTransformer extends TransformerAbstract
         'matchmaking_stats',
         'monthly_playcounts',
         'nominated_beatmapset_count',
+        'official_import',
         'page',
         'pending_beatmapset_count',
         'previous_usernames',
@@ -157,6 +165,10 @@ class UserCompactTransformer extends TransformerAbstract
     {
         $histories = $user->accountHistories()->recent();
 
+        foreach (self::OFFICIAL_IMPORT_ACCOUNT_HISTORY_PREFIXES as $prefix) {
+            $histories->where('reason', 'not like', "{$prefix}%");
+        }
+
         if (!priv_check('UserSilenceShowExtendedInfo')->can()) {
             $histories->default();
         } else {
@@ -188,8 +200,10 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeBadges(User $user)
     {
+        $badges = $user->badges()->orderBy('awarded', 'DESC')->get();
+
         return $this->collection(
-            $user->badges()->orderBy('awarded', 'DESC')->get(),
+            $badges,
             new UserBadgeTransformer()
         );
     }
@@ -302,7 +316,10 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeGroups(User $user)
     {
-        return $this->collection($user->userGroupsForBadges(), new UserGroupTransformer());
+        return $this->primitive($user->userGroupsForBadges()
+            ->map(fn ($userGroup) => (new UserGroupTransformer())->transform($userGroup))
+            ->values()
+            ->all());
     }
 
     public function includeGuestBeatmapsetCount(User $user)
@@ -402,6 +419,11 @@ class UserCompactTransformer extends TransformerAbstract
     public function includeNominatedBeatmapsetCount(User $user)
     {
         return $this->primitive($user->profileBeatmapsetsNominated()->count());
+    }
+
+    public function includeOfficialImport(User $user)
+    {
+        return $this->primitive(app(OfficialProfileImport::class)->forUser($user, $this->mode));
     }
 
     public function includePage(User $user)
@@ -537,7 +559,21 @@ class UserCompactTransformer extends TransformerAbstract
     {
         $stats = $user->statistics($this->mode, false, $this->variant);
 
-        return $this->item($stats, new UserStatisticsTransformer());
+        $ret = (new UserStatisticsTransformer())->transform($stats);
+
+        if ($this->variant === null) {
+            $officialImport = app(OfficialProfileImport::class)->forUser($user, $this->mode);
+            $officialStats = $officialImport['statistics']['current'] ?? null;
+
+            if (is_array($officialStats)) {
+                $ret = $this->withOfficialImportedStatistics($ret, $officialStats);
+            }
+        }
+
+        $ret['country_rank'] = $stats?->countryRank();
+        $ret['rank'] = ['country' => $stats?->countryRank()];
+
+        return $this->primitive($ret);
     }
 
     public function includeStatisticsRulesets(User $user)
@@ -605,5 +641,38 @@ class UserCompactTransformer extends TransformerAbstract
         $this->variant = $variant;
 
         return $this;
+    }
+
+    private function withOfficialImportedStatistics(array $native, array $official): array
+    {
+        $level = (float) ($official['level'] ?? 1);
+        $levelCurrent = max(1, (int) floor($level));
+
+        return [
+            ...$native,
+            'accuracy' => (float) ($official['accuracy'] ?? $native['accuracy']),
+            'count_100' => (int) ($official['count_100'] ?? $native['count_100']),
+            'count_300' => (int) ($official['count_300'] ?? $native['count_300']),
+            'count_50' => (int) ($official['count_50'] ?? $native['count_50']),
+            'count_miss' => (int) ($official['count_miss'] ?? $native['count_miss']),
+            'grade_counts' => [
+                'a' => (int) ($official['grade_counts']['a'] ?? $native['grade_counts']['a']),
+                's' => (int) ($official['grade_counts']['s'] ?? $native['grade_counts']['s']),
+                'sh' => (int) ($official['grade_counts']['sh'] ?? $native['grade_counts']['sh']),
+                'ss' => (int) ($official['grade_counts']['ss'] ?? $native['grade_counts']['ss']),
+                'ssh' => (int) ($official['grade_counts']['ssh'] ?? $native['grade_counts']['ssh']),
+            ],
+            'hit_accuracy' => (float) ($official['hit_accuracy'] ?? $native['hit_accuracy']),
+            'level' => [
+                'current' => $levelCurrent,
+                'progress' => (int) max(0, min(100, round(($level - $levelCurrent) * 100))),
+            ],
+            'maximum_combo' => (int) ($official['maximum_combo'] ?? $native['maximum_combo']),
+            'play_count' => (int) ($official['play_count'] ?? $native['play_count']),
+            'play_time' => (int) ($official['play_time'] ?? $native['play_time']),
+            'ranked_score' => (int) ($official['ranked_score'] ?? $native['ranked_score']),
+            'total_hits' => (int) ($official['total_hits'] ?? $native['total_hits']),
+            'total_score' => (int) ($official['total_score'] ?? $native['total_score']),
+        ];
     }
 }

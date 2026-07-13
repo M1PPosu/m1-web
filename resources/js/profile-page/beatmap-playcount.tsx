@@ -28,7 +28,9 @@ export default class BeatmapPlaycount extends React.PureComponent<Props> {
       throw new Error('playcount JSON is missing beatmap or beatmapset include');
     }
 
-    const url = beatmapUrl(beatmap, this.props.currentMode);
+    const url = beatmap.url?.startsWith('http')
+      ? beatmap.url
+      : beatmapUrl(beatmap, this.props.currentMode);
 
     return (
       <div className={bn}>
@@ -61,15 +63,7 @@ export default class BeatmapPlaycount extends React.PureComponent<Props> {
               <span className={`${bn}__mapper`}>
                 <StringWithComponent
                   mappings={{
-                    mapper: (
-                      <UserLink
-                        className={`${bn}__mapper-link`}
-                        user={{
-                          id: beatmapset.user_id,
-                          username: beatmapset.creator,
-                        }}
-                      />
-                    ),
+                    mapper: this.renderMapperLink(),
                   }}
                   pattern={trans('beatmapsets.show.details.mapped_by')}
                 />
@@ -96,6 +90,24 @@ export default class BeatmapPlaycount extends React.PureComponent<Props> {
         </span>
         {formatNumber(this.props.playcount.count)}
       </div>
+    );
+  }
+
+  private renderMapperLink() {
+    const beatmapset = this.props.playcount.beatmapset;
+
+    if (beatmapset == null) return null;
+
+    return beatmapset.is_external ? (
+      <span className={`${bn}__mapper-link`}>{beatmapset.creator}</span>
+    ) : (
+      <UserLink
+        className={`${bn}__mapper-link`}
+        user={{
+          id: beatmapset.user_id,
+          username: beatmapset.creator,
+        }}
+      />
     );
   }
 }

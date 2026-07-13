@@ -15,7 +15,22 @@ class Ip2AsnTest extends TestCase
      */
     public function testLookup(string $ip, string $asn)
     {
-        $this->assertSame((new Ip2Asn())->lookup($ip), $asn);
+        $ip2Asn = new Ip2Asn();
+        if (!$ip2Asn->isAvailable()) {
+            $this->markTestSkipped('ip2asn database is not present in this checkout.');
+        }
+
+        $this->assertSame($ip2Asn->lookup($ip), $asn);
+    }
+
+    public function testLookupFallsBackWhenDatabaseIsMissing(): void
+    {
+        $ip2Asn = new Ip2Asn();
+        if ($ip2Asn->isAvailable()) {
+            $this->markTestSkipped('ip2asn database is present in this checkout.');
+        }
+
+        $this->assertSame('0', $ip2Asn->lookup('8.8.8.8'));
     }
 
     public static function dataProviderForLookup(): array

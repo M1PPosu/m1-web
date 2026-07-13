@@ -11,7 +11,35 @@ interface Props {
   suffix?: React.ReactNode;
 }
 
+function pp(score: ScoreJson, suffix: React.ReactNode, imported: boolean) {
+  return (
+    <span className='pp-value'>
+      <span title={formatNumber(score.pp ?? 0)}>
+        {formatNumber(Math.round(score.pp ?? 0))}
+        {suffix}
+      </span>
+      {imported && (
+        <span
+          className='pp-value__imported-marker'
+          data-tooltip-position='top center'
+          title='Imported Bancho Score'
+        >
+          <span className='fas fa-star' />
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function PpValue({ score, suffix }: Props) {
+  if (score.type === 'm1pposu_official_import') {
+    if (score.pp == null) {
+      return <span title={trans('scores.status.no_pp')}>-</span>;
+    }
+
+    return pp(score, suffix, true);
+  }
+
   if (score.type !== 'solo_score' && score.best_id == null) {
     return <span title={trans('scores.status.non_best')}>-</span>;
   }
@@ -31,10 +59,5 @@ export default function PpValue({ score, suffix }: Props) {
     );
   }
 
-  return (
-    <span title={formatNumber(score.pp)}>
-      {formatNumber(Math.round(score.pp))}
-      {suffix}
-    </span>
-  );
+  return pp(score, suffix, false);
 }

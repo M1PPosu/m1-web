@@ -8,6 +8,7 @@ import LegacyApiKey from 'legacy-api-key';
 import LegacyIrcKey from 'legacy-irc-key';
 import { AuthorizedClients } from 'oauth/authorized-clients';
 import { OwnClients } from 'oauth/own-clients';
+import OfficialOsuConnection from 'official-osu-connection';
 import core from 'osu-core-singleton';
 import * as React from 'react';
 import { parseJsonNullable } from 'utils/json';
@@ -31,6 +32,10 @@ core.reactTurbolinks.register('legacy-api-key', (container: HTMLElement) => (
 
 core.reactTurbolinks.register('legacy-irc-key', (container: HTMLElement) => (
   <LegacyIrcKey container={container} />
+));
+
+core.reactTurbolinks.register('official-osu-connection', (container: HTMLElement) => (
+  <OfficialOsuConnection container={container} />
 ));
 
 core.reactTurbolinks.register('own-clients', () => {

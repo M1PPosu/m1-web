@@ -4,6 +4,7 @@
 import CountryJson from './country-json';
 import DailyChallengeUserStatsJson from './daily-challenge-user-stats-json';
 import MatchmakingUserStatsJson from './matchmaking-user-stats-json';
+import OfficialProfileImportJson from './official-profile-import-json';
 import ProfileBannerJson from './profile-banner';
 import RankHighestJson from './rank-highest-json';
 import RankHistoryJson from './rank-history-json';
@@ -54,6 +55,7 @@ interface UserJsonAvailableIncludes {
   matchmaking_stats: MatchmakingUserStatsJson[];
   monthly_playcounts: UserMonthlyPlaycountJson[];
   nominated_beatmapset_count: number;
+  official_import: OfficialProfileImportJson | null;
   page: {
     html: string;
     raw: string;

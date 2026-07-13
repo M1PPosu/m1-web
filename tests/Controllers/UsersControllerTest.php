@@ -8,6 +8,7 @@ namespace Tests\Controllers;
 use App\Models\Achievement;
 use App\Models\Country;
 use App\Models\User;
+use Queue;
 use Tests\TestCase;
 
 class UsersControllerTest extends TestCase
@@ -173,6 +174,24 @@ class UsersControllerTest extends TestCase
         ])->assertRedirect(route('home'));
     }
 
+    public function testStoreWebUsesLocalRegistrationWhenPrivateServerRegistrationIsDisabled(): void
+    {
+        config_set('m1pposu.private_server.enabled', true);
+        config_set('m1pposu.private_server.registration_enabled', false);
+        config_set('osu.user.registration_mode.web', true);
+        $this->expectCountChange(fn () => User::count(), 1);
+
+        $this->post(route('users.store-web'), [
+            'user' => [
+                'username' => 'user1',
+                'user_email' => 'user1@example.com',
+                'user_email_confirmation' => 'user1@example.com',
+                'password' => 'hunter22',
+                'password_confirmation' => 'hunter22',
+            ],
+        ])->assertRedirect(route('home'));
+    }
+
     /**
      * @dataProvider dataProviderForStoreWebInvalidParams
      */
@@ -208,6 +227,21 @@ class UsersControllerTest extends TestCase
                 'password_confirmation' => 'hunter22',
             ],
         ])->assertRedirect('/');
+    }
+
+    public function testUpdatePageDoesNotRequireSupporterWhenStoreFeatureIsDisabled(): void
+    {
+        Queue::fake();
+
+        config_set('m1pposu.features.store', false);
+        config_set('m1pposu.private_server.enabled', false);
+
+        $user = User::factory()->create();
+
+        $this->actingAsVerified($user)
+            ->put(route('users.page', $user), ['body' => 'hello from m1pposu'])
+            ->assertSuccessful()
+            ->assertJsonStructure(['html']);
     }
 
     public function testStoreWithCountry()

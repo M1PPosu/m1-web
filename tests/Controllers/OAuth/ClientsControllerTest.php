@@ -25,6 +25,26 @@ class ClientsControllerTest extends TestCase
         $this->assertFalse(Client::find($this->client->getKey())->revoked);
     }
 
+    public function testM1pposuDisablesUserClientManagementWhenFeatureIsOff()
+    {
+        config_set('m1pposu.features.oauth_settings', false);
+
+        $this
+            ->actingAsVerified($this->owner)
+            ->json('POST', route('oauth.clients.store'), [
+                'name' => 'blocked client',
+                'redirect' => 'https://nowhere.local',
+            ])
+            ->assertStatus(404);
+
+        $this
+            ->actingAsVerified($this->owner)
+            ->json('DELETE', route('oauth.clients.destroy', ['client' => $this->client->getKey()]))
+            ->assertStatus(404);
+
+        $this->assertFalse(Client::find($this->client->getKey())->revoked);
+    }
+
     public function testCanDeleteOwnClient()
     {
         $this
@@ -134,6 +154,8 @@ class ClientsControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        config_set('m1pposu.features.oauth_settings', true);
 
         $this->owner = User::factory()->create();
         $this->client = Client::factory()->create(['user_id' => $this->owner]);

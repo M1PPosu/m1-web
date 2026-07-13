@@ -68,6 +68,19 @@ class WikiController extends Controller
             return ujs_redirect(wiki_url(rtrim($path, '/'), $locale));
         }
 
+        $localPage = $this->m1pposuLocalWikiPage($path);
+        if ($localPage !== null) {
+            if (is_json_request()) {
+                return response(null, 404);
+            }
+
+            return ext_view('wiki.m1pposu_local', [
+                'locale' => $locale,
+                'page' => $localPage,
+                'path' => OsuWiki::cleanPath($path),
+            ]);
+        }
+
         // legal pages should be displayed with their own style etc
         if (starts_with("{$path}/", 'Legal/') && !is_api_request()) {
             return ujs_redirect(wiki_url($path, $locale));
@@ -176,5 +189,40 @@ class WikiController extends Controller
         }
 
         return ujs_redirect(Request::getUri());
+    }
+
+    private function m1pposuLocalWikiPage(?string $path): ?array
+    {
+        if ($path === null) {
+            return null;
+        }
+
+        return match (strtolower(OsuWiki::cleanPath($path))) {
+            'rules/visual_content_considerations' => [
+                'title' => 'M1PPosu visual content guidelines',
+                'subtitle' => 'Rules',
+                'sections' => [
+                    [
+                        'id' => 'rules',
+                        'title' => 'Avatar and profile image rules',
+                        'body' => [
+                            'Keep profile images suitable for a mixed-age community.',
+                            'Do not upload nudity, sexual content, explicit violence, hate symbols, harassment, impersonation, or images intended to evade moderation.',
+                            'Do not use images that make the interface hard to read, such as flashing imagery or intentionally misleading transparent overlays.',
+                        ],
+                    ],
+                    [
+                        'id' => 'notes',
+                        'title' => 'Notes',
+                        'body' => [
+                            'This page is a local M1PPosu policy page and is not an official osu! wiki article.',
+                            'Moderators may remove content that is disruptive, unsafe, or unsuitable even when it is not listed here verbatim.',
+                            'Imported official osu! profile data is displayed separately from local account privileges and does not grant supporter perks, pp, rank, or leaderboard placement.',
+                        ],
+                    ],
+                ],
+            ],
+            default => null,
+        };
     }
 }

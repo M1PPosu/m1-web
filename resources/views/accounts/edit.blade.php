@@ -177,13 +177,15 @@
 
         @include('accounts._edit_sessions')
 
-        @if (get_bool(config('m1pposu.features.oauth_settings') ?? false))
+        @if ($showOAuthSettings)
             @include('accounts._edit_oauth')
         @endif
 
         @if (\App\Models\GithubUser::canAuthenticate())
             @include('accounts._edit_github_user')
         @endif
+
+        @include('accounts._edit_official_osu')
 
         @if (get_bool(config('m1pposu.features.legacy_api_settings') ?? false))
             @include('accounts._edit_legacy_api')
@@ -192,13 +194,15 @@
 @endsection
 
 @section("script")
-  <script id="json-authorized-clients" type="application/json">
-    {!! json_encode($authorizedClients) !!}
-  </script>
+  @if ($showOAuthSettings)
+    <script id="json-authorized-clients" type="application/json">
+      {!! json_encode($authorizedClients) !!}
+    </script>
 
-  <script id="json-own-clients" type="application/json">
-    {!! json_encode($ownClients) !!}
-  </script>
+    <script id="json-own-clients" type="application/json">
+      {!! json_encode($ownClients) !!}
+    </script>
+  @endif
 
   @include('layout._react_js', ['src' => 'js/account-edit.js'])
 @endsection

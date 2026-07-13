@@ -23,6 +23,8 @@ class UserBadge extends Model
 
     public function imageUrl()
     {
-        return "https://assets.ppy.sh/profile-badges/{$this->image}";
+        return starts_with($this->image, ['/', 'http://', 'https://'])
+            ? $this->image
+            : "https://assets.ppy.sh/profile-badges/{$this->image}";
     }
 }

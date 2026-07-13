@@ -9,6 +9,7 @@ use App\Exceptions\ModelNotSavedException;
 use App\Exceptions\ValidationException;
 use App\Http\Middleware\RequestCost;
 use App\Libraries\ClientCheck;
+use App\Libraries\M1pposu\OfficialProfileImport;
 use App\Libraries\M1pposu\ProjectedScoreVariant;
 use App\Libraries\M1pposu\SourceRegistrar;
 use App\Libraries\M1pposu\UserpageBridge;
@@ -159,7 +160,10 @@ class UsersController extends Controller
         switch ($page) {
             case 'beatmaps':
                 return [
-                    'favourite' => $this->getExtraSection('favouriteBeatmapsets', $this->user->profileBeatmapsetsFavourite()->count()),
+                    'favourite' => $this->getExtraSection(
+                        'favouriteBeatmapsets',
+                        $this->extraCount('favouriteBeatmapsets', $this->user->profileBeatmapsetsFavourite()->count()),
+                    ),
                     'graveyard' => $this->getExtraSection('graveyardBeatmapsets', $this->user->profileBeatmapsetCountByGroupedStatus('graveyard')),
                     'guest' => $this->getExtraSection('guestBeatmapsets', $this->user->profileBeatmapsetsGuest()->count()),
                     'loved' => $this->getExtraSection('lovedBeatmapsets', $this->user->profileBeatmapsetCountByGroupedStatus('loved')),
@@ -170,11 +174,14 @@ class UsersController extends Controller
 
             case 'historical':
                 return [
-                    'beatmap_playcounts' => $this->getExtraSection('beatmapPlaycounts', $this->user->beatmapPlaycounts()->count()),
+                    'beatmap_playcounts' => $this->getExtraSection(
+                        'beatmapPlaycounts',
+                        $this->extraCount('beatmapPlaycounts', $this->user->beatmapPlaycounts()->count()),
+                    ),
                     'monthly_playcounts' => json_collection($this->user->monthlyPlaycounts, new UserMonthlyPlaycountTransformer()),
                     'recent' => $this->getExtraSection(
                         'scoresRecent',
-                        $this->recentScoresQuery(false)->count(),
+                        $this->extraCount('scoresRecent', $this->recentScoresQuery(false)->count()),
                     ),
                     'replays_watched_counts' => json_collection($this->user->replaysWatchedCounts, new UserReplaysWatchedCountTransformer()),
                     'score_replay_stats' => $this->getExtraSection(
@@ -193,15 +200,18 @@ class UsersController extends Controller
                 return [
                     'best' => $this->getExtraSection(
                         'scoresBest',
-                        count($this->user->beatmapBestScoreIds($this->mode))
+                        $this->extraCount('scoresBest', count($this->user->beatmapBestScoreIds($this->mode)))
                     ),
                     'firsts' => $this->getExtraSection(
                         'scoresFirsts',
-                        $this->user->scoresFirst(
-                            $this->mode,
-                            ScoreSearchParams::showLegacyForUser(\Auth::user()),
-                            $this->variant,
-                        )->count()
+                        $this->extraCount(
+                            'scoresFirsts',
+                            $this->user->scoresFirst(
+                                $this->mode,
+                                ScoreSearchParams::showLegacyForUser(\Auth::user()),
+                                $this->variant,
+                            )->count(),
+                        )
                     ),
                     'pinned' => $this->getExtraSection(
                         'scoresPinned',
@@ -236,7 +246,7 @@ class UsersController extends Controller
             return static::storeClientDisabledError();
         }
 
-        return $this->storeUser($request->all(), $clientTokenData);
+        return $this->storeUser($request->all(), $clientTokenData, false);
     }
 
     public function storeWeb()
@@ -273,7 +283,7 @@ class UsersController extends Controller
             }
         }
 
-        return $this->storeUser($rawParams, null);
+        return $this->storeUser($rawParams, null, true);
     }
 
     /**
@@ -573,6 +583,11 @@ class UsersController extends Controller
         return response($json, is_null($json['error'] ?? null) ? 200 : 504);
     }
 
+    private function extraCount(string $section, int $nativeCount): int
+    {
+        return $nativeCount + $this->officialExtraCount($section);
+    }
+
     /**
      * Get Own Data
      *
@@ -706,7 +721,8 @@ class UsersController extends Controller
                 'current_mode' => $currentMode,
                 'current_variant' => $currentVariant,
                 'scores_notice' => $GLOBALS['cfg']['osu']['user']['profile_scores_notice'],
-                'userpage_edit_enabled' => get_bool(config('m1pposu.private_server.enabled') ?? false),
+                'userpage_edit_enabled' => !get_bool(config('m1pposu.features.store') ?? false)
+                    || get_bool(config('m1pposu.private_server.enabled') ?? false),
                 'user' => $userArray,
                 'user_cover_presets' => $userCoverPresets ?? [],
             ];
@@ -961,7 +977,39 @@ class UsersController extends Controller
             }
         }
 
-        return json_collection($collection, $transformer, $includes ?? []);
+        $items = json_collection($collection, $transformer, $includes ?? []);
+
+        return $this->withOfficialExtra($page, $items, $perPage, $offset);
+    }
+
+    private function officialExtraCount(string $section): int
+    {
+        return match ($section) {
+            'beatmapPlaycounts' => app(OfficialProfileImport::class)->beatmapsetCount($this->user, 'most_played'),
+            'favouriteBeatmapsets' => app(OfficialProfileImport::class)->beatmapsetCount($this->user, 'favourite'),
+            'recentActivity' => app(OfficialProfileImport::class)->recentActivityCount($this->user),
+            'scoresBest' => app(OfficialProfileImport::class)->scoreCount($this->user, $this->mode, 'best', $this->variant),
+            'scoresFirsts' => app(OfficialProfileImport::class)->scoreCount($this->user, $this->mode, 'firsts', $this->variant),
+            'scoresRecent' => app(OfficialProfileImport::class)->scoreCount($this->user, $this->mode, 'recent', $this->variant),
+            default => 0,
+        };
+    }
+
+    private function officialExtraItems(string $section, int $offset, int $limit): array
+    {
+        if ($limit <= 0) {
+            return [];
+        }
+
+        return match ($section) {
+            'beatmapPlaycounts' => app(OfficialProfileImport::class)->beatmapsetItems($this->user, 'most_played', $offset, $limit),
+            'favouriteBeatmapsets' => app(OfficialProfileImport::class)->beatmapsetItems($this->user, 'favourite', $offset, $limit),
+            'recentActivity' => app(OfficialProfileImport::class)->recentActivityItems($this->user, $offset, $limit),
+            'scoresBest' => app(OfficialProfileImport::class)->scoreItems($this->user, $this->mode, 'best', $offset, $limit, $this->variant),
+            'scoresFirsts' => app(OfficialProfileImport::class)->scoreItems($this->user, $this->mode, 'firsts', $offset, $limit, $this->variant),
+            'scoresRecent' => app(OfficialProfileImport::class)->scoreItems($this->user, $this->mode, 'recent', $offset, $limit, $this->variant),
+            default => [],
+        };
     }
 
     private function recentScoresQuery(bool $includeFails)
@@ -993,6 +1041,40 @@ class UsersController extends Controller
         }
 
         return $query;
+    }
+
+    private function nativeExtraCount(string $section): int
+    {
+        return match ($section) {
+            'beatmapPlaycounts' => $this->user->beatmapPlaycounts()->count(),
+            'favouriteBeatmapsets' => $this->user->profileBeatmapsetsFavourite()->count(),
+            'recentActivity' => $this->user->events()->recent(ScoreSearchParams::showLegacyForUser(\Auth::user()))->count(),
+            'scoresBest' => count($this->user->beatmapBestScoreIds($this->mode)),
+            'scoresFirsts' => $this->user->scoresFirst(
+                $this->mode,
+                ScoreSearchParams::showLegacyForUser(\Auth::user()),
+                $this->variant,
+            )->count(),
+            'scoresRecent' => $this->recentScoresQuery(false)->count(),
+            default => 0,
+        };
+    }
+
+    private function withOfficialExtra(string $section, array $items, int $perPage, int $offset): array
+    {
+        $officialCount = $this->officialExtraCount($section);
+        if ($officialCount === 0 || count($items) >= $perPage) {
+            return $items;
+        }
+
+        $nativeCount = $this->nativeExtraCount($section);
+        $officialOffset = max(0, $offset + count($items) - $nativeCount);
+        $remaining = $perPage - count($items);
+
+        return [
+            ...$items,
+            ...$this->officialExtraItems($section, $officialOffset, $remaining),
+        ];
     }
 
     private function getExtraSection(string $section, ?int $count = null)
@@ -1048,6 +1130,7 @@ class UsersController extends Controller
             'current_season_stats',
             'daily_challenge_user_stats',
             'matchmaking_stats.pool',
+            'official_import',
             'page',
             'pending_beatmapset_count',
             'rank_highest',
@@ -1107,7 +1190,7 @@ class UsersController extends Controller
         return $userJson;
     }
 
-    private function storeUser(array $rawParams, ?array $clientTokenData)
+    private function storeUser(array $rawParams, ?array $clientTokenData, bool $allowLocalFallback)
     {
         if (!$GLOBALS['cfg']['osu']['user']['allow_registration']) {
             return abort(403, 'User registration is currently disabled');
@@ -1135,12 +1218,16 @@ class UsersController extends Controller
         try {
             $registration->assertValid();
 
+            $sourceRegistrationEnabled = $sourceRegistrar->enabled();
+
             if ($sourceRegistrar->active()) {
-                if (!$sourceRegistrar->enabled()) {
+                if (!$sourceRegistrationEnabled && !$allowLocalFallback) {
                     return error_popup('Account registration is currently unavailable', 403);
                 }
 
-                $sourceRegistrar->assertValid($registration);
+                if ($sourceRegistrationEnabled) {
+                    $sourceRegistrar->assertValid($registration);
+                }
             }
 
             if (get_bool($rawParams['check'] ?? null)) {
@@ -1161,7 +1248,7 @@ class UsersController extends Controller
                 }
             }
 
-            $user = $sourceRegistrar->enabled()
+            $user = $sourceRegistrationEnabled
                 ? $sourceRegistrar->register($registration, $countryCode)
                 : tap($registration, fn ($registration) => $registration->save())->user();
 
