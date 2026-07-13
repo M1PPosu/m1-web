@@ -36,6 +36,8 @@ class UserCompactTransformer extends TransformerAbstract
     ];
 
     const CARD_INCLUDES_PRELOAD = [
+        'm1pposuLatestOfficialImportRequest.connection',
+        'm1pposuLatestOfficialImportRequest.snapshot',
         'team',
         'userGroups',
     ];
@@ -61,6 +63,8 @@ class UserCompactTransformer extends TransformerAbstract
 
     protected string $mode;
     protected ?string $variant = null;
+
+    private ?OfficialProfileImport $officialProfileImport = null;
 
     protected array $availableIncludes = [
         'account_history',
@@ -146,7 +150,7 @@ class UserCompactTransformer extends TransformerAbstract
     public function transform(User $user)
     {
         return [
-            'avatar_url' => $user->user_avatar,
+            'avatar_url' => $this->officialProfileImport()->avatarUrl($user) ?? $user->user_avatar,
             'country_code' => $user->country_acronym,
             'default_group' => $user->defaultGroup()->identifier,
             'id' => $user->user_id,
@@ -241,6 +245,15 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeCover(User $user)
     {
+        $officialUrl = $this->officialProfileImport()->coverUrl($user);
+        if ($officialUrl !== null) {
+            return $this->primitive([
+                'custom_url' => $officialUrl,
+                'url' => $officialUrl,
+                'id' => null,
+            ]);
+        }
+
         $cover = $user->cover();
 
         return $this->primitive([
@@ -424,19 +437,27 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeOfficialImport(User $user)
     {
-        return $this->primitive(app(OfficialProfileImport::class)->forUser($user, $this->mode));
+        return $this->primitive($this->officialProfileImport()->forUser($user, $this->mode));
     }
 
     public function includePage(User $user)
     {
+        $officialPage = $this->officialProfileImport()->userpage($user);
+
         return $this->primitive(
-            $user->userPage === null
-                ? ['html' => '', 'raw' => '']
-                : [
-                    'html' => $user->userPage->bodyHTML(['modifiers' => ['profile-page']]),
-                    'raw' => $user->userPage->bodyRaw,
-                ]
+            $officialPage
+                ?? ($user->userPage === null
+                    ? ['html' => '', 'raw' => '']
+                    : [
+                        'html' => $user->userPage->bodyHTML(['modifiers' => ['profile-page']]),
+                        'raw' => $user->userPage->bodyRaw,
+                    ])
         );
+    }
+
+    protected function officialProfileImport(): OfficialProfileImport
+    {
+        return $this->officialProfileImport ??= app(OfficialProfileImport::class);
     }
 
     public function includePendingBeatmapsetCount(User $user)

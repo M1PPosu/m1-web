@@ -34,7 +34,7 @@ class UserTransformer extends UserCompactTransformer
 
         return [
             ...$result,
-            'cover_url' => $user->cover()->url(), // TODO: deprecated.
+            'cover_url' => $this->officialProfileImport()->coverUrl($user) ?? $user->cover()->url(), // TODO: deprecated.
             'discord' => $user->user_discord,
             'has_supported' => $user->hasSupported(),
             'interests' => $user->user_interests,

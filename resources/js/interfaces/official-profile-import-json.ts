@@ -28,14 +28,11 @@ export default interface OfficialProfileImportJson {
   official_url: string;
   official_user_id: number;
   profile: {
-    avatar_url: string | null;
     badges: UserBadgeJson[];
     badges_count: number;
     country: CountryJson | null;
-    cover_url: string | null;
     is_supporter: boolean;
     join_date: string | null;
-    page_html: string | null;
     title: string | null;
     username: string | null;
   };

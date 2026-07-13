@@ -77,6 +77,7 @@ use Request;
  * @property bool $hide_presence
  * @property bool $lock_email_changes
  * @property-read Collection<UserMonthlyPlaycount> $monthlyPlaycounts
+ * @property-read M1pposuAccountImportRequest|null $m1pposuLatestOfficialImportRequest
  * @property-read M1pposuOfficialConnection|null $m1pposuOfficialConnection
  * @property-read Collection<UserNotificationOption> $notificationOptions
  * @property-read Collection<Client> $oauthClients
@@ -933,6 +934,8 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
             'githubUser',
             'givenKudosu',
             'legacyIrcKey',
+            'm1pposuLatestOfficialImportRequest',
+            'm1pposuOfficialConnection',
             'monthlyPlaycounts',
             'notificationOptions',
             'oauthClients',
@@ -1225,6 +1228,14 @@ class User extends Model implements AfterCommit, AuthenticatableContract, HasLoc
     public function m1pposuOfficialConnection(): HasOne
     {
         return $this->hasOne(M1pposuOfficialConnection::class, 'user_id');
+    }
+
+    public function m1pposuLatestOfficialImportRequest(): HasOne
+    {
+        return $this
+            ->hasOne(M1pposuAccountImportRequest::class, 'user_id')
+            ->whereIn('status', M1pposuAccountImportRequest::IMPORTED_STATUSES)
+            ->latestOfMany();
     }
 
     public function legacyIrcKey(): HasOne

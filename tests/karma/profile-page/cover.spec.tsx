@@ -47,14 +47,11 @@ describe('ProfilePageCover', () => {
             official_url: 'https://osu.ppy.sh/users/33592661',
             official_user_id: 33592661,
             profile: {
-              avatar_url: null,
               badges: [],
               badges_count: 0,
               country: null,
-              cover_url: null,
               is_supporter: false,
               join_date: null,
-              page_html: null,
               title: null,
               username: 'Yomorei',
             },
@@ -76,6 +73,7 @@ describe('ProfilePageCover', () => {
     expect(html).toContain('title="Players who imported their official osu! accounts"');
     expect(html).toContain('data-label="admin"');
     expect(html).toContain('data-label="dev"');
+    expect(html).toContain('/images/layout/avatar-guest.png');
     expect(html).not.toContain('user-group-badge--official-imported');
   });
 });

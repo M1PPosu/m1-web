@@ -22,6 +22,7 @@ use App\Models\User;
 use App\Models\UserAccountHistory;
 use App\Models\UserStatistics\Osu as OsuStatistics;
 use App\Transformers\CurrentUserTransformer;
+use App\Transformers\UserCompactTransformer;
 use App\Transformers\UserTransformer;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Http;
@@ -104,7 +105,7 @@ class OfficialAccountImportServiceDbTest extends TestCase
         $this->assertSame('local_user', $user->username);
     }
 
-    public function testAppliedImportExposesVisibleProfileFieldsWithoutNativePp(): void
+    public function testAppliedImportExposesHistoricalProfileMetadataAndImportedVisualDefaultsWithoutNativePp(): void
     {
         Country::factory()->create(['acronym' => 'US', 'name' => 'United States']);
         $this->ensureAchievement(1);
@@ -133,8 +134,9 @@ class OfficialAccountImportServiceDbTest extends TestCase
         $currentUserJson = json_item($user->fresh(), new CurrentUserTransformer());
 
         $this->assertSame('https://a.ppy.sh/654321', $currentUserJson['avatar_url']);
-        $this->assertSame('https://a.ppy.sh/654321', $json['official_import']['profile']['avatar_url']);
-        $this->assertSame('https://assets.ppy.sh/user-profile-covers/654321/x.jpg', $json['official_import']['profile']['cover_url']);
+        $this->assertArrayNotHasKey('avatar_url', $json['official_import']['profile']);
+        $this->assertArrayNotHasKey('cover_url', $json['official_import']['profile']);
+        $this->assertArrayNotHasKey('page_html', $json['official_import']['profile']);
         $this->assertSame('US', $json['official_import']['profile']['country']['code']);
         $this->assertSame('2012-05-01T00:00:00+00:00', $json['official_import']['profile']['join_date']);
         $this->assertSame(1111111, $json['official_import']['statistics']['current']['ranked_score']);
@@ -163,6 +165,143 @@ class OfficialAccountImportServiceDbTest extends TestCase
             'user_id' => $user->getKey(),
             'achievement_id' => 1,
         ]);
+    }
+
+    public function testImportedProfileDefaultsAndIndependentNativeOverridesAcrossImportLifecycle(): void
+    {
+        $admin = User::factory()->withGroup('admin')->create();
+        $user = User::factory()->create([
+            'cover_preset_id' => null,
+            'custom_cover_filename' => 'native-cover-before.jpg',
+            'user_avatar' => 'native-avatar-before.png',
+            'username' => 'local_user',
+        ]);
+        $user->updatePage('native page before import');
+
+        $connection = $this->createConnection($user, [
+            'avatar_url' => 'https://a.ppy.sh/654321',
+            'cover_url' => 'https://assets.ppy.sh/user-profile-covers/654321/official.jpg',
+            'username' => 'local_user',
+        ]);
+        $snapshot = $this->createSnapshot($connection);
+        $snapshotData = $snapshot->data;
+        $snapshotData['user']['page'] = ['html' => '<p>official page</p>', 'raw' => 'official page'];
+        $snapshot->update(['data' => $snapshotData]);
+
+        $service = app(OfficialAccountImportService::class);
+        $result = $service->apply($snapshot, $user);
+        $request = $service->createAppliedRequest($connection, $snapshot, $user, $result);
+
+        $this->assertSame('native-avatar-before.png', $user->fresh()->getRawAttribute('user_avatar'));
+        $this->assertSame('native-cover-before.jpg', $user->fresh()->getRawAttribute('custom_cover_filename'));
+        $this->assertSame('native page before import', $user->fresh()->userPage->bodyRaw);
+        $this->assertProfilePresentation(
+            $user,
+            'https://a.ppy.sh/654321',
+            'https://assets.ppy.sh/user-profile-covers/654321/official.jpg',
+            'official page',
+        );
+
+        $profileImport = app(OfficialProfileImport::class);
+
+        $user->update(['user_avatar' => 'native-avatar-after.png']);
+        $profileImport->markOverride($user->fresh(), OfficialProfileImport::FIELD_AVATAR);
+        $connection->refresh();
+        $this->assertNotNull($connection->imported_avatar_overridden_at);
+        $this->assertNull($connection->imported_cover_overridden_at);
+        $this->assertNull($connection->imported_userpage_overridden_at);
+        $this->assertProfilePresentation(
+            $user,
+            $user->fresh()->user_avatar,
+            'https://assets.ppy.sh/user-profile-covers/654321/official.jpg',
+            'official page',
+        );
+
+        $user->update([
+            'cover_preset_id' => null,
+            'custom_cover_filename' => 'native-cover-after.jpg',
+        ]);
+        $profileImport->markOverride($user->fresh(), OfficialProfileImport::FIELD_COVER);
+        $connection->refresh();
+        $this->assertNotNull($connection->imported_avatar_overridden_at);
+        $this->assertNotNull($connection->imported_cover_overridden_at);
+        $this->assertNull($connection->imported_userpage_overridden_at);
+        $this->assertProfilePresentation(
+            $user,
+            $user->fresh()->user_avatar,
+            $user->fresh()->cover()->url(),
+            'official page',
+        );
+
+        $user->fresh()->updatePage('native page after import');
+        $profileImport->markOverride($user->fresh(), OfficialProfileImport::FIELD_USERPAGE);
+        $connection->refresh();
+        $this->assertNotNull($connection->imported_avatar_overridden_at);
+        $this->assertNotNull($connection->imported_cover_overridden_at);
+        $this->assertNotNull($connection->imported_userpage_overridden_at);
+        $this->assertProfilePresentation(
+            $user,
+            $user->fresh()->user_avatar,
+            $user->fresh()->cover()->url(),
+            'native page after import',
+        );
+
+        $overrideTimestamps = [
+            $connection->imported_avatar_overridden_at->toJSON(),
+            $connection->imported_cover_overridden_at->toJSON(),
+            $connection->imported_userpage_overridden_at->toJSON(),
+        ];
+
+        $connection->update([
+            'avatar_url' => 'https://a.ppy.sh/654321?reimported',
+            'cover_url' => 'https://assets.ppy.sh/user-profile-covers/654321/reimported.jpg',
+        ]);
+        $reimportSnapshot = $this->createSnapshot($connection->fresh());
+        $reimportData = $reimportSnapshot->data;
+        $reimportData['user']['page'] = ['html' => '<p>reimported official page</p>', 'raw' => 'reimported official page'];
+        $reimportSnapshot->update(['data' => $reimportData]);
+        $reimportResult = $service->apply($reimportSnapshot, $user->fresh());
+        $request = $service->createAppliedRequest(
+            $connection->fresh(),
+            $reimportSnapshot,
+            $user,
+            $reimportResult,
+            true,
+        );
+
+        $connection->refresh();
+        $this->assertSame($overrideTimestamps, [
+            $connection->imported_avatar_overridden_at->toJSON(),
+            $connection->imported_cover_overridden_at->toJSON(),
+            $connection->imported_userpage_overridden_at->toJSON(),
+        ]);
+        $this->assertProfilePresentation(
+            $user,
+            $user->fresh()->user_avatar,
+            $user->fresh()->cover()->url(),
+            'native page after import',
+        );
+
+        $service->removeByStaff($request, $admin, 'verify native customization survives removal');
+        $this->assertProfilePresentation(
+            $user,
+            $user->fresh()->user_avatar,
+            $user->fresh()->cover()->url(),
+            'native page after import',
+        );
+
+        $service->restore($request->fresh(), $admin, 'verify native customization survives restore');
+        $this->assertProfilePresentation(
+            $user,
+            $user->fresh()->user_avatar,
+            $user->fresh()->cover()->url(),
+            'native page after import',
+        );
+
+        $snapshotProfile = $reimportSnapshot->fresh()->data['user'];
+        $this->assertSame('https://a.ppy.sh/654321?reimported', $snapshotProfile['avatar_url']);
+        $this->assertSame('https://assets.ppy.sh/user-profile-covers/654321/reimported.jpg', $snapshotProfile['cover_url']);
+        $this->assertSame('reimported official page', $snapshotProfile['page']['raw']);
     }
 
     public function testAppliedImportKeepsOfficialMedalsOutOfPublicProfile(): void
@@ -376,10 +515,9 @@ class OfficialAccountImportServiceDbTest extends TestCase
         $favourites = app(OfficialProfileImport::class)->beatmapsetItems($user->fresh(), 'favourite');
         $activity = app(OfficialProfileImport::class)->recentActivityItems($user->fresh());
 
-        $this->assertNull($json['official_import']['profile']['avatar_url']);
-        $this->assertNull($json['official_import']['profile']['cover_url']);
-        $this->assertStringContainsString('<p>ok</p>', $json['official_import']['profile']['page_html']);
-        $this->assertStringNotContainsString('<script', $json['official_import']['profile']['page_html']);
+        $this->assertArrayNotHasKey('avatar_url', $json['official_import']['profile']);
+        $this->assertArrayNotHasKey('cover_url', $json['official_import']['profile']);
+        $this->assertArrayNotHasKey('page_html', $json['official_import']['profile']);
         $this->assertCount(1, $json['official_import']['profile']['badges']);
         $this->assertSame('good badge', $json['official_import']['profile']['badges'][0]['description']);
         $this->assertSame('https://assets.ppy.sh/profile-badges/good.png', $json['official_import']['profile']['badges'][0]['image_url']);
@@ -804,6 +942,33 @@ class OfficialAccountImportServiceDbTest extends TestCase
             'id' => $request->getKey(),
             'status' => 'applied',
         ]);
+    }
+
+    private function assertProfilePresentation(User $user, string $avatarUrl, ?string $coverUrl, string $pageRaw): void
+    {
+        $user = $user->fresh();
+        $currentUserJson = json_item($user, new CurrentUserTransformer());
+        $compactJson = json_item($user, (new UserCompactTransformer())->setMode('osu'));
+        $profileJson = json_item(
+            $user,
+            (new UserTransformer())->setMode('osu'),
+            ['cover', 'official_import', 'page'],
+        );
+
+        $this->assertSame($avatarUrl, $currentUserJson['avatar_url']);
+        $this->assertSame($avatarUrl, $compactJson['avatar_url']);
+        $this->assertSame($avatarUrl, $profileJson['avatar_url']);
+        $this->assertSame($coverUrl, $currentUserJson['cover']['url']);
+        $this->assertSame($coverUrl, $profileJson['cover']['url']);
+        $this->assertSame($coverUrl, $profileJson['cover_url']);
+        $this->assertSame($pageRaw, $profileJson['page']['raw']);
+        $this->assertStringContainsString($pageRaw, $profileJson['page']['html']);
+
+        if ($profileJson['official_import'] !== null) {
+            $this->assertArrayNotHasKey('avatar_url', $profileJson['official_import']['profile']);
+            $this->assertArrayNotHasKey('cover_url', $profileJson['official_import']['profile']);
+            $this->assertArrayNotHasKey('page_html', $profileJson['official_import']['profile']);
+        }
     }
 
     private function createConnection(User $user, array $attributes = []): M1pposuOfficialConnection

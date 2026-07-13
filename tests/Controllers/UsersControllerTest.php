@@ -11,6 +11,7 @@ use App\Models\Country;
 use App\Models\Forum\Forum;
 use App\Models\Forum\Post;
 use App\Models\Forum\Topic;
+use App\Models\M1pposuOfficialConnection;
 use App\Models\User;
 use App\Libraries\M1pposu\PrivateProfileData;
 use Queue;
@@ -336,6 +337,36 @@ class UsersControllerTest extends TestCase
             ->put(route('users.page', $user), ['body' => 'hello from m1pposu'])
             ->assertSuccessful()
             ->assertJsonStructure(['html']);
+    }
+
+    public function testUpdatePageMarksOnlyOfficialUserpageOverride(): void
+    {
+        Queue::fake();
+
+        config_set('m1pposu.features.store', false);
+        config_set('m1pposu.private_server.enabled', false);
+
+        $user = User::factory()->create();
+        $connection = M1pposuOfficialConnection::create([
+            'user_id' => $user->getKey(),
+            'official_user_id' => 990000001,
+            'username' => 'OfficialUser',
+            'avatar_url' => 'https://a.ppy.sh/990000001',
+            'cover_url' => 'https://assets.ppy.sh/user-profile-covers/990000001/cover.jpg',
+            'restricted_at_connection' => false,
+            'refresh_token' => null,
+            'token_metadata' => null,
+            'connected_at' => now(),
+        ]);
+
+        $this->actingAsVerified($user)
+            ->put(route('users.page', $user), ['body' => 'manual page'])
+            ->assertSuccessful();
+
+        $connection->refresh();
+        $this->assertNull($connection->imported_avatar_overridden_at);
+        $this->assertNull($connection->imported_cover_overridden_at);
+        $this->assertNotNull($connection->imported_userpage_overridden_at);
     }
 
     public function testStoreWithCountry()

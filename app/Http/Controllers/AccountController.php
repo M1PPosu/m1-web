@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ModelNotSavedException;
 use App\Libraries\M1pposu\OfficialOsuClient;
+use App\Libraries\M1pposu\OfficialProfileImport;
 use App\Libraries\M1pposu\SourceMode;
 use App\Libraries\Session\Store as SessionStore;
 use App\Libraries\SessionVerification;
@@ -75,16 +76,21 @@ class AccountController extends Controller
         parent::__construct();
     }
 
-    public function avatar()
+    public function avatar(OfficialProfileImport $officialProfileImport)
     {
-        $user = auth()->user();
+        $user = DB::transaction(function () use ($officialProfileImport) {
+            $user = User::whereKey(auth()->id())->lockForUpdate()->firstOrFail();
 
-        AvatarHelper::set($user, Request::file('avatar_file'));
+            AvatarHelper::set($user, Request::file('avatar_file'));
+            $officialProfileImport->markOverride($user, OfficialProfileImport::FIELD_AVATAR);
+
+            return $user->fresh();
+        });
 
         return json_item($user, new CurrentUserTransformer());
     }
 
-    public function cover()
+    public function cover(OfficialProfileImport $officialProfileImport)
     {
         $user = \Auth::user();
         $params = get_params(\Request::all(), null, [
@@ -96,8 +102,14 @@ class AccountController extends Controller
             return error_popup(osu_trans('errors.supporter_only'));
         }
 
-        $user->cover()->set($params['cover_id'], $params['cover_file']);
-        $user->save();
+        $user = DB::transaction(function () use ($officialProfileImport, $params, $user) {
+            $user = User::whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+            $user->cover()->set($params['cover_id'], $params['cover_file']);
+            $user->save();
+            $officialProfileImport->markOverride($user, OfficialProfileImport::FIELD_COVER);
+
+            return $user->fresh();
+        });
 
         return json_item($user, new CurrentUserTransformer());
     }

@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $username
  * @property string|null $avatar_url
  * @property string|null $cover_url
+ * @property \Carbon\Carbon|null $imported_avatar_overridden_at
+ * @property \Carbon\Carbon|null $imported_cover_overridden_at
+ * @property \Carbon\Carbon|null $imported_userpage_overridden_at
  * @property bool $restricted_at_connection
  * @property string|null $refresh_token
  * @property array|null $token_metadata
@@ -27,6 +30,9 @@ class M1pposuOfficialConnection extends Model
 {
     protected $casts = [
         'connected_at' => 'datetime',
+        'imported_avatar_overridden_at' => 'datetime',
+        'imported_cover_overridden_at' => 'datetime',
+        'imported_userpage_overridden_at' => 'datetime',
         'restricted_at_connection' => 'boolean',
         'refresh_token' => 'encrypted',
         'token_metadata' => 'array',

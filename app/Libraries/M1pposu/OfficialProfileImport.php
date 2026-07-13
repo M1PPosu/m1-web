@@ -16,9 +16,14 @@ use App\Models\M1pposuImportedOfficialScoreSummary;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
+use InvalidArgumentException;
 
 class OfficialProfileImport
 {
+    public const FIELD_AVATAR = 'avatar';
+    public const FIELD_COVER = 'cover';
+    public const FIELD_USERPAGE = 'userpage';
+
     private const OFFICIAL_ASSET_HOSTS = ['a.ppy.sh', 'assets.ppy.sh', 'b.ppy.sh'];
     private const OFFICIAL_PAGE_HOSTS = ['osu.ppy.sh'];
     private const BEATMAPSET_STATUSES = ['graveyard', 'wip', 'pending', 'ranked', 'approved', 'qualified', 'loved'];
@@ -29,7 +34,7 @@ class OfficialProfileImport
 
     public function forUser(User $user, ?string $mode = null): ?array
     {
-        $request = $this->appliedRequest($user);
+        $request = $this->appliedRequest($user, ['snapshot']);
 
         if ($request === null || $request->snapshot === null) {
             return null;
@@ -45,6 +50,60 @@ class OfficialProfileImport
             'official_url' => "https://osu.ppy.sh/users/{$request->official_user_id}",
             'profile' => $this->profile($profile),
             'statistics' => $this->statistics($data['statistics'] ?? [], $mode),
+        ];
+    }
+
+    public function avatarUrl(User $user): ?string
+    {
+        $profile = $this->importedProfile($user, self::FIELD_AVATAR);
+
+        return $profile === null ? null : $this->officialAssetUrl($profile['avatar_url'] ?? null);
+    }
+
+    public function coverUrl(User $user): ?string
+    {
+        $profile = $this->importedProfile($user, self::FIELD_COVER);
+
+        return $profile === null ? null : $this->officialAssetUrl($profile['cover_url'] ?? null);
+    }
+
+    public function isOverrideMarked(User $user, string $field): bool
+    {
+        $column = $this->overrideColumn($field);
+        $connection = $user->relationLoaded('m1pposuOfficialConnection')
+            ? $user->m1pposuOfficialConnection
+            : $user->m1pposuOfficialConnection()->first();
+
+        return $connection?->{$column} !== null;
+    }
+
+    public function markOverride(User $user, string $field): void
+    {
+        $column = $this->overrideColumn($field);
+
+        $user->m1pposuOfficialConnection()->update([$column => Carbon::now()]);
+        $user->unsetRelation('m1pposuLatestOfficialImportRequest');
+        $user->unsetRelation('m1pposuOfficialConnection');
+        unset($this->requestCache[$user->getKey()]);
+    }
+
+    public function userpage(User $user): ?array
+    {
+        $profile = $this->importedProfile($user, self::FIELD_USERPAGE);
+        $page = $profile['page'] ?? null;
+        if (!is_array($page)) {
+            return null;
+        }
+
+        $html = get_string($page['html'] ?? null);
+        $raw = get_string($page['raw'] ?? null);
+        if ($html === null && $raw === null) {
+            return null;
+        }
+
+        return [
+            'html' => $html === null ? '' : app('clean-html')->purify($html),
+            'raw' => $raw ?? '',
         ];
     }
 
@@ -150,16 +209,48 @@ class OfficialProfileImport
         return $items;
     }
 
-    private function appliedRequest(User $user): ?M1pposuAccountImportRequest
+    private function appliedRequest(User $user, array $with = []): ?M1pposuAccountImportRequest
     {
-        $request = $this->requestCache[$user->getKey()] ??= M1pposuAccountImportRequest
-            ::where('user_id', $user->getKey())
-            ->whereIn('status', M1pposuAccountImportRequest::IMPORTED_STATUSES)
-            ->with(['snapshot'])
-            ->latest('id')
-            ->first();
+        $userId = $user->getKey();
+        if (!array_key_exists($userId, $this->requestCache)) {
+            $request = $user->relationLoaded('m1pposuLatestOfficialImportRequest')
+                ? $user->m1pposuLatestOfficialImportRequest
+                : $user->m1pposuLatestOfficialImportRequest()->first();
 
-        return $request?->status === M1pposuAccountImportRequest::ACTIVE_STATUS ? $request : null;
+            $this->requestCache[$userId] = $request?->status === M1pposuAccountImportRequest::ACTIVE_STATUS
+                ? $request
+                : null;
+        }
+
+        $request = $this->requestCache[$userId];
+        if ($request !== null && $with !== []) {
+            $request->loadMissing($with);
+        }
+
+        return $request;
+    }
+
+    private function importedProfile(User $user, string $field): ?array
+    {
+        $request = $this->appliedRequest($user, ['connection', 'snapshot']);
+        $connection = $request?->connection;
+        if ($connection === null || $connection->{$this->overrideColumn($field)} !== null) {
+            return null;
+        }
+
+        $profile = $request->snapshot?->data['user'] ?? null;
+
+        return is_array($profile) ? $profile : null;
+    }
+
+    private function overrideColumn(string $field): string
+    {
+        return match ($field) {
+            self::FIELD_AVATAR => 'imported_avatar_overridden_at',
+            self::FIELD_COVER => 'imported_cover_overridden_at',
+            self::FIELD_USERPAGE => 'imported_userpage_overridden_at',
+            default => throw new InvalidArgumentException("Unknown official profile field '{$field}'."),
+        };
     }
 
     private function beatmap(array $beatmap): ?array
@@ -230,20 +321,16 @@ class OfficialProfileImport
         $countryCode = get_string($profile['country_code'] ?? null);
         $country = $countryCode === null ? null : app('countries')->byCode($countryCode);
         $badges = is_array($profile['badges'] ?? null) ? $profile['badges'] : [];
-        $pageHtml = get_string($profile['page']['html'] ?? null);
 
         return [
-            'avatar_url' => $this->officialAssetUrl($profile['avatar_url'] ?? null),
             'badges' => $this->badges($badges),
             'badges_count' => count($badges),
             'country' => $country === null || $country->acronym === Country::UNKNOWN ? null : [
                 'code' => $country->acronym,
                 'name' => $country->name,
             ],
-            'cover_url' => $this->officialAssetUrl($profile['cover_url'] ?? null),
             'is_supporter' => get_bool($profile['is_supporter'] ?? null) ?? false,
             'join_date' => isset($profile['join_date']) ? json_time(Carbon::parse($profile['join_date'])) : null,
-            'page_html' => $pageHtml === null ? null : app('clean-html')->purify($pageHtml),
             'title' => get_string($profile['title'] ?? null),
             'username' => get_string($profile['username'] ?? null),
         ];

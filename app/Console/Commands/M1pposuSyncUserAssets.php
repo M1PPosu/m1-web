@@ -10,11 +10,13 @@ namespace App\Console\Commands;
 use App\Console\Commands\Concerns\HasM1pposuCommandLock;
 use App\Libraries\ImageProcessor;
 use App\Libraries\M1pposu\ImportedAssets;
+use App\Libraries\M1pposu\OfficialProfileImport;
 use App\Libraries\User\Cover as UserCover;
 use App\Models\M1pposuExternalUser;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
 
@@ -26,6 +28,8 @@ class M1pposuSyncUserAssets extends Command
     private const MAX_LIMIT = 1000;
     private const MAX_CHUNK_SIZE = 2000;
     private const SOURCE_EXTENSIONS = ['', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    private ?OfficialProfileImport $officialProfileImport = null;
 
     protected $signature = 'm1pposu:sync:user-assets
         {type : avatars or covers}
@@ -108,6 +112,7 @@ class M1pposuSyncUserAssets extends Command
             'skipped_missing_source_file' => 0,
             'skipped_invalid_file' => 0,
             'skipped_missing_destination_user' => 0,
+            'skipped_native_customization' => 0,
             'warnings' => [],
         ];
 
@@ -129,6 +134,12 @@ class M1pposuSyncUserAssets extends Command
         $user = User::find($mapping->user_id);
         if ($user === null) {
             $summary['skipped_missing_destination_user']++;
+
+            return;
+        }
+
+        if (!$this->canImportAsset($user, $type)) {
+            $summary['skipped_native_customization']++;
 
             return;
         }
@@ -162,15 +173,34 @@ class M1pposuSyncUserAssets extends Command
                 return;
             }
 
-            ImportedAssets::putPublicFile($path, $tmpFile);
-            if ($type === 'avatars') {
-                $user->setAttribute('user_avatar', ImportedAssets::marker($path));
-            } else {
-                $user->setAttribute('cover_preset_id', null);
-                $user->setAttribute('custom_cover_filename', ImportedAssets::marker($path));
+            $imported = DB::transaction(function () use ($path, $tmpFile, $type, $user) {
+                $user = User::whereKey($user->getKey())->lockForUpdate()->first();
+                if ($user === null || !$this->canImportAsset($user, $type)) {
+                    return false;
+                }
+
+                $currentMarker = $type === 'avatars'
+                    ? $user->getRawAttribute('user_avatar')
+                    : $user->getRawAttribute('custom_cover_filename');
+
+                ImportedAssets::putPublicFile($path, $tmpFile);
+                if ($type === 'avatars') {
+                    $user->setAttribute('user_avatar', ImportedAssets::marker($path));
+                } else {
+                    $user->setAttribute('cover_preset_id', null);
+                    $user->setAttribute('custom_cover_filename', ImportedAssets::marker($path));
+                }
+                $user->saveOrExplode();
+                ImportedAssets::deleteMarkerIfDifferent(is_string($currentMarker) ? $currentMarker : null, $path);
+
+                return true;
+            });
+
+            if (!$imported) {
+                $summary['skipped_native_customization']++;
+
+                return;
             }
-            $user->saveOrExplode();
-            ImportedAssets::deleteMarkerIfDifferent(is_string($currentMarker) ? $currentMarker : null, $path);
 
             $summary["{$type}_imported"]++;
         } catch (Throwable $e) {
@@ -205,6 +235,20 @@ class M1pposuSyncUserAssets extends Command
 
             throw $e;
         }
+    }
+
+    private function canImportAsset(User $user, string $type): bool
+    {
+        $field = $type === 'avatars'
+            ? OfficialProfileImport::FIELD_AVATAR
+            : OfficialProfileImport::FIELD_COVER;
+
+        return !$this->officialProfileImport()->isOverrideMarked($user, $field);
+    }
+
+    private function officialProfileImport(): OfficialProfileImport
+    {
+        return $this->officialProfileImport ??= app(OfficialProfileImport::class);
     }
 
     private function forEachMappingBatch(?string $externalId, ?string $username, ?int $limit, bool $all, int $chunkSize, callable $callback): void

@@ -147,9 +147,7 @@ export default class Cover extends React.Component<Props> {
   };
 
   private renderAvatar() {
-    return <UserAvatar modifiers='full' user={{
-      avatar_url: this.props.user.official_import?.profile.avatar_url ?? this.props.user.avatar_url,
-    }} />;
+    return <UserAvatar modifiers='full' user={this.props.user} />;
   }
 
   private renderIcons() {

@@ -34,6 +34,7 @@ use App\Transformers\UserMonthlyPlaycountTransformer;
 use App\Transformers\UserReplaysWatchedCountTransformer;
 use App\Transformers\UserTransformer;
 use Auth;
+use DB;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Request;
 use romanzipp\Turnstile\Validator as TurnstileValidator;
@@ -756,7 +757,7 @@ class UsersController extends Controller
         return response()->noContent();
     }
 
-    public function updatePage($id, UserpageBridge $userpageBridge)
+    public function updatePage($id, UserpageBridge $userpageBridge, OfficialProfileImport $officialProfileImport)
     {
         $user = User::findOrFail($id);
 
@@ -766,7 +767,13 @@ class UsersController extends Controller
             if (get_bool(config('m1pposu.private_server.enabled') ?? false)) {
                 $userpageBridge->write($user, (string) request('body'));
             }
-            $user = $user->updatePage(request('body'));
+            $user = DB::transaction(function () use ($officialProfileImport, $user) {
+                $user = User::whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+                $user = $user->updatePage(request('body'));
+                $officialProfileImport->markOverride($user, OfficialProfileImport::FIELD_USERPAGE);
+
+                return $user;
+            });
 
             if (!$user->is(auth()->user())) {
                 UserAccountHistory::logUserPageModerated($user, auth()->user());

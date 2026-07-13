@@ -71,15 +71,6 @@ function withOfficialProfilePort(user: ProfilePageUserJson) {
   const officialImport = user.official_import;
   if (officialImport == null) return user;
 
-  if (officialImport.profile.avatar_url != null) {
-    user.avatar_url = officialImport.profile.avatar_url;
-  }
-
-  if (officialImport.profile.cover_url != null) {
-    user.cover.url = officialImport.profile.cover_url;
-    user.cover.custom_url ??= officialImport.profile.cover_url;
-  }
-
   if ((user.country == null || user.country.code === 'XX') && officialImport.profile.country != null) {
     user.country = officialImport.profile.country;
     user.country_code = officialImport.profile.country.code;
@@ -87,10 +78,6 @@ function withOfficialProfilePort(user: ProfilePageUserJson) {
 
   if (officialImport.profile.join_date != null) {
     user.join_date = officialImport.profile.join_date;
-  }
-
-  if (officialImport.profile.page_html != null && user.page.html.length === 0) {
-    user.page.html = officialImport.profile.page_html;
   }
 
   const officialBadges = officialImport.profile.badges ?? [];
@@ -204,7 +191,7 @@ export default class Controller {
     this.currentVariant = initialData.current_variant;
     this.scoresNotice = initialData.scores_notice;
     this.userpageEditEnabled = initialData.userpage_edit_enabled;
-    this.displayCoverUrl = this.state.user.official_import?.profile.cover_url ?? this.state.user.cover.url;
+    this.displayCoverUrl = this.state.user.cover.url;
     this.selectedHue = this.state.user.profile_hue;
     this.userCoverPresets = initialData.user_cover_presets;
 
@@ -488,7 +475,7 @@ export default class Controller {
 
   @action
   setDisplayCoverUrl(url: string | null) {
-    this.displayCoverUrl = url ?? this.state.user.official_import?.profile.cover_url ?? this.state.user.cover.url;
+    this.displayCoverUrl = url ?? this.state.user.cover.url;
   }
 
   @action
