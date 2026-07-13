@@ -16,9 +16,11 @@ class WikiControllerTest extends TestCase
         $this
             ->get('/wiki/en/Rules/Visual_content_considerations')
             ->assertSuccessful()
-            ->assertSee('M1PPosu visual content guidelines')
-            ->assertSee('This page is a local M1PPosu policy page')
+            ->assertSee('Visual content guidelines')
+            ->assertSee('Readability and safety')
+            ->assertSee('Repeated or severe violations may lead to account restrictions.')
             ->assertSee('id="notes"', false)
+            ->assertDontSee('This page is a local M1PPosu policy page')
             ->assertDontSee('Visual content considerations')
             ->assertDontSee('Skin elements');
     }

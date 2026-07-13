@@ -105,6 +105,10 @@ class OfficialOsuConnectionsControllerTest extends TestCase
     public function testRestrictedOfficialAccountCanAutoImportWithAdminFlag(): void
     {
         Queue::fake();
+        config_set('m1pposu.official_osu.discord_webhook_url', 'https://discord.test/webhook');
+        Http::fake([
+            'https://discord.test/webhook' => Http::response([], 204),
+        ]);
 
         $user = User::factory()->create();
         $connection = $this->createConnection($user);
@@ -124,6 +128,8 @@ class OfficialOsuConnectionsControllerTest extends TestCase
             'status' => M1pposuAccountImportRequest::STATUS_APPLIED,
             'restricted_at_request' => true,
         ]);
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => $request->data()['embeds'][0]['color'] === 0x57F287);
     }
 
     public function testAppliedImportResetBlockedForNormalUser(): void
@@ -303,9 +309,13 @@ class OfficialOsuConnectionsControllerTest extends TestCase
             ->assertSee('OfficialUser')
             ->assertSee('Action')
             ->assertSee('Remove')
+            ->assertSee('Removal reason')
             ->assertDontSee('Last action')
-            ->assertDontSee('Removal')
-            ->assertDontSee('>View</a>', false);
+            ->assertDontSee('Imported data summary');
+
+        $this->withPersistentSession($adminSession)
+            ->get("/admin/imported-accounts/{$request->getKey()}")
+            ->assertRedirect(route('admin.imported-accounts.index'));
 
         $this->withPersistentSession($adminSession)
             ->withHeader('X-CSRF-TOKEN', $adminSession->token())
@@ -313,7 +323,7 @@ class OfficialOsuConnectionsControllerTest extends TestCase
                 'confirmed' => 1,
                 'reason' => 'official account mismatch',
             ])
-            ->assertRedirect(route('admin.imported-accounts.show', $request));
+            ->assertRedirect(route('admin.imported-accounts.index'));
 
         $this->assertDatabaseHas('m1pposu_account_import_requests', [
             'id' => $request->getKey(),
@@ -327,7 +337,8 @@ class OfficialOsuConnectionsControllerTest extends TestCase
         $this->withPersistentSession($adminSession)
             ->get(route('admin.imported-accounts.index'))
             ->assertSuccessful()
-            ->assertSee('Restore');
+            ->assertSee('Restore')
+            ->assertSee('Restore reason');
 
         $this->withPersistentSession($adminSession)
             ->withHeader('X-CSRF-TOKEN', $adminSession->token())
@@ -335,7 +346,7 @@ class OfficialOsuConnectionsControllerTest extends TestCase
                 'confirmed' => 1,
                 'reason' => 'restored after review',
             ])
-            ->assertRedirect(route('admin.imported-accounts.show', $request));
+            ->assertRedirect(route('admin.imported-accounts.index'));
 
         $this->assertDatabaseHas('m1pposu_account_import_requests', [
             'id' => $request->getKey(),
@@ -345,9 +356,15 @@ class OfficialOsuConnectionsControllerTest extends TestCase
         ]);
         $this->assertFalse($user->fresh()->isRestricted());
 
-        Http::assertSentCount(2);
-        Http::assertSent(fn ($request) => str_contains(json_encode($request->data()), 'admin removed import'));
-        Http::assertSent(fn ($request) => str_contains(json_encode($request->data()), 'admin restored import'));
+        $webhookRequests = collect(Http::recorded())
+            ->filter(fn ($record) => $record[0]->url() === 'https://discord.test/webhook');
+        $this->assertCount(2, $webhookRequests);
+        Http::assertSent(fn ($request) => $request->url() === 'https://discord.test/webhook'
+            && $request->data()['embeds'][0]['title'] === 'Official import removed'
+            && $request->data()['embeds'][0]['color'] === 0xED4245);
+        Http::assertSent(fn ($request) => $request->url() === 'https://discord.test/webhook'
+            && $request->data()['embeds'][0]['title'] === 'Official import restored'
+            && $request->data()['embeds'][0]['color'] === 0x57F287);
     }
 
     public function testNormalUserCannotRemoveOrRestoreImportedAccount(): void

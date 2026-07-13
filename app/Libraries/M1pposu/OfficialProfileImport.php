@@ -98,7 +98,19 @@ class OfficialProfileImport
 
     public function scoreCount(User $user, string $mode, string $kind, ?string $variant = null): int
     {
-        return count($this->scoreItems($user, $mode, $kind, 0, null, $variant));
+        if ($variant !== null || !Beatmap::isModeValid($mode) || !in_array($kind, self::SCORE_KINDS, true)) {
+            return 0;
+        }
+
+        $request = $this->appliedRequest($user);
+
+        return $request === null
+            ? 0
+            : M1pposuImportedOfficialScoreSummary::query()
+                ->where('snapshot_id', $request->snapshot_id)
+                ->where('mode', $mode)
+                ->where('kind', $kind)
+                ->count();
     }
 
     public function scoreItems(
@@ -122,14 +134,20 @@ class OfficialProfileImport
             ::where('snapshot_id', $request->snapshot_id)
             ->where('mode', $mode)
             ->where('kind', $kind)
-            ->orderBy('id')
+            ->orderByRaw('pp IS NULL')
+            ->orderByDesc('pp')
+            ->orderByDesc('id')
+            ->when($limit !== null, fn ($query) => $query->limit($limit))
+            ->when($offset > 0, fn ($query) => $query
+                ->limit($limit ?? PHP_INT_MAX)
+                ->offset($offset))
             ->get();
 
         $items = array_values(array_filter($rows->map(
             fn (M1pposuImportedOfficialScoreSummary $summary) => $this->score($summary, $user, $mode),
         )->all()));
 
-        return array_slice($items, $offset, $limit);
+        return $items;
     }
 
     private function appliedRequest(User $user): ?M1pposuAccountImportRequest

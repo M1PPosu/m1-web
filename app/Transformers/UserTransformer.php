@@ -5,6 +5,7 @@
 
 namespace App\Transformers;
 
+use App\Models\Forum;
 use App\Models\User;
 use App\Models\UserProfileCustomization;
 
@@ -45,7 +46,9 @@ class UserTransformer extends UserCompactTransformer
             'playmode' => $user->playmode,
             'playmode_variant' => $user->playmode_variant,
             'playstyle' => $user->osu_playstyle,
-            'post_count' => $user->user_posts,
+            'post_count' => $user->forumPosts()
+                ->whereIn('forum_id', Forum\Authorize::postsCountedForums($user))
+                ->count(),
             'profile_hue' => $user->user_style,
             'profile_order' => $profileOrder,
             'title' => $user->title(),

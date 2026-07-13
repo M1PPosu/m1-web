@@ -7,6 +7,7 @@ namespace App\Transformers;
 
 use App\Libraries\M1pposu\ProjectedScoreVariant;
 use App\Libraries\M1pposu\OfficialProfileImport;
+use App\Libraries\M1pposu\PrivateProfileData;
 use App\Libraries\MorphMap;
 use App\Libraries\Search\ScoreSearchParams;
 use App\Libraries\SessionVerification;
@@ -465,6 +466,11 @@ class UserCompactTransformer extends TransformerAbstract
 
     public function includeRankHistory(User $user)
     {
+        $privateRankHistory = app(PrivateProfileData::class)->rankHistory($user, $this->mode, $this->variant);
+        if ($privateRankHistory !== null) {
+            return $this->primitive($privateRankHistory);
+        }
+
         if ($this->variant !== null) {
             return $this->primitive(null);
         }
@@ -568,6 +574,12 @@ class UserCompactTransformer extends TransformerAbstract
             if (is_array($officialStats)) {
                 $ret = $this->withOfficialImportedStatistics($ret, $officialStats);
             }
+        }
+
+        $privateStats = app(PrivateProfileData::class)->statistics($user, $this->mode, $this->variant);
+        if ($privateStats !== null) {
+            $ret['play_count'] = $privateStats['play_count'];
+            $ret['total_hits'] = $privateStats['total_hits'];
         }
 
         $ret['country_rank'] = $stats?->countryRank();

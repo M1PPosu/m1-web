@@ -199,25 +199,30 @@ class WikiController extends Controller
 
         return match (strtolower(OsuWiki::cleanPath($path))) {
             'rules/visual_content_considerations' => [
-                'title' => 'M1PPosu visual content guidelines',
-                'subtitle' => 'Rules',
+                'title' => 'Visual content guidelines',
+                'subtitle' => 'M1PPosu community rules',
                 'sections' => [
                     [
-                        'id' => 'rules',
-                        'title' => 'Avatar and profile image rules',
+                        'id' => 'profile-images',
+                        'title' => 'Profile images',
                         'body' => [
-                            'Keep profile images suitable for a mixed-age community.',
-                            'Do not upload nudity, sexual content, explicit violence, hate symbols, harassment, impersonation, or images intended to evade moderation.',
-                            'Do not use images that make the interface hard to read, such as flashing imagery or intentionally misleading transparent overlays.',
+                            'Avatars, profile covers, and other public images must be suitable for a mixed-age community.',
+                            'Nudity, sexual content, graphic violence, hate symbols, harassment, impersonation, and attempts to evade moderation are not allowed.',
+                        ],
+                    ],
+                    [
+                        'id' => 'readability',
+                        'title' => 'Readability and safety',
+                        'body' => [
+                            'Images must not flash rapidly, imitate site controls, hide important information, or otherwise make M1PPosu difficult or unsafe to use.',
                         ],
                     ],
                     [
                         'id' => 'notes',
                         'title' => 'Notes',
                         'body' => [
-                            'This page is a local M1PPosu policy page and is not an official osu! wiki article.',
-                            'Moderators may remove content that is disruptive, unsafe, or unsuitable even when it is not listed here verbatim.',
-                            'Imported official osu! profile data is displayed separately from local account privileges and does not grant supporter perks, pp, rank, or leaderboard placement.',
+                            'Moderators may remove content that is disruptive, unsafe, or clearly unsuitable even when it is not listed above.',
+                            'Repeated or severe violations may lead to account restrictions.',
                         ],
                     ],
                 ],

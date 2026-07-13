@@ -898,17 +898,7 @@ class UsersController extends Controller
 
             // Score
             case 'scoresBest':
-                $transformer = new ScoreTransformer();
-                $includes = [...ScoreTransformer::USER_PROFILE_INCLUDES, 'weight'];
-                $collection = $this->user->beatmapBestScores(
-                    $this->mode,
-                    $perPage,
-                    $offset,
-                    ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD,
-                    $this->variant,
-                );
-                $userRelationColumn = 'user';
-                break;
+                return $this->mixedBestScores($perPage, $offset);
             case 'scoresFirsts':
                 $transformer = new ScoreTransformer();
                 $includes = ScoreTransformer::USER_PROFILE_INCLUDES;
@@ -1049,7 +1039,7 @@ class UsersController extends Controller
             'beatmapPlaycounts' => $this->user->beatmapPlaycounts()->count(),
             'favouriteBeatmapsets' => $this->user->profileBeatmapsetsFavourite()->count(),
             'recentActivity' => $this->user->events()->recent(ScoreSearchParams::showLegacyForUser(\Auth::user()))->count(),
-            'scoresBest' => count($this->user->beatmapBestScoreIds($this->mode)),
+            'scoresBest' => count($this->user->beatmapBestScoreIds($this->mode, $this->variant)),
             'scoresFirsts' => $this->user->scoresFirst(
                 $this->mode,
                 ScoreSearchParams::showLegacyForUser(\Auth::user()),
@@ -1075,6 +1065,44 @@ class UsersController extends Controller
             ...$items,
             ...$this->officialExtraItems($section, $officialOffset, $remaining),
         ];
+    }
+
+    private function mixedBestScores(int $perPage, int $offset): array
+    {
+        if ($perPage <= 0) {
+            return [];
+        }
+
+        $fetchLimit = min($this->maxResults, $offset + $perPage);
+        $nativeScores = $this->user->beatmapBestScores(
+            $this->mode,
+            $fetchLimit,
+            0,
+            ScoreTransformer::USER_PROFILE_INCLUDES_PRELOAD,
+            $this->variant,
+        );
+        $nativeItems = json_collection(
+            $nativeScores,
+            new ScoreTransformer(),
+            [...ScoreTransformer::USER_PROFILE_INCLUDES, 'weight'],
+        );
+        $officialItems = app(OfficialProfileImport::class)->scoreItems(
+            $this->user,
+            $this->mode,
+            'best',
+            0,
+            $fetchLimit,
+            $this->variant,
+        );
+
+        $items = [...$nativeItems, ...$officialItems];
+        usort($items, function (array $left, array $right): int {
+            $ppOrder = ((float) ($right['pp'] ?? -1)) <=> ((float) ($left['pp'] ?? -1));
+
+            return $ppOrder !== 0 ? $ppOrder : (($right['id'] ?? 0) <=> ($left['id'] ?? 0));
+        });
+
+        return array_slice($items, $offset, $perPage);
     }
 
     private function getExtraSection(string $section, ?int $count = null)

@@ -16,6 +16,8 @@ use Log;
 class OfficialImportDiscordNotifier
 {
     private const FIELD_VALUE_LIMIT = 1000;
+    private const COLOR_GREEN = 0x57F287;
+    private const COLOR_RED = 0xED4245;
 
     public function connectionEvent(
         string $event,
@@ -26,32 +28,36 @@ class OfficialImportDiscordNotifier
     ): void
     {
         $fields = [
-            'event' => $event,
-            'local_user' => "{$connection->user->username} ({$connection->user_id})",
-            'official_user' => "{$connection->username} ({$connection->official_user_id})",
-            'status' => $request?->status ?? ($connection->restricted_at_connection ? 'restricted' : 'connected'),
-            'timestamp' => now()->toIso8601String(),
+            'Local account' => $this->markdownLink(
+                "{$connection->user->username} ({$connection->user_id})",
+                route('users.show', ['user' => $connection->user_id]),
+            ),
+            'Official account' => $this->markdownLink(
+                "{$connection->username} ({$connection->official_user_id})",
+                "https://osu.ppy.sh/users/{$connection->official_user_id}",
+            ),
+            'Status' => $request?->status ?? ($connection->restricted_at_connection ? 'restricted' : 'connected'),
         ];
 
         if ($request !== null) {
-            $fields['request_id'] = (string) $request->getKey();
-            $fields['admin_url'] = in_array($request->status, M1pposuAccountImportRequest::IMPORTED_STATUSES, true)
-                ? route('admin.imported-accounts.show', $request)
-                : route('admin.official-import-requests.show', $request);
+            $fields['Import ID'] = "#{$request->getKey()}";
         }
 
         if ($actor !== null) {
-            $fields['actor'] = "{$actor->username} ({$actor->getKey()})";
+            $fields['Actor'] = $this->markdownLink(
+                "{$actor->username} ({$actor->getKey()})",
+                route('users.show', ['user' => $actor->getKey()]),
+            );
         }
 
         if (presence($reason) !== null) {
-            $fields['reason'] = $reason;
+            $fields['Reason'] = $reason;
         }
 
-        $this->send($fields);
+        $this->send($event, $request?->getKey(), $fields);
     }
 
-    private function send(array $fields): void
+    private function send(string $event, ?int $requestId, array $fields): void
     {
         $webhookUrl = presence(config('m1pposu.official_osu.discord_webhook_url'));
         if ($webhookUrl === null) {
@@ -62,7 +68,7 @@ class OfficialImportDiscordNotifier
             ->map(fn ($value, $key) => [
                 'name' => (string) $key,
                 'value' => $this->safeFieldValue((string) $value),
-                'inline' => false,
+                'inline' => $key !== 'Reason',
             ])
             ->values()
             ->all();
@@ -72,28 +78,49 @@ class OfficialImportDiscordNotifier
                 ->acceptJson()
                 ->post($webhookUrl, [
                     'allowed_mentions' => ['parse' => []],
-                    'content' => $this->safeFieldValue("official osu! import: {$fields['event']}"),
                     'embeds' => [[
+                        'color' => $this->eventColor($event),
                         'fields' => $embedFields,
+                        'footer' => ['text' => 'Official osu! import'],
                         'timestamp' => now()->toIso8601String(),
-                        'title' => 'Official osu! import',
+                        'title' => ucfirst($this->safeFieldValue($event)),
                     ]],
                 ]);
 
             if (!$response->successful()) {
                 Log::warning('Official osu! import Discord webhook failed.', [
                     'status' => $response->status(),
-                    'event' => $fields['event'] ?? null,
-                    'request_id' => $fields['request_id'] ?? null,
+                    'event' => $event,
+                    'request_id' => $requestId,
                 ]);
             }
         } catch (\Throwable $exception) {
             Log::warning('Official osu! import Discord webhook exception.', [
                 'class' => $exception::class,
-                'event' => $fields['event'] ?? null,
-                'request_id' => $fields['request_id'] ?? null,
+                'event' => $event,
+                'request_id' => $requestId,
             ]);
         }
+    }
+
+    private function eventColor(string $event): int
+    {
+        $event = strtolower($event);
+
+        foreach (['remove', 'reset', 'unlink', 'disconnect', 'fail', 'denied', 'error'] as $redEvent) {
+            if (str_contains($event, $redEvent)) {
+                return self::COLOR_RED;
+            }
+        }
+
+        return self::COLOR_GREEN;
+    }
+
+    private function markdownLink(string $label, string $url): string
+    {
+        $label = str_replace(['[', ']'], ['\\[', '\\]'], $label);
+
+        return "[{$label}]({$url})";
     }
 
     private function safeFieldValue(string $value): string

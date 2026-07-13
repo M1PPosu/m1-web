@@ -55,7 +55,7 @@ class OfficialOsuConnectionsController extends Controller
         $importService->createSnapshot($connection, $token['access_token'], $officialUser);
 
         $discord->connectionEvent(
-            $connection->restricted_at_connection ? 'restricted official account linked' : 'OAuth connection linked',
+            'Official account connected',
             $connection->fresh('user'),
         );
         \Session::flash('popup', osu_trans('accounts.official_osu.connected'));
@@ -86,7 +86,7 @@ class OfficialOsuConnectionsController extends Controller
             abort_unless(get_bool(request('confirmed')), 422, osu_trans('accounts.official_osu.error.remove_confirm_required'));
 
             $removedRequest = $importService->selfRemove($latestImportedRequest, auth()->user());
-            $discord->connectionEvent('user self-removed import', $connection->fresh('user'), $removedRequest, auth()->user(), $removedRequest->remove_reason);
+            $discord->connectionEvent('Official import removed by user', $connection->fresh('user'), $removedRequest, auth()->user(), $removedRequest->remove_reason);
 
             return response([
                 'message' => osu_trans('accounts.official_osu.remove_removed'),
@@ -102,7 +102,7 @@ class OfficialOsuConnectionsController extends Controller
 
         $discordConnection = $connection->fresh('user');
         $connection->delete();
-        $discord->connectionEvent('official account disconnected before import', $discordConnection);
+        $discord->connectionEvent('Official account disconnected', $discordConnection);
 
         return response()->noContent();
     }
@@ -115,9 +115,15 @@ class OfficialOsuConnectionsController extends Controller
         $snapshot = $importService->refreshSnapshot($connection);
         $connection->refresh();
 
-        $result = $importService->apply($snapshot, auth()->user());
-        $request = $importService->createAppliedRequest($connection, $snapshot, auth()->user(), $result, true);
-        $discord->connectionEvent('admin reset/reimported import', $connection->fresh('user'), $request, auth()->user());
+        try {
+            $result = $importService->apply($snapshot, auth()->user());
+            $request = $importService->createAppliedRequest($connection, $snapshot, auth()->user(), $result, true);
+        } catch (\Throwable $exception) {
+            $discord->connectionEvent('Official import failed', $connection->fresh('user'), null, auth()->user());
+
+            throw $exception;
+        }
+        $discord->connectionEvent('Official data reimported', $connection->fresh('user'), $request, auth()->user());
 
         return response([
             'message' => osu_trans('accounts.official_osu.reimport_started'),
@@ -135,7 +141,7 @@ class OfficialOsuConnectionsController extends Controller
         $discordConnection = $connection->fresh('user');
         $connection->delete();
 
-        $discord->connectionEvent('official import reset/unlinked by admin/dev', $discordConnection, null, $user);
+        $discord->connectionEvent('Official import link reset', $discordConnection, null, $user);
 
         return response()->noContent();
     }
@@ -181,14 +187,15 @@ class OfficialOsuConnectionsController extends Controller
             : $connection->snapshots()->latest()->firstOrFail();
         $connection->refresh();
 
-        $result = $importService->apply($snapshot, auth()->user());
-        $request = $importService->createAppliedRequest($connection, $snapshot, auth()->user(), $result);
-        $discord->connectionEvent(
-            $request->restricted_at_request ? 'restricted/suspicious official account imported' : 'user imported official account',
-            $connection->fresh('user'),
-            $request,
-            auth()->user(),
-        );
+        try {
+            $result = $importService->apply($snapshot, auth()->user());
+            $request = $importService->createAppliedRequest($connection, $snapshot, auth()->user(), $result);
+        } catch (\Throwable $exception) {
+            $discord->connectionEvent('Official import failed', $connection->fresh('user'), null, auth()->user());
+
+            throw $exception;
+        }
+        $discord->connectionEvent('Official data imported', $connection->fresh('user'), $request, auth()->user());
 
         return response([
             'message' => osu_trans('accounts.official_osu.import_started'),

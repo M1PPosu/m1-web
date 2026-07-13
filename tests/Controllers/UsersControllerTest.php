@@ -6,13 +6,107 @@
 namespace Tests\Controllers;
 
 use App\Models\Achievement;
+use App\Models\Comment;
 use App\Models\Country;
+use App\Models\Forum\Forum;
+use App\Models\Forum\Post;
+use App\Models\Forum\Topic;
 use App\Models\User;
+use App\Libraries\M1pposu\PrivateProfileData;
 use Queue;
 use Tests\TestCase;
 
 class UsersControllerTest extends TestCase
 {
+    public function testProfileUsesRealVisibleForumPostAndCommentCounts(): void
+    {
+        $user = User::factory()->create(['user_posts' => 99]);
+        $forum = Forum::factory()->withAuthorize('postCount')->create();
+        $topic = Topic::factory()->create(['forum_id' => $forum->getKey()]);
+        Post::factory()->create([
+            'forum_id' => $forum->getKey(),
+            'poster_id' => $user->getKey(),
+            'topic_id' => $topic->getKey(),
+        ]);
+        Post::factory()->create([
+            'deleted_at' => now(),
+            'forum_id' => $forum->getKey(),
+            'poster_id' => $user->getKey(),
+            'topic_id' => $topic->getKey(),
+        ]);
+        Comment::factory()->create(['user_id' => $user->getKey()]);
+        Comment::factory()->deleted()->create(['user_id' => $user->getKey()]);
+
+        $this->actAsScopedUser($user, ['public']);
+
+        $this->get(route('api.users.show', ['user' => $user->getKey()]))
+            ->assertSuccessful()
+            ->assertJsonPath('post_count', 1)
+            ->assertJsonPath('comments_count', 1);
+    }
+
+    public function testProfileUsesPrivateStatsAndRankHistoryWithoutChangingNativePp(): void
+    {
+        $user = User::factory()->create();
+        \App\Models\UserStatistics\Osu::factory()->create([
+            'playcount' => 7,
+            'rank_score' => 123.0,
+            'user_id' => $user->getKey(),
+        ]);
+        $rankData = array_fill(0, 90, 0);
+        $rankData[88] = 2;
+        $rankData[89] = 1;
+
+        $this->app->instance(PrivateProfileData::class, new class($rankData) extends PrivateProfileData {
+            public function __construct(private array $rankData)
+            {
+            }
+
+            public function rankHistory(User $user, string $ruleset, ?string $variant): ?array
+            {
+                return ['data' => $this->rankData, 'mode' => $ruleset];
+            }
+
+            public function statistics(User $user, string $ruleset, ?string $variant): ?array
+            {
+                return ['play_count' => 12, 'total_hits' => 15052];
+            }
+        });
+        $this->actAsScopedUser($user, ['public']);
+
+        $this->get(route('api.users.show', ['user' => $user->getKey(), 'mode' => 'osu']))
+            ->assertSuccessful()
+            ->assertJsonPath('statistics.play_count', 12)
+            ->assertJsonPath('statistics.total_hits', 15052)
+            ->assertJsonPath('statistics.pp', 123)
+            ->assertJsonPath('rank_history.data.88', 2)
+            ->assertJsonPath('rank_history.data.89', 1);
+    }
+
+    public function testProfilePrivateStatsSupportZeroPlays(): void
+    {
+        $user = User::factory()->create();
+        \App\Models\UserStatistics\Osu::factory()->create(['user_id' => $user->getKey()]);
+
+        $this->app->instance(PrivateProfileData::class, new class extends PrivateProfileData {
+            public function rankHistory(User $user, string $ruleset, ?string $variant): ?array
+            {
+                return null;
+            }
+
+            public function statistics(User $user, string $ruleset, ?string $variant): ?array
+            {
+                return ['play_count' => 0, 'total_hits' => 0];
+            }
+        });
+        $this->actAsScopedUser($user, ['public']);
+
+        $this->get(route('api.users.show', ['user' => $user->getKey(), 'mode' => 'osu']))
+            ->assertSuccessful()
+            ->assertJsonPath('statistics.play_count', 0)
+            ->assertJsonPath('statistics.total_hits', 0);
+    }
+
     public function testIndexForApi()
     {
         $user = User::factory()->create();

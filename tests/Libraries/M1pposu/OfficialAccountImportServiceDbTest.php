@@ -458,9 +458,61 @@ class OfficialAccountImportServiceDbTest extends TestCase
         $this->assertSame(30, $result['imported_score_summaries']);
         $this->assertSame(30, $profileImport->scoreCount($user->fresh(), 'osu', 'best'));
         $this->assertCount(30, $items);
-        $this->assertSame(9001, abs($items[0]['id']));
-        $this->assertSame(9030, abs($items[29]['id']));
+        $this->assertSame(9030, abs($items[0]['id']));
+        $this->assertSame(9001, abs($items[29]['id']));
         $this->assertSame(0, Score::where('user_id', $user->getKey())->count());
+    }
+
+    public function testProfileTopPlaysMergeNativeAndImportedScoresByPpWithPagination(): void
+    {
+        config_set('m1pposu.private_server.enabled', true);
+
+        $user = User::factory()->create(['username' => 'local_user']);
+        $connection = $this->createConnection($user);
+        $snapshot = $this->createSnapshot($connection);
+        $result = app(OfficialAccountImportService::class)->apply($snapshot, $user);
+        app(OfficialAccountImportService::class)->createAppliedRequest($connection, $snapshot, $user, $result);
+
+        $higherNative = Score::factory()->create([
+            'passed' => true,
+            'pp' => 400.0,
+            'preserve' => true,
+            'rank' => 'A',
+            'ranked' => true,
+            'ruleset_id' => 0,
+            'user_id' => $user->getKey(),
+        ]);
+        $lowerNative = Score::factory()->create([
+            'passed' => true,
+            'pp' => 200.0,
+            'preserve' => true,
+            'rank' => 'A',
+            'ranked' => true,
+            'ruleset_id' => 0,
+            'user_id' => $user->getKey(),
+        ]);
+
+        $this->actAsScopedUser($user, ['public']);
+
+        $this->assertSame(1, app(OfficialProfileImport::class)->scoreCount($user->fresh(), 'osu', 'best'));
+
+        $response = $this->get("/api/v2/users/{$user->getKey()}/scores/best?mode=osu&limit=3")
+            ->assertSuccessful();
+        $this->assertSame(
+            [400.0, 321.45, 200.0],
+            array_map(fn ($score) => (float) $score['pp'], $response->json()),
+            json_encode($response->json()),
+        );
+        $response
+            ->assertJsonPath('0.id', $higherNative->getKey())
+            ->assertJsonPath('1.id', -9876)
+            ->assertJsonPath('1.source.backend', 'official_osu')
+            ->assertJsonPath('2.id', $lowerNative->getKey());
+
+        $this->get("/api/v2/users/{$user->getKey()}/scores/best?mode=osu&limit=1&offset=1")
+            ->assertSuccessful()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.id', -9876);
     }
 
     public function testIncompleteImportedTopPlaysAreHiddenFromProfileRows(): void
@@ -649,13 +701,70 @@ class OfficialAccountImportServiceDbTest extends TestCase
             $encodedPayload = json_encode($payload);
 
             return $request->url() === 'https://discord.test/webhook'
-                && str_contains($payload['content'], 'official osu! import: import applied')
-                && in_array('local_user', $fieldNames, true)
+                && !array_key_exists('content', $payload)
+                && $payload['embeds'][0]['color'] === 0x57F287
+                && $payload['embeds'][0]['title'] === 'Import applied'
+                && in_array('Local account', $fieldNames, true)
+                && in_array('Official account', $fieldNames, true)
                 && !str_contains($encodedPayload, '@everyone')
                 && !str_contains($encodedPayload, '<@&123456789>')
                 && !str_contains($encodedPayload, 'refresh_token')
                 && !str_contains($encodedPayload, 'access_token');
         });
+        Http::assertSentCount(1);
+    }
+
+    public function testDiscordNotifierFailureUsesOneRedEmbed(): void
+    {
+        config_set('m1pposu.official_osu.discord_webhook_url', 'https://discord.test/webhook');
+        Http::fake([
+            'https://discord.test/webhook' => Http::response([], 204),
+        ]);
+
+        $user = User::factory()->create(['username' => 'local_user']);
+        $connection = $this->createConnection($user);
+
+        app(OfficialImportDiscordNotifier::class)->connectionEvent('import failed', $connection);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => !array_key_exists('content', $request->data())
+            && $request->data()['embeds'][0]['color'] === 0xED4245
+            && $request->data()['embeds'][0]['title'] === 'Import failed');
+    }
+
+    public function testDiscordNotifierUsesGreenForConnectionEventsAndRedForRemovalEvents(): void
+    {
+        config_set('m1pposu.official_osu.discord_webhook_url', 'https://discord.test/webhook');
+        Http::fake([
+            'https://discord.test/webhook' => Http::response([], 204),
+        ]);
+
+        $user = User::factory()->create(['username' => 'local_user']);
+        $connection = $this->createConnection($user);
+        $events = [
+            'Official account connected' => 0x57F287,
+            'Official data imported' => 0x57F287,
+            'Official data reimported' => 0x57F287,
+            'Official import approved' => 0x57F287,
+            'Official import restored' => 0x57F287,
+            'Official import removed' => 0xED4245,
+            'Official import removed by user' => 0xED4245,
+            'Official account disconnected' => 0xED4245,
+            'Official import link reset' => 0xED4245,
+            'Official import failed' => 0xED4245,
+            'Official import denied' => 0xED4245,
+        ];
+
+        foreach (array_keys($events) as $event) {
+            app(OfficialImportDiscordNotifier::class)->connectionEvent($event, $connection);
+        }
+
+        $embeds = collect(Http::recorded())->map(fn ($record) => $record[0]->data()['embeds'][0]);
+        $this->assertCount(count($events), $embeds);
+
+        foreach (array_values($events) as $index => $color) {
+            $this->assertSame($color, $embeds[$index]['color']);
+        }
     }
 
     public function testRevokedOauthKeepsAppliedImportAndMarksReconnectNeeded(): void
