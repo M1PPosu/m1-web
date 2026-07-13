@@ -14,13 +14,6 @@ use DB;
 
 class ImportedAccountsController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->middleware('throttle:30,10')->only(['remove', 'restore']);
-    }
-
     public function index()
     {
         $latestImportedIds = DB::table('m1pposu_account_import_requests')

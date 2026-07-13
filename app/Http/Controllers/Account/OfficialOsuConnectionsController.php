@@ -20,7 +20,6 @@ class OfficialOsuConnectionsController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('verify-user');
-        $this->middleware('throttle:10,10')->only(['callback', 'create', 'destroy', 'import', 'reimport', 'reset']);
 
         parent::__construct();
     }

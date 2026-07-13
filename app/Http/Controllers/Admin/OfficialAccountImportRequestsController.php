@@ -20,13 +20,6 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class OfficialAccountImportRequestsController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->middleware('throttle:30,10')->only(['approve', 'deny']);
-    }
-
     public function approve(
         M1pposuAccountImportRequest $officialImportRequest,
         OfficialAccountImportService $importService,

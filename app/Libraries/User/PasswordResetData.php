@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Libraries\User;
 
 use App\Exceptions\InvariantException;
+use App\Libraries\RateLimiter;
 use App\Mail\PasswordReset;
 use App\Models\User;
 
@@ -32,6 +33,10 @@ class PasswordResetData
      */
     public static function attempt(User $user): bool
     {
+        if (RateLimiter::isDisabled()) {
+            return true;
+        }
+
         $limiterKey = "password_reset_user:{$user->getKey()}";
         if (\RateLimiter::attempts($limiterKey) >= 3) {
             return false;

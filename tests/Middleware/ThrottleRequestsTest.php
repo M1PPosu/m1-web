@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Tests\Middleware;
 
 use App\Http\Middleware\RequestCost;
+use App\Libraries\RateLimiter;
 use App\Models\OAuth\Token;
 use App\Models\User;
 use Closure;
@@ -43,6 +44,30 @@ class ThrottleRequestsTest extends TestCase
         $this->getJson('api/test-throttle')
             ->assertHeader('X-Ratelimit-Limit', static::LIMIT)
             ->assertHeader('X-Ratelimit-Remaining', 58);
+    }
+
+    public function testThrottleIsDisabledInLocalEnvironment()
+    {
+        $this->app->detectEnvironment(fn () => 'local');
+
+        Route::get('api/test-local-throttle', fn () => [])
+            ->middleware(['api', 'require-scopes'])
+            ->middleware('throttle:1,10');
+
+        for ($i = 0; $i < 3; $i++) {
+            $response = $this->getJson('api/test-local-throttle')->assertSuccessful();
+
+            $this->assertFalse($response->headers->has('X-Ratelimit-Limit'));
+            $this->assertFalse($response->headers->has('X-Ratelimit-Remaining'));
+        }
+
+        $limiter = app(RateLimiter::class);
+        $key = 'test-local-direct-limit:'.$this->token->getKey();
+        $limiter->clear($key);
+
+        $this->assertSame(0, $limiter->hit($key, 600));
+        $this->assertSame(0, $limiter->attempts($key));
+        $this->assertFalse($limiter->tooManyAttempts($key, 1));
     }
 
     public static function throttleDataProvider()

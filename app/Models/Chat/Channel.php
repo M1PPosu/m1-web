@@ -10,6 +10,7 @@ use App\Events\ChatMessageEvent;
 use App\Exceptions\API;
 use App\Exceptions\InvariantException;
 use App\Libraries\AuthorizationResult;
+use App\Libraries\RateLimiter;
 use App\Models\LegacyMatch\LegacyMatch;
 use App\Models\Multiplayer\Room;
 use App\Models\User;
@@ -438,7 +439,7 @@ class Channel extends Model
 
         $now = $timestamp === null ? now() : Carbon::instance(\DateTime::createFromInterface($timestamp));
 
-        if ($applyRateLimit) {
+        if ($applyRateLimit && !RateLimiter::isDisabled()) {
             if ($this->isPM()) {
                 $limit = $GLOBALS['cfg']['osu']['chat']['rate_limits']['private']['limit'];
                 $window = $GLOBALS['cfg']['osu']['chat']['rate_limits']['private']['window'];

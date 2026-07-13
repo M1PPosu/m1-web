@@ -53,6 +53,16 @@ class PasswordResetControllerTest extends TestCase
         Mail::assertNothingOutgoing();
     }
 
+    public function testLocalEnvironmentDoesNotLimitPasswordResetAttempts(): void
+    {
+        $this->app->detectEnvironment(fn () => 'local');
+        $user = User::factory()->create();
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->assertTrue(PasswordResetData::attempt($user));
+        }
+    }
+
     public function testCreateSendMailOnce()
     {
         $user = User::factory()->create();

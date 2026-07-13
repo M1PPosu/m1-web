@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Tests\Controllers\Account;
 
-use App\Http\Middleware\ThrottleRequests;
 use App\Models\M1pposuAccountImportRequest;
 use App\Models\M1pposuAccountImportSnapshot;
 use App\Models\M1pposuOfficialConnection;
@@ -18,13 +17,6 @@ use Tests\TestCase;
 
 class OfficialOsuConnectionsControllerTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->withoutMiddleware(ThrottleRequests::class);
-    }
-
     public function testDisconnectAllowedBeforeImport(): void
     {
         Queue::fake();

@@ -11,9 +11,25 @@ use Illuminate\Cache\RateLimiter as CacheRateLimiter;
 
 class RateLimiter extends CacheRateLimiter
 {
+    public static function isDisabled(): bool
+    {
+        return app()->environment('local');
+    }
+
+    public function tooManyAttempts($key, $maxAttempts)
+    {
+        return static::isDisabled()
+            ? false
+            : parent::tooManyAttempts($key, $maxAttempts);
+    }
+
     // overriden version of hit() to support a cost.
     public function hit($key, $decaySeconds = 60, int $cost = 1)
     {
+        if (static::isDisabled()) {
+            return 0;
+        }
+
         $key = $this->cleanRateLimiterKey($key);
 
         $this->cache->add(

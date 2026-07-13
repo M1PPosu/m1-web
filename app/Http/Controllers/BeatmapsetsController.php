@@ -11,6 +11,7 @@ use App\Libraries\BeatmapsetDiscussion\Review;
 use App\Libraries\CommentBundle;
 use App\Libraries\M1pposu\BeatmapsetAssets;
 use App\Libraries\M1pposu\PrivateBeatmapsetSearch;
+use App\Libraries\RateLimiter;
 use App\Libraries\Search\BeatmapsetSearchCached;
 use App\Libraries\Search\BeatmapsetSearchRequestParams;
 use App\Models\Beatmap;
@@ -192,12 +193,14 @@ class BeatmapsetsController extends Controller
 
         $user = Auth::user();
         $userId = $user->getKey();
-        $recentlyDownloaded = BeatmapDownload::where('user_id', $userId)
-            ->where('timestamp', '>', Carbon::now()->subHours()->getTimestamp())
-            ->count();
+        if (!RateLimiter::isDisabled()) {
+            $recentlyDownloaded = BeatmapDownload::where('user_id', $userId)
+                ->where('timestamp', '>', Carbon::now()->subHours()->getTimestamp())
+                ->count();
 
-        if ($recentlyDownloaded > $user->beatmapsetDownloadAllowance()) {
-            abort(429, osu_trans('beatmapsets.download.limit_exceeded'));
+            if ($recentlyDownloaded > $user->beatmapsetDownloadAllowance()) {
+                abort(429, osu_trans('beatmapsets.download.limit_exceeded'));
+            }
         }
 
         if ($privateDownloadUrl !== null) {

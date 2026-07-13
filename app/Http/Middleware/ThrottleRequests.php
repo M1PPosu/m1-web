@@ -23,6 +23,10 @@ class ThrottleRequests extends ThrottleRequestsBase
 
     protected function handleRequest($request, Closure $next, array $limits)
     {
+        if (RateLimiter::isDisabled()) {
+            return $next($request);
+        }
+
         foreach ($limits as $limit) {
             if ($this->limiter->tooManyAttempts($limit->key, $limit->maxAttempts)) {
                 throw $this->buildException($request, $limit->key, $limit->maxAttempts, $limit->responseCallback);
